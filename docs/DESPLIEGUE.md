@@ -2,12 +2,21 @@
 
 Tres contenedores: PostgreSQL, la API y un Nginx que sirve el frontend y reenvía `/api` a la API.
 
-Solo se publica **un puerto en la interfaz local** (`127.0.0.1:8080`). El Nginx del servidor apunta
-ahí y se encarga del dominio y del certificado. Ni la base ni la API quedan accesibles desde fuera.
+Ni la base ni la API quedan accesibles desde fuera: el proxy del servidor es el único punto de
+entrada y se encarga del dominio y del certificado.
+
+Con **Nginx Proxy Manager**, que corre en Docker, el tráfico ni siquiera sale de Docker:
 
 ```
-internet → Nginx del servidor (TLS) → 127.0.0.1:8080 → contenedor web ─┬→ archivos de Angular
-                                                                       └→ /api → contenedor api → postgres
+internet → NPM (TLS) → [red de Docker] → automargin-web ─┬→ archivos de Angular
+                                                         └→ /api → api → postgres
+```
+
+Con **Nginx instalado en el sistema**, se publica un puerto solo en la interfaz local:
+
+```
+internet → Nginx (TLS) → 127.0.0.1:8080 → contenedor web ─┬→ archivos de Angular
+                                                          └→ /api → api → postgres
 ```
 
 Como el frontend y la API viajan por el mismo origen, **no hay CORS** y el mismo build sirve para
@@ -81,9 +90,58 @@ docker compose -f docker-compose.prod.yml ps          # los tres deben estar hea
 curl -s http://127.0.0.1:8080/health                  # {"status":"ok","database":"connected"}
 ```
 
-## 5. Configurar el Nginx del servidor
+## 5a. Con Nginx Proxy Manager
 
-Crea `/etc/nginx/sites-available/automargin`:
+Si usas NPM, no hace falta publicar ningún puerto en el host: NPM también corre en Docker y puede
+hablar con el contenedor directamente por la red interna. El tráfico nunca sale de Docker.
+
+Averigua el nombre de la red de NPM:
+
+```bash
+docker network ls | grep -i proxy
+```
+
+Añádelo al `.env` y levanta con el complemento:
+
+```bash
+echo "NPM_NETWORK=nginxproxymanager_default" >> .env    # ajustar al nombre real
+
+docker compose -f docker-compose.prod.yml -f docker-compose.npm.yml up -d --build
+```
+
+Luego, en la interfaz de NPM → **Proxy Hosts** → **Add Proxy Host**:
+
+| Pestaña | Campo | Valor |
+|---|---|---|
+| Details | Domain Names | `automargin.andyjara.dev` |
+| Details | Scheme | `http` |
+| Details | Forward Hostname / IP | `automargin-web` |
+| Details | Forward Port | `80` |
+| Details | Block Common Exploits | activado |
+| Details | Websockets Support | desactivado (no se usan) |
+| SSL | SSL Certificate | Request a new SSL Certificate |
+| SSL | Force SSL | activado |
+| SSL | HTTP/2 Support | activado |
+
+En **Advanced**, para cuando lleguen las fotografías en la Fase 2:
+
+```nginx
+client_max_body_size 20m;
+```
+
+NPM ya envía `X-Forwarded-Proto`, `X-Forwarded-For` y `Host`, que es justo lo que la API necesita
+para saber que el cliente llegó por HTTPS. No hay que configurar nada más.
+
+> **`Forward Hostname` debe ser `automargin-web`**, no `web` ni `localhost`. Es un alias de red
+> definido a propósito: usar solo «web» arriesga que colisione con otro stack en la misma red, y
+> `localhost` apuntaría al propio contenedor de NPM.
+
+Con NPM puedes saltarte los pasos 5 y 6. El puerto en `127.0.0.1` se mantiene publicado por si
+necesitas diagnosticar desde el servidor con `curl`.
+
+## 5b. Con Nginx instalado en el sistema
+
+Solo si **no** usas Nginx Proxy Manager. Crea `/etc/nginx/sites-available/automargin`:
 
 ```nginx
 server {
@@ -147,6 +205,11 @@ del `.env`.
 ```bash
 cd /opt/automargin
 git pull
+
+# Con Nginx Proxy Manager
+docker compose -f docker-compose.prod.yml -f docker-compose.npm.yml up -d --build
+
+# Con Nginx del sistema
 docker compose -f docker-compose.prod.yml up -d --build
 ```
 

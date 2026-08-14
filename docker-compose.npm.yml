@@ -1,0 +1,23 @@
+# Complemento para servidores con Nginx Proxy Manager.
+#
+#   docker compose -f docker-compose.prod.yml -f docker-compose.npm.yml up -d --build
+#
+# Conecta el contenedor web a la red de NPM para que este lo alcance por nombre, sin pasar por
+# el host. Así el tráfico no sale de Docker y no hace falta exponer ningún puerto,
+# aunque el de 127.0.0.1 se mantiene para poder diagnosticar desde el servidor.
+
+services:
+  web:
+    networks:
+      interna:
+      proxy:
+        aliases:
+          # Nombre explícito para que NPM lo resuelva sin ambigüedad. Usar solo «web» sería
+          # arriesgado: otro stack en la misma red podría llamarse igual.
+          - automargin-web
+
+networks:
+  proxy:
+    external: true
+    # Ajustar a la red real de NPM. Para verla:  docker network ls
+    name: ${NPM_NETWORK:-nginxproxymanager_default}
