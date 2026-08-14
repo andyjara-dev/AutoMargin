@@ -89,25 +89,40 @@ var paths = contours
     .Where(p => !string.IsNullOrEmpty(p))
     .ToList();
 
-var svg = $"""
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="AutoMargin">
-  <defs>
-    <linearGradient id="am" x1="8%" y1="5%" x2="92%" y2="95%">
-      <stop offset="0%" stop-color="#2563EB"/>
-      <stop offset="52%" stop-color="#0EA5E9"/>
-      <stop offset="100%" stop-color="#22D3EE"/>
-    </linearGradient>
-  </defs>
-  <g transform="translate({F(shiftX)} {F(shiftY)})" fill="url(#am)" fill-rule="evenodd">
-    <path d="{string.Join(" ", paths)}"/>
-  </g>
-</svg>
+var combined = string.Join(" ", paths);
 
-""";
+// El destino habitual es el frontend: se escriben de una vez las tres variantes que usan
+// el mismo trazo, para que no puedan quedar desincronizadas.
+// El PNG vive en <frontend>/public, así que el proyecto está un nivel más arriba.
+var frontendRoot = Path.GetFullPath(
+    Path.Combine(Path.GetDirectoryName(Path.GetFullPath(input))!, ".."));
 
-await File.WriteAllTextAsync(output, svg);
+if (Directory.Exists(Path.Combine(frontendRoot, "src", "app", "shared")))
+{
+    Console.WriteLine("Archivos generados:");
+    Emitter.WriteAll(combined, shiftX, shiftY, frontendRoot);
+}
+else
+{
+    var svg = $"""
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="AutoMargin">
+          <defs>
+            <linearGradient id="am" x1="8%" y1="5%" x2="92%" y2="95%">
+              <stop offset="0%" stop-color="#2563EB"/>
+              <stop offset="52%" stop-color="#0EA5E9"/>
+              <stop offset="100%" stop-color="#22D3EE"/>
+            </linearGradient>
+          </defs>
+          <g transform="translate({F(shiftX)} {F(shiftY)})" fill="url(#am)" fill-rule="evenodd">
+            <path d="{combined}"/>
+          </g>
+        </svg>
+        """;
 
-Console.WriteLine($"SVG generado: {output} ({new FileInfo(output).Length / 1024d:N1} KB)");
+    await File.WriteAllTextAsync(output, svg);
+    Console.WriteLine($"SVG generado: {output} ({new FileInfo(output).Length / 1024d:N1} KB)");
+}
+
 Console.WriteLine("Si el trazo salió con ruido, sube el suavizado. Si perdió detalle, bájalo.");
 return 0;
 

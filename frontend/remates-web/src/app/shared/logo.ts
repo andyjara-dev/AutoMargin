@@ -1,10 +1,12 @@
 import { Component, input } from '@angular/core';
 
+import { LOGO_OFFSET, LOGO_PATH } from './logo-path';
+
 /**
  * Isotipo de AutoMargin.
  *
- * Va como SVG en línea y no como <img> para que herede el color cuando se necesita
- * monocromático y para que el gradiente se defina una sola vez por instancia.
+ * Va como SVG en línea y no como <img> para poder teñirlo con el gradiente de marca o con el
+ * color del contenedor. El trazo vive en logo-path.ts, generado desde el PNG original.
  */
 @Component({
   selector: 'app-logo',
@@ -16,30 +18,16 @@ import { Component, input } from '@angular/core';
       role="img"
       aria-label="AutoMargin">
       <defs>
-        <linearGradient [attr.id]="gradientId" x1="10%" y1="0%" x2="95%" y2="100%">
+        <linearGradient [attr.id]="gradientId" x1="8%" y1="5%" x2="92%" y2="95%">
           <stop offset="0%" stop-color="#2563EB" />
-          <stop offset="55%" stop-color="#0EA5E9" />
+          <stop offset="52%" stop-color="#0EA5E9" />
           <stop offset="100%" stop-color="#22D3EE" />
         </linearGradient>
       </defs>
 
-      <!-- La A: un trazo continuo de esquina a esquina pasando por el vértice -->
-      <path
-        d="M 16 101 L 55 27 Q 60 18 65 27 L 104 101"
-        fill="none"
-        [attr.stroke]="stroke"
-        stroke-width="11"
-        stroke-linecap="round"
-        stroke-linejoin="round" />
-
-      <!-- La silueta del auto, que además cierra la A por abajo -->
-      <path
-        d="M 33 88 C 43 70, 63 64, 78 73 C 90 80, 89 95, 77 95 C 66 95, 60 87, 47 87"
-        fill="none"
-        [attr.stroke]="stroke"
-        stroke-width="9.5"
-        stroke-linecap="round"
-        stroke-linejoin="round" />
+      <g [attr.transform]="transform" [attr.fill]="fill" fill-rule="evenodd">
+        <path [attr.d]="path" />
+      </g>
     </svg>
   `,
   styles: [':host { display: inline-flex; line-height: 0; }']
@@ -50,10 +38,13 @@ export class Logo {
   /** En monocromático hereda el color del contenedor, para fondos claros o de un solo tono. */
   readonly mono = input(false);
 
+  protected readonly path = LOGO_PATH;
+  protected readonly transform = `translate(${LOGO_OFFSET.x} ${LOGO_OFFSET.y})`;
+
   /** Cada instancia necesita su propio id de gradiente: repetirlo rompe el segundo SVG. */
   protected readonly gradientId = `am-${Math.random().toString(36).slice(2, 9)}`;
 
-  protected get stroke(): string {
+  protected get fill(): string {
     return this.mono() ? 'currentColor' : `url(#${this.gradientId})`;
   }
 }
