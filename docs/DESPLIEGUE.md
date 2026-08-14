@@ -84,11 +84,15 @@ sección es opcional: sin configurar nada, la pantalla funciona igual y la búsq
 las fuentes no están configuradas, en vez de mostrar cero resultados sin explicación. El pegado
 manual de avisos no depende de ninguna credencial.
 
-| Fuente | Cómo se integra |
+| Fuente | Estado |
 |---|---|
-| **MercadoLibre** | API oficial. Registrar una aplicación en [developers.mercadolibre.cl](https://developers.mercadolibre.cl/) y cargar `ML_CLIENT_ID` y `ML_CLIENT_SECRET`. Es la vía estable. |
-| **Yapo** | Lectura del HTML de su búsqueda pública, que su `robots.txt` permite. Se activa con `YAPO_ENABLED=true`. Frágil: un rediseño del sitio la degrada. |
+| **MercadoLibre** | **No disponible.** Su API responde `403 forbidden` a `/sites/{site}/search` con token de aplicación: la búsqueda de avisos de terceros dejó de otorgarse. No es configurable — ningún permiso del panel de desarrollador lo destraba. El adaptador se conserva apagado (`ML_ENABLED=false`) por si el acceso vuelve. |
+| **Yapo** | Funciona. Lectura del HTML de su búsqueda pública, que su `robots.txt` permite. Se activa con `YAPO_ENABLED=true`. Frágil: un rediseño del sitio la degrada. |
 | **Chileautos** | No se integra. Su `robots.txt` prohíbe la lectura automatizada de las rutas necesarias, y el sistema no las pide. Para esos avisos se usa el pegado manual. |
+
+> Verificado el 14-08-2026 con credenciales válidas: el token se emite sin problema y la búsqueda
+> devuelve `{"message":"forbidden","error":"forbidden","status":403,"cause":[]}`. El `cause` vacío
+> es la negativa genérica; cuando falta un scope concreto, MercadoLibre lo nombra ahí.
 
 Las consultas salen con un agente que se identifica, con un mínimo de segundos entre peticiones
 a un mismo sitio (`MARKET_MIN_SECONDS`, por defecto 3) y con un tope bajo de resultados. Bajar

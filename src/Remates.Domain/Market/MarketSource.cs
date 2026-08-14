@@ -74,5 +74,16 @@ public interface IMarketSource
     /// <summary>False cuando falta configuración, como las credenciales de una API.</summary>
     bool IsConfigured { get; }
 
+    /// <summary>
+    /// Por qué la fuente no se va a consultar. Nulo cuando está lista.
+    ///
+    /// Lo explica la propia fuente y no quien la orquesta, porque los motivos no son
+    /// intercambiables: «faltan credenciales» y «el portal ya no lo permite» llevan a acciones
+    /// distintas, y un mensaje genérico manda a buscar una configuración que no existe.
+    /// </summary>
+    string? UnavailableReason => IsConfigured
+        ? null
+        : "No configurada. Ver la sección de fuentes de mercado en el despliegue.";
+
     Task<MarketSearchOutcome> SearchAsync(MarketSearchQuery query, CancellationToken ct);
 }

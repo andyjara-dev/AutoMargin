@@ -36,6 +36,10 @@ public sealed class YapoSource(
 
     public bool IsConfigured => _options.Yapo.Enabled;
 
+    public string? UnavailableReason => IsConfigured
+        ? null
+        : "Desactivada. Se enciende con MarketSources__Yapo__Enabled=true (YAPO_ENABLED en el .env).";
+
     public async Task<MarketSearchOutcome> SearchAsync(MarketSearchQuery query, CancellationToken ct)
     {
         if (!IsConfigured)

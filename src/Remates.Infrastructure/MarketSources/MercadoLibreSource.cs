@@ -34,6 +34,19 @@ public sealed class MercadoLibreSource(
         && !string.IsNullOrWhiteSpace(_options.MercadoLibre.ClientId)
         && !string.IsNullOrWhiteSpace(_options.MercadoLibre.ClientSecret);
 
+    public string? UnavailableReason
+    {
+        get
+        {
+            if (IsConfigured) return null;
+
+            return _options.MercadoLibre.Enabled
+                ? "Faltan las credenciales. Definir MarketSources__MercadoLibre__ClientId y ClientSecret."
+                : "Desactivada. Su API ya no permite buscar avisos de terceros, así que encenderla " +
+                  "solo agregaría un error permanente. Para este portal, usa el pegado de avisos.";
+        }
+    }
+
     public async Task<MarketSearchOutcome> SearchAsync(MarketSearchQuery query, CancellationToken ct)
     {
         if (!IsConfigured)
@@ -67,9 +80,7 @@ public sealed class MercadoLibreSource(
                 logger.LogWarning("MercadoLibre respondió {Status} a {Url}: {Detail}",
                     response.StatusCode, url, detail ?? "(sin detalle)");
 
-                return MarketSearchOutcome.Failed(Name, detail is null
-                    ? $"La API respondió {(int)response.StatusCode}."
-                    : $"La API respondió {(int)response.StatusCode}: {detail}");
+                return MarketSearchOutcome.Failed(Name, Explain(response.StatusCode, detail));
             }
 
             var payload = await response.Content.ReadFromJsonAsync<JsonElement>(ct);
@@ -125,6 +136,29 @@ public sealed class MercadoLibreSource(
 
         return _token;
     }
+
+    /// <summary>
+    /// Traduce el fallo a algo sobre lo que se pueda actuar. «forbidden · forbidden» es
+    /// literalmente lo que devuelve la API, y no le dice nada a quien está mirando la pantalla.
+    /// </summary>
+    private static string Explain(System.Net.HttpStatusCode status, string? detail) => (int)status switch
+    {
+        // MercadoLibre dejó de abrir la búsqueda de avisos de terceros a las aplicaciones.
+        // No hay permiso que activar en el panel de desarrollador: es su decisión, no un error
+        // de configuración, y conviene decirlo para no mandar a nadie a buscar una casilla.
+        403 => "MercadoLibre no habilita la búsqueda de avisos de terceros para aplicaciones. " +
+               "No es un problema de tus credenciales ni de los permisos que marcaste. " +
+               "Para avisos de este portal, usa el pegado de avisos.",
+
+        401 => "Las credenciales fueron rechazadas. Revisa MarketSources__MercadoLibre__ClientId " +
+               "y ClientSecret.",
+
+        429 => "Se superó el límite de consultas de la API. Espera unos minutos.",
+
+        _ => detail is null
+            ? $"La API respondió {(int)status}."
+            : $"La API respondió {(int)status}: {detail}"
+    };
 
     /// <summary>
     /// Saca el motivo del error del cuerpo de la respuesta. MercadoLibre devuelve un JSON con

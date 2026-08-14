@@ -49,8 +49,7 @@ public sealed class MarketSearchService(
         {
             if (!source.IsConfigured)
             {
-                statuses.Add(new SourceStatus(source.Name, false, 0,
-                    "No configurada. Ver la sección de fuentes de mercado en el despliegue."));
+                statuses.Add(new SourceStatus(source.Name, false, 0, source.UnavailableReason));
                 continue;
             }
 

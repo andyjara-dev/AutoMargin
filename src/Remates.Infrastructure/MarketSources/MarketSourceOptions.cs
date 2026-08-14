@@ -25,7 +25,13 @@ public sealed class MarketSourceOptions
 
 public sealed class MercadoLibreOptions
 {
-    public bool Enabled { get; set; } = true;
+    /// <summary>
+    /// Apagada por defecto. Su endpoint de búsqueda responde 403 a las aplicaciones: dejó de
+    /// abrirse para consultar avisos de terceros, que es justamente para lo que servía aquí.
+    /// El adaptador se conserva porque funciona y no cuesta nada apagado, por si el acceso
+    /// vuelve a otorgarse; encenderlo hoy solo agrega un error permanente a la pantalla.
+    /// </summary>
+    public bool Enabled { get; set; }
 
     /// <summary>Credenciales de la aplicación registrada en developers.mercadolibre.cl.</summary>
     public string ClientId { get; set; } = string.Empty;
