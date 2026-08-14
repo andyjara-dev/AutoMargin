@@ -52,15 +52,18 @@ cd /opt/automargin
 cp .env.prod.example .env
 ```
 
-Genera las claves en el servidor, sin escribirlas a mano ni pasarlas por chat:
+Genera las claves en el servidor, sin escribirlas a mano ni pasarlas por chat. Se sustituyen en
+su línea en vez de añadirse al final, para no dejar la clave dos veces en el archivo:
 
 ```bash
-echo "POSTGRES_PASSWORD=$(openssl rand -base64 24)" >> .env
-echo "JWT_SIGNING_KEY=$(openssl rand -base64 48)" >> .env
+sed -i "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$(openssl rand -base64 24)|" .env
 ```
 
-Edita `.env` y completa lo que falta: borra las líneas vacías de esas dos claves que dejó el
-ejemplo, y define `ADMIN_EMAIL`, `ADMIN_PASSWORD` y `PUBLIC_URL`.
+```bash
+sed -i "s|^JWT_SIGNING_KEY=.*|JWT_SIGNING_KEY=$(openssl rand -base64 48)|" .env
+```
+
+Edita `.env` y define `ADMIN_EMAIL`, `ADMIN_PASSWORD` y `PUBLIC_URL`. Después:
 
 ```bash
 chmod 600 .env
@@ -120,8 +123,13 @@ host. Es preferible: el tráfico no sale de Docker y no hace falta exponer ning�
 
 ```bash
 docker inspect nginx-proxy-manager --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{end}}'
-echo "NPM_NETWORK=<la red que devolvió>" >> .env
+```
 
+```bash
+sed -i "s|^PUBLIC_PORT=.*|&\nNPM_NETWORK=LA_RED_QUE_DEVOLVIO|" .env
+```
+
+```bash
 docker compose -f docker-compose.prod.yml -f docker-compose.npm.yml up -d --build
 ```
 
