@@ -259,11 +259,19 @@ public sealed class VehiclesController(
         v.Region, v.Comuna, v.ConditionNotes, v.InspectionLevel, v.DocumentRisk, v.Status,
         v.SourceType, v.Url, v.CreatedAt);
 
-    /// <summary>Nombre legible del vehículo, con el texto libre como respaldo si no hay catálogo.</summary>
+    /// <summary>
+    /// Nombre legible del vehículo. El catálogo manda solo cuando identifica el vehículo por
+    /// completo: con la marca sola, el nombre escrito a mano suele decir más
+    /// («Toyota Yaris Sport» frente a «Toyota»).
+    /// </summary>
     private static string BuildLabel(string? make, string? model, string? displayName, int year)
     {
         var fromCatalog = string.Join(" ", new[] { make, model }.Where(s => !string.IsNullOrWhiteSpace(s)));
-        var baseName = !string.IsNullOrWhiteSpace(fromCatalog) ? fromCatalog : displayName;
+        var catalogIsComplete = !string.IsNullOrWhiteSpace(make) && !string.IsNullOrWhiteSpace(model);
+
+        var baseName = catalogIsComplete ? fromCatalog
+            : !string.IsNullOrWhiteSpace(displayName) ? displayName
+            : fromCatalog;
 
         return string.IsNullOrWhiteSpace(baseName) ? $"Vehículo {year}" : $"{baseName} {year}";
     }

@@ -22,6 +22,15 @@ public interface ICurrentUser
 public sealed class AuditInterceptor(ICurrentUser currentUser, TimeProvider timeProvider)
     : SaveChangesInterceptor
 {
+    /// <summary>
+    /// Los enums se guardan por nombre. Un rastro que dice «Status pasó de 1 a 2» obliga a quien
+    /// audite a buscar la equivalencia en el código, que es justo lo contrario de lo que se busca.
+    /// </summary>
+    private static readonly JsonSerializerOptions SerializerOptions = new()
+    {
+        Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
+    };
+
     /// <summary>Entidades cuyo cambio no aporta valor de auditoría y solo generaría ruido.</summary>
     private static readonly HashSet<string> Excluded =
     [
@@ -126,7 +135,7 @@ public sealed class AuditInterceptor(ICurrentUser currentUser, TimeProvider time
             EntityName = entityName,
             EntityId = PrimaryKeyOf(entry),
             Action = action.Value,
-            ChangesJson = JsonSerializer.Serialize(changes),
+            ChangesJson = JsonSerializer.Serialize(changes, SerializerOptions),
             UserId = currentUser.UserId,
             UserName = currentUser.UserName,
             OccurredAt = now

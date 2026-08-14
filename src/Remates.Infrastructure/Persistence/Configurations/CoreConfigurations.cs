@@ -86,5 +86,9 @@ public class VehicleStatusHistoryConfiguration : IEntityTypeConfiguration<Vehicl
             .HasForeignKey(x => x.VehicleId).OnDelete(DeleteBehavior.Cascade);
 
         b.HasIndex(x => new { x.VehicleId, x.ChangedAt });
+
+        // Debe repetir el filtro del padre: sin esto, el historial de un vehículo dado de baja
+        // seguiría apareciendo al consultar esta tabla directamente.
+        b.HasQueryFilter(x => x.Vehicle!.DeletedAt == null);
     }
 }

@@ -42,6 +42,8 @@ public class AuctionLotConfiguration : IEntityTypeConfiguration<AuctionLot>
             .HasForeignKey(x => x.VehicleId).OnDelete(DeleteBehavior.Cascade);
 
         b.HasIndex(x => new { x.AuctionId, x.LotNumber });
+
+        b.HasQueryFilter(x => x.Vehicle!.DeletedAt == null);
     }
 }
 
@@ -56,6 +58,9 @@ public class BidConfiguration : IEntityTypeConfiguration<Bid>
 
         // Consultado al calibrar: cuántas pujas ganamos y a qué precio se fueron las perdidas.
         b.HasIndex(x => x.Result);
+
+        // El filtro se hereda a través del lote hasta el vehículo.
+        b.HasQueryFilter(x => x.AuctionLot!.Vehicle!.DeletedAt == null);
     }
 }
 
@@ -75,6 +80,10 @@ public class MarketComparableConfiguration : IEntityTypeConfiguration<MarketComp
             .HasForeignKey(x => x.VehicleId).OnDelete(DeleteBehavior.Cascade);
 
         b.HasIndex(x => x.VehicleId);
+
+        // Repite el filtro de borrado lógico del vehículo, para que los comparables de uno
+        // dado de baja no reaparezcan al consultar esta tabla.
+        b.HasQueryFilter(x => x.Vehicle!.DeletedAt == null);
     }
 }
 
@@ -90,6 +99,8 @@ public class DamageItemConfiguration : IEntityTypeConfiguration<DamageItemEntity
             .HasForeignKey(x => x.VehicleId).OnDelete(DeleteBehavior.Cascade);
 
         b.HasIndex(x => x.VehicleId);
+
+        b.HasQueryFilter(x => x.Vehicle!.DeletedAt == null);
     }
 }
 
@@ -144,5 +155,7 @@ public class DealAnalysisSnapshotConfiguration : IEntityTypeConfiguration<DealAn
             .HasForeignKey(x => x.ParameterSetId).OnDelete(DeleteBehavior.Restrict);
 
         b.HasIndex(x => new { x.VehicleId, x.ComputedAt }).IsDescending(false, true);
+
+        b.HasQueryFilter(x => x.Vehicle!.DeletedAt == null);
     }
 }
