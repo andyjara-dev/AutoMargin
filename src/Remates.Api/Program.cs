@@ -72,6 +72,7 @@ builder.Services.AddRematesJwtAuth(builder.Configuration);
 builder.Services.AddScoped<ParameterProvider>();
 builder.Services.AddScoped<VehicleAnalysisService>();
 builder.Services.AddScoped<InventoryService>();
+builder.Services.AddScoped<DashboardService>();
 
 builder.Services.AddProblemDetails();
 

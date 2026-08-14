@@ -1,0 +1,232 @@
+<div class="dashboard">
+  <header class="head">
+    <div>
+      <h1>Estado del negocio</h1>
+      <p class="subtitle">Capital, inventario, rentabilidad y lo que requiere atención.</p>
+    </div>
+    @if (loading()) {
+      <span class="pill">Cargando…</span>
+    }
+  </header>
+
+  @if (error()) {
+    <div class="banner banner--error">{{ error() }}</div>
+  }
+
+  @if (data(); as d) {
+    <!-- ---------- Alertas primero: es lo accionable ---------- -->
+    @if (d.alerts.length) {
+      <section class="card">
+        <h2>
+          Requiere atención
+          @if (criticalCount()) {
+            <span class="badge badge--critical">{{ criticalCount() }} crítico(s)</span>
+          }
+        </h2>
+
+        <div class="alerts">
+          @for (a of d.alerts; track $index) {
+            <div [class]="alertClass(a)">
+              <div class="alert__head">
+                <strong>{{ alertLabels[a.type] }}</strong>
+                @if (a.vehicleId) {
+                  <a [routerLink]="['/vehiculos', a.vehicleId]">{{ a.vehicleLabel }}</a>
+                }
+              </div>
+              <p class="alert__msg">{{ a.message }}</p>
+              <p class="alert__fix">{{ a.suggestion }}</p>
+            </div>
+          }
+        </div>
+      </section>
+    } @else {
+      <div class="banner banner--ok">Sin alertas. Nada requiere atención en este momento.</div>
+    }
+
+    <!-- ---------- Capital ---------- -->
+    <section class="card">
+      <h2>Capital</h2>
+      <div class="kpis">
+        <div class="kpi">
+          <span class="kpi__label">Aportado</span>
+          <span class="kpi__value">{{ clp(d.capital.totalContributed) }}</span>
+        </div>
+        <div class="kpi kpi--highlight">
+          <span class="kpi__label">Disponible</span>
+          <span class="kpi__value" [class.negative]="d.capital.available < 0">
+            {{ clp(d.capital.available) }}
+          </span>
+        </div>
+        <div class="kpi">
+          <span class="kpi__label">Inmovilizado</span>
+          <span class="kpi__value">{{ clp(d.capital.immobilized) }}</span>
+          <span class="kpi__sub">{{ pct(d.capital.immobilizedPct) }} del total</span>
+        </div>
+      </div>
+
+      <div class="bar">
+        <div class="bar__fill" [style.width.%]="d.capital.immobilizedPct * 100"></div>
+      </div>
+      <p class="hint">
+        La barra muestra qué fracción del capital está metida en vehículos sin vender. Mientras
+        más llena, menos margen tienes para entrar a un remate nuevo.
+      </p>
+    </section>
+
+    <!-- ---------- Inventario ---------- -->
+    <section class="card">
+      <h2>Inventario</h2>
+      <div class="kpis">
+        <div class="kpi">
+          <span class="kpi__label">En inventario</span>
+          <span class="kpi__value">{{ d.inventory.inInventory }}</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi__label">Vendidos</span>
+          <span class="kpi__value">{{ d.inventory.sold }}</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi__label">En análisis</span>
+          <span class="kpi__value">{{ d.inventory.analyzing }}</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi__label">Costo del inventario</span>
+          <span class="kpi__value">{{ clp(d.inventory.inventoryCostValue) }}</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi__label">Valor esperado</span>
+          <span class="kpi__value">{{ clp(d.inventory.inventoryExpectedValue) }}</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi__label">Utilidad potencial</span>
+          <span class="kpi__value" [class.negative]="d.inventory.potentialProfit < 0">
+            {{ clp(d.inventory.potentialProfit) }}
+          </span>
+        </div>
+      </div>
+
+      @if (d.inventory.unvaluedCount) {
+        <p class="hint hint--warn">
+          {{ d.inventory.unvaluedCount }} vehículo(s) por
+          {{ clp(d.inventory.unvaluedCost) }} quedan fuera del valor esperado porque no tienen
+          valuación. Cargar comparables y analizarlos completa este número.
+        </p>
+      }
+
+      <p class="hint">Días promedio en inventario: {{ d.inventory.averageDaysInInventory }}</p>
+    </section>
+
+    <!-- ---------- Rentabilidad ---------- -->
+    <section class="card">
+      <h2>Rentabilidad realizada</h2>
+
+      @if (!hasEnoughHistory()) {
+        <div class="banner banner--info">
+          Solo {{ d.closedOperations }} operación(es) cerrada(s). Los promedios de abajo son
+          indicativos, no concluyentes: hacen falta varias decenas de ventas para que signifiquen algo.
+        </div>
+      }
+
+      <div class="kpis">
+        <div class="kpi">
+          <span class="kpi__label">Utilidad de caja</span>
+          <span class="kpi__value" [class.negative]="d.profit.realizedProfitCash < 0">
+            {{ clp(d.profit.realizedProfitCash) }}
+          </span>
+        </div>
+        <div class="kpi kpi--highlight">
+          <span class="kpi__label">Utilidad económica</span>
+          <span class="kpi__value" [class.negative]="d.profit.realizedProfitEconomic < 0">
+            {{ clp(d.profit.realizedProfitEconomic) }}
+          </span>
+        </div>
+        <div class="kpi">
+          <span class="kpi__label">Últimos 30 días</span>
+          <span class="kpi__value">{{ clp(d.profit.profitLast30Days) }}</span>
+          <span class="kpi__sub">{{ d.profit.salesLast30Days }} venta(s)</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi__label">ROI promedio</span>
+          <span class="kpi__value">{{ pct(d.profit.averageRoiEconomic) }}</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi__label">Margen promedio</span>
+          <span class="kpi__value">{{ pct(d.profit.averageMarginPct) }}</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi__label">Días promedio de venta</span>
+          <span class="kpi__value">{{ d.profit.averageDaysToSell }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- Oportunidades ---------- -->
+    @if (d.opportunities.length) {
+      <section class="card">
+        <h2>Oportunidades analizadas</h2>
+        <div class="table-scroll">
+          <table class="grid">
+            <thead>
+              <tr>
+                <th>Vehículo</th><th class="right">Puja máxima</th><th class="right">Precio actual</th>
+                <th class="right">Holgura</th><th class="right">ROI anual</th>
+                <th class="right">Días</th><th class="right">Score</th><th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (o of d.opportunities; track o.vehicleId) {
+                <tr>
+                  <td class="strong"><a [routerLink]="['/vehiculos', o.vehicleId]">{{ o.label }}</a></td>
+                  <td class="right">{{ clp(o.maxBid) }}</td>
+                  <td class="right">{{ clp(o.currentPrice) }}</td>
+                  <td class="right" [class.negative]="o.headroom < 0">{{ clp(o.headroom) }}</td>
+                  <td class="right">{{ annualizedPct(o.roiAnnualized) }}</td>
+                  <td class="right">{{ o.estimatedDays }}</td>
+                  <td class="right">{{ o.score }}</td>
+                  <td><span [class]="lightClass(o.trafficLight)"></span></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+
+    <!-- ---------- Modelos ---------- -->
+    @if (d.bestModels.length) {
+      <section class="card">
+        <h2>Rendimiento por modelo</h2>
+
+        @if (!hasEnoughHistory()) {
+          <p class="hint hint--warn">
+            Con {{ d.closedOperations }} venta(s) este ranking no distingue un buen modelo de una
+            operación afortunada. Es información, no todavía un patrón.
+          </p>
+        }
+
+        <div class="table-scroll">
+          <table class="grid">
+            <thead>
+              <tr>
+                <th>Modelo</th><th class="right">Ventas</th><th class="right">Utilidad total</th>
+                <th class="right">Utilidad promedio</th><th class="right">ROI</th><th class="right">Días</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (m of d.bestModels; track m.model) {
+                <tr>
+                  <td class="strong">{{ m.model }}</td>
+                  <td class="right">{{ m.sales }}</td>
+                  <td class="right">{{ clp(m.totalProfit) }}</td>
+                  <td class="right">{{ clp(m.averageProfit) }}</td>
+                  <td class="right">{{ pct(m.averageRoi) }}</td>
+                  <td class="right">{{ m.averageDays }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+  }
+</div>

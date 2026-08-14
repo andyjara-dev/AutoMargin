@@ -5,6 +5,9 @@
   </a>
 
   <div class="app-nav__links">
+    @if (isAuthenticated()) {
+      <a routerLink="/dashboard" routerLinkActive="active">Estado</a>
+    }
     <a routerLink="/analizador" routerLinkActive="active">Analizador</a>
     @if (isAuthenticated()) {
       <a routerLink="/vehiculos" routerLinkActive="active">Vehículos</a>

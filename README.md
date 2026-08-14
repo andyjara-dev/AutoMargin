@@ -23,10 +23,13 @@ end-to-end. Sin base de datos todavía (Paso 2).
 | 0 | Andamiaje, docker-compose, workspace Angular | ✅ |
 | 1 | Motores + tests + `POST /api/analysis/simulate` + Analizador | ✅ |
 | 1b | Manual embebido en la app (`/manual`) | ✅ |
-| 2 | PostgreSQL, EF Core, JWT + roles, CRUD de vehículos | pendiente |
-| 3 | Inventario, gastos reales, venta, rentabilidad real | pendiente |
-| 4 | Dashboard y alertas | pendiente |
-| 5 | Cierre del MVP (validación, logging, seeds) | pendiente |
+| 2 | PostgreSQL, EF Core, JWT + roles, CRUD de vehículos | ✅ |
+| 3 | Inventario, gastos reales, venta, rentabilidad real | ✅ |
+| 4 | Dashboard y alertas | ✅ |
+| 5 | Cierre del MVP (validación, logging, seeds de demo) | pendiente |
+
+Pantallas: `/dashboard` (estado del negocio), `/analizador`, `/vehiculos`, `/vehiculos/:id`
+(ficha con gastos y venta) y `/manual`.
 
 ## Arquitectura
 

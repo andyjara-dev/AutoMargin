@@ -22,6 +22,12 @@ export const routes: Routes = [
     title: 'Manual · AutoMargin'
   },
   {
+    path: 'dashboard',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/dashboard/dashboard').then((m) => m.Dashboard),
+    title: 'Estado del negocio · AutoMargin'
+  },
+  {
     path: 'vehiculos',
     canActivate: [authGuard],
     loadComponent: () =>

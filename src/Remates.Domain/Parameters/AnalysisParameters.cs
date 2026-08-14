@@ -92,6 +92,20 @@ public sealed record AnalysisParameters
     /// <summary>Mínimo de comparables válidos para que la valuación sea utilizable.</summary>
     public int MinComparables { get; init; } = 3;
 
+    // ---------- Umbrales de alerta ----------
+
+    /// <summary>Días en inventario a partir de los cuales un vehículo se considera estancado.</summary>
+    public int MaxDaysInInventory { get; init; } = 60;
+
+    /// <summary>Días publicado sin vender que sugieren revisar el precio.</summary>
+    public int ListedTooLongDays { get; init; } = 30;
+
+    /// <summary>Margen proyectado bajo el cual la operación deja de compensar.</summary>
+    public decimal MinMarginPct { get; init; } = 0.12m;
+
+    /// <summary>Cuánto puede excederse la reparación antes de avisar.</summary>
+    public decimal RepairOverBudgetTolerancePct { get; init; } = 0.10m;
+
     // ---------- Escenarios ----------
 
     /// <summary>Castigo al precio de venta en el escenario pesimista.</summary>
