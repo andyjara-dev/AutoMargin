@@ -47,6 +47,7 @@
 .app-nav__links {
   display: flex;
   gap: 4px;
+  flex: 1;
 
   a {
     padding: 6px 14px;
@@ -59,4 +60,43 @@
     &:hover { color: var(--text); background: var(--surface-2); }
     &.active { color: var(--brand-bright); background: var(--accent-soft); }
   }
+}
+
+/* ---- Sesión ---- */
+
+.app-nav__session {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+}
+
+.session__user {
+  color: var(--text-dim);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session__out {
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--text-dim);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  cursor: pointer;
+
+  &:hover { border-color: var(--red); color: var(--red-text); }
+}
+
+.session__in {
+  color: var(--brand);
+  text-decoration: none;
+  padding: 4px 10px;
+  border: 1px solid var(--accent-line);
+  border-radius: var(--radius-sm);
+
+  &:hover { background: var(--accent-soft); }
 }

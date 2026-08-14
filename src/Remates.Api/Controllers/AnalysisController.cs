@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Remates.Api.Contracts;
@@ -6,8 +7,15 @@ using Remates.Domain.Parameters;
 
 namespace Remates.Api.Controllers;
 
+/// <summary>
+/// Simulador sin persistencia. Se deja abierto a propósito: es la única parte del sistema que
+/// funciona sin base de datos, y conviene que siga disponible desde el recinto del remate aunque
+/// falle todo lo demás. No expone datos del negocio, solo transforma números.
+/// Si se quiere cerrar, basta cambiar AllowAnonymous por Authorize.
+/// </summary>
 [ApiController]
 [Route("api/analysis")]
+[AllowAnonymous]
 [Produces("application/json")]
 public sealed class AnalysisController : ControllerBase
 {

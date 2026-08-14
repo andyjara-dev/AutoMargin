@@ -6,7 +6,19 @@
 
   <div class="app-nav__links">
     <a routerLink="/analizador" routerLinkActive="active">Analizador</a>
+    @if (isAuthenticated()) {
+      <a routerLink="/vehiculos" routerLinkActive="active">Vehículos</a>
+    }
     <a routerLink="/manual" routerLinkActive="active">Manual</a>
+  </div>
+
+  <div class="app-nav__session">
+    @if (user(); as u) {
+      <span class="session__user" [title]="u.email">{{ u.fullName || u.email }}</span>
+      <button type="button" class="session__out" (click)="logout()">Salir</button>
+    } @else {
+      <a routerLink="/login" class="session__in">Iniciar sesión</a>
+    }
   </div>
 </nav>
 

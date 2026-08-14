@@ -1,4 +1,11 @@
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.OpenApi;
+using Remates.Api.Auth;
+using Remates.Api.Services;
+using Remates.Api.Startup;
+using Remates.Infrastructure;
+using Remates.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +31,23 @@ builder.Services.AddSwaggerGen(options =>
                       "Todos los cálculos financieros son determinísticos: ningún modelo de lenguaje participa en ellos."
     });
 
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Pegar solo el token, sin el prefijo 'Bearer'."
+    });
+
+    // Microsoft.OpenApi 2.x referencia los esquemas por tipo dedicado, ya no por la propiedad
+    // Reference, y Swashbuckle 10 recibe el requisito como función del documento.
+    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+    {
+        [new OpenApiSecuritySchemeReference("Bearer", document)] = []
+    });
+
     var xmlPath = Path.Combine(AppContext.BaseDirectory, "Remates.Api.xml");
     if (File.Exists(xmlPath)) options.IncludeXmlComments(xmlPath);
 });
@@ -37,6 +61,16 @@ builder.Services.AddCors(options =>
         .AllowAnyHeader()
         .AllowAnyMethod());
 });
+
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUser, HttpCurrentUser>();
+
+builder.Services.AddRematesInfrastructure(builder.Configuration);
+builder.Services.AddRematesJwtAuth(builder.Configuration);
+
+builder.Services.AddScoped<ParameterProvider>();
+builder.Services.AddScoped<VehicleAnalysisService>();
 
 builder.Services.AddProblemDetails();
 
@@ -59,10 +93,34 @@ else
 }
 
 app.UseCors(AngularCorsPolicy);
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
 app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
+
+// Estado de la API y de la base, útil para saber si el contenedor de Postgres está arriba.
+// Se acota el tiempo a propósito: la estrategia de reintentos de EF es correcta para una consulta
+// de negocio, pero en un health check convierte una base caída en 20 segundos de espera, y
+// cualquier balanceador daría la aplicación por muerta antes de recibir la respuesta.
+app.MapGet("/health", async (RematesDbContext db, CancellationToken ct) =>
+{
+    using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+    timeout.CancelAfter(TimeSpan.FromSeconds(3));
+
+    try
+    {
+        return await db.Database.CanConnectAsync(timeout.Token)
+            ? Results.Ok(new { status = "ok", database = "connected" })
+            : Results.Json(new { status = "degraded", database = "unreachable" }, statusCode: 503);
+    }
+    catch (Exception ex) when (ex is OperationCanceledException or Npgsql.NpgsqlException)
+    {
+        return Results.Json(new { status = "degraded", database = "unreachable" }, statusCode: 503);
+    }
+}).ExcludeFromDescription();
+
+await app.MigrateAndSeedAsync();
 
 app.Run();
 

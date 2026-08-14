@@ -1,0 +1,102 @@
+:host { display: block; }
+
+.vehicles { max-width: 1400px; margin: 0 auto; padding: 20px 24px 64px; }
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+
+  h1 { font-size: 22px; }
+}
+
+.subtitle { margin: 4px 0 0; color: var(--text-dim); font-size: 13px; }
+
+.pill {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: var(--surface-2);
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 10px;
+  margin-bottom: 16px;
+
+  @media (max-width: 620px) { grid-template-columns: 1fr; }
+}
+
+.alert {
+  background: var(--red-soft);
+  border: 1px solid var(--red);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--red-text);
+  margin-bottom: 16px;
+}
+
+.empty {
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  text-align: center;
+
+  strong { display: block; margin-bottom: 6px; }
+  p { margin: 0 auto; max-width: 60ch; font-size: 12.5px; color: var(--text-faint); line-height: 1.65; }
+}
+
+.table-scroll { overflow-x: auto; }
+
+table.grid {
+  font-size: 13px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+
+  th {
+    text-align: left;
+    padding: 10px 12px;
+    background: var(--surface-2);
+    color: var(--text-faint);
+    font-weight: 500;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 10px 12px;
+    border-top: 1px solid var(--border);
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+
+  td.strong { color: var(--text); font-weight: 500; }
+  td.right, th.right { text-align: right; font-variant-numeric: tabular-nums; }
+  td.warn { color: var(--yellow-text); }
+
+  tbody tr:hover td { background: rgba(148, 163, 184, .05); }
+}
+
+.muted { color: var(--text-faint); font-size: 11.5px; }
+
+.light {
+  display: inline-block;
+  width: 11px; height: 11px;
+  border-radius: 50%;
+
+  &--green { background: var(--green); }
+  &--yellow { background: var(--yellow); }
+  &--red { background: var(--red); }
+  &--none { background: var(--border); }
+}

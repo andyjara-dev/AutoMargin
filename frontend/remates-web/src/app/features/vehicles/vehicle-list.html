@@ -1,0 +1,74 @@
+<div class="vehicles">
+  <header class="head">
+    <div>
+      <h1>Vehículos</h1>
+      <p class="subtitle">Cada fila muestra el resultado del último análisis registrado.</p>
+    </div>
+    @if (loading()) {
+      <span class="pill">Cargando…</span>
+    }
+  </header>
+
+  <div class="filters">
+    <input type="text" [formControl]="search" placeholder="Buscar por marca, modelo o patente…" />
+    <select [formControl]="statusFilter">
+      <option value="">Todos los estados</option>
+      @for (s of statuses; track s[0]) {
+        <option [value]="s[0]">{{ s[1] }}</option>
+      }
+    </select>
+  </div>
+
+  @if (error()) {
+    <div class="alert">{{ error() }}</div>
+  }
+
+  @if (!error() && items().length === 0 && !loading()) {
+    <div class="empty">
+      <strong>No hay vehículos registrados todavía.</strong>
+      <p>
+        Cuando cargues el primero, aquí verás su puja máxima, su puntaje y su semáforo, ordenados
+        para comparar oportunidades de un vistazo.
+      </p>
+    </div>
+  }
+
+  @if (items().length) {
+    <div class="table-scroll">
+      <table class="grid">
+        <thead>
+          <tr>
+            <th>Vehículo</th>
+            <th>Estado</th>
+            <th class="right">Km</th>
+            <th class="right">Comparables</th>
+            <th class="right">Daños</th>
+            <th class="right">Puja máxima</th>
+            <th class="right">Score</th>
+            <th>Semáforo</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (v of items(); track v.id) {
+            <tr>
+              <td class="strong">{{ v.label }}</td>
+              <td>{{ statusLabels[v.status] }}</td>
+              <td class="right">{{ num(v.mileageKm) }}</td>
+              <td class="right" [class.warn]="v.comparableCount < 3">{{ v.comparableCount }}</td>
+              <td class="right">{{ v.damageCount }}</td>
+              <td class="right">{{ v.lastMaxBid != null ? clp(v.lastMaxBid) : '—' }}</td>
+              <td class="right">{{ v.lastScore != null ? v.lastScore : '—' }}</td>
+              <td>
+                @if (v.lastTrafficLight) {
+                  <span [class]="lightClass(v.lastTrafficLight)"></span>
+                } @else {
+                  <span class="muted">sin analizar</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
