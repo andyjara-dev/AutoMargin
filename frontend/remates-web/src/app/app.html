@@ -19,7 +19,9 @@
 
   <div class="app-nav__session">
     @if (user(); as u) {
-      <span class="session__user" [title]="u.email">{{ u.fullName || u.email }}</span>
+      <a routerLink="/cuenta" routerLinkActive="active" class="session__user" [title]="u.email">
+        {{ u.fullName || u.email }}
+      </a>
       <button type="button" class="session__out" (click)="logout()">Salir</button>
     } @else {
       <a routerLink="/login" class="session__in">Iniciar sesión</a>

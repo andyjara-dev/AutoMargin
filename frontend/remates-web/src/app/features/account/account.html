@@ -1,0 +1,56 @@
+<div class="account">
+  <header class="head">
+    <h1>Mi cuenta</h1>
+    @if (user(); as u) {
+      <p class="subtitle">{{ u.fullName || u.email }} · {{ u.roles.join(', ') }}</p>
+    }
+  </header>
+
+  <section class="card">
+    <h2>Cambiar contraseña</h2>
+
+    @if (done()) {
+      <div class="banner banner--ok">
+        Contraseña actualizada. Las demás sesiones abiertas quedaron cerradas.
+      </div>
+    }
+
+    @if (error()) {
+      <div class="banner banner--error">{{ error() }}</div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <label>
+        Contraseña actual
+        <input type="password" formControlName="currentPassword" autocomplete="current-password" />
+      </label>
+
+      <label>
+        Nueva contraseña
+        <input type="password" formControlName="newPassword" autocomplete="new-password" />
+      </label>
+
+      @if (missing().length) {
+        <p class="hint hint--warn">Le falta: {{ missing().join(', ') }}.</p>
+      }
+
+      <label>
+        Repetir la nueva contraseña
+        <input type="password" formControlName="confirmPassword" autocomplete="new-password" />
+      </label>
+
+      @if (mismatch) {
+        <p class="hint hint--warn">Las dos contraseñas no coinciden.</p>
+      }
+
+      <button type="submit" class="btn-primary" [disabled]="saving()">
+        {{ saving() ? 'Guardando…' : 'Cambiar contraseña' }}
+      </button>
+    </form>
+
+    <p class="hint">
+      Al cambiarla se cierran las demás sesiones abiertas. Esta se mantiene, pero el acceso
+      actual caduca en un rato y tendrás que entrar con la contraseña nueva.
+    </p>
+  </section>
+</div>

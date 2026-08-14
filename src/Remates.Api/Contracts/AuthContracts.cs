@@ -17,6 +17,19 @@ public sealed class RefreshRequest
     public string RefreshToken { get; set; } = string.Empty;
 }
 
+public sealed class ChangePasswordRequest
+{
+    [Required]
+    public string CurrentPassword { get; set; } = string.Empty;
+
+    /// <summary>
+    /// La política real la aplica Identity y sus mensajes son los que ve el usuario.
+    /// Este mínimo solo evita el viaje al servidor en el caso obvio.
+    /// </summary>
+    [Required, MinLength(10)]
+    public string NewPassword { get; set; } = string.Empty;
+}
+
 public sealed record AuthenticatedUser(
     long Id,
     string Email,

@@ -94,6 +94,69 @@ public sealed class AuthController(
         return NoContent();
     }
 
+    /// <summary>
+    /// Cambia la contraseña del usuario autenticado.
+    ///
+    /// Exige la actual aunque haya sesión iniciada: si alguien deja el equipo desbloqueado,
+    /// sin ese requisito bastaría con pasar por aquí para quedarse con la cuenta.
+    /// </summary>
+    [HttpPost("change-password")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ChangePassword(
+        [FromBody] ChangePasswordRequest request, CancellationToken ct)
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user is null) return Unauthorized();
+
+        var result = await userManager.ChangePasswordAsync(
+            user, request.CurrentPassword, request.NewPassword);
+
+        if (!result.Succeeded)
+        {
+            foreach (var error in result.Errors)
+            {
+                // Identity distingue entre «la actual no coincide» y «la nueva no cumple»,
+                // y son problemas de campos distintos para quien rellena el formulario.
+                var field = error.Code == "PasswordMismatch"
+                    ? nameof(request.CurrentPassword)
+                    : nameof(request.NewPassword);
+
+                ModelState.AddModelError(field, Translate(error.Code, error.Description));
+            }
+
+            return ValidationProblem(ModelState);
+        }
+
+        // Cerrar las demás sesiones: si la contraseña se cambia porque pudo quedar expuesta,
+        // dejar vivos los refresh tokens anteriores anularía el propósito.
+        var now = timeProvider.GetUtcNow();
+        var tokens = await db.RefreshTokens
+            .Where(t => t.UserId == user.Id && t.RevokedAt == null)
+            .ToListAsync(ct);
+
+        foreach (var token in tokens) token.RevokedAt = now;
+
+        await db.SaveChangesAsync(ct);
+
+        logger.LogInformation("El usuario {Email} cambió su contraseña", user.Email);
+
+        return NoContent();
+    }
+
+    /// <summary>Los mensajes de Identity vienen en inglés; los del sistema están en español.</summary>
+    private static string Translate(string code, string fallback) => code switch
+    {
+        "PasswordMismatch" => "La contraseña actual no es correcta.",
+        "PasswordTooShort" => "La nueva contraseña debe tener al menos 10 caracteres.",
+        "PasswordRequiresDigit" => "La nueva contraseña debe incluir al menos un número.",
+        "PasswordRequiresUpper" => "La nueva contraseña debe incluir al menos una mayúscula.",
+        "PasswordRequiresLower" => "La nueva contraseña debe incluir al menos una minúscula.",
+        "PasswordRequiresUniqueChars" => "La nueva contraseña debe tener más caracteres distintos.",
+        _ => fallback
+    };
+
     /// <summary>Datos del usuario autenticado. Lo usa el frontend al recargar la página.</summary>
     [HttpGet("me")]
     [Authorize]

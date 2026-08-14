@@ -83,6 +83,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-decoration: none;
+  padding: 5px 9px;
+  border-radius: var(--radius-sm);
+
+  &:hover { color: var(--text); background: var(--surface-2); }
+  &.active { color: var(--brand-bright); background: var(--accent-soft); }
 }
 
 .session__out {

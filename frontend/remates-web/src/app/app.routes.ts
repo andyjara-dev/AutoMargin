@@ -49,6 +49,12 @@ export const routes: Routes = [
     title: 'Parámetros · AutoMargin'
   },
   {
+    path: 'cuenta',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/account/account').then((m) => m.Account),
+    title: 'Mi cuenta · AutoMargin'
+  },
+  {
     path: 'manual',
     canActivate: [authGuard],
     loadComponent: () => import('./features/tutorial/tutorial').then((m) => m.Tutorial),
