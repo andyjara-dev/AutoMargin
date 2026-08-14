@@ -1,0 +1,74 @@
+# AutoMargin en producción.
+#
+#   docker compose -f docker-compose.prod.yml up -d --build
+#
+# Expone un único puerto en localhost. El Nginx del servidor apunta ahí y se encarga del
+# dominio y del certificado. Ni la API ni PostgreSQL quedan accesibles desde fuera.
+
+name: automargin
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-automargin}
+      POSTGRES_USER: ${POSTGRES_USER:-automargin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Falta POSTGRES_PASSWORD en el archivo .env}
+      TZ: America/Santiago
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # Sin puertos publicados: solo la API la alcanza, por la red interna.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-automargin} -d ${POSTGRES_DB:-automargin}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks: [interna]
+
+  api:
+    build:
+      context: .
+      dockerfile: src/Remates.Api/Dockerfile
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__Postgres: >-
+        Host=postgres;Port=5432;Database=${POSTGRES_DB:-automargin};Username=${POSTGRES_USER:-automargin};Password=${POSTGRES_PASSWORD};Timeout=10;Command Timeout=60
+      Jwt__Issuer: ${JWT_ISSUER:-automargin}
+      Jwt__Audience: ${JWT_AUDIENCE:-automargin-web}
+      Jwt__SigningKey: ${JWT_SIGNING_KEY:?Falta JWT_SIGNING_KEY en el archivo .env}
+      Jwt__AccessTokenMinutes: ${JWT_ACCESS_MINUTES:-60}
+      Jwt__RefreshTokenDays: ${JWT_REFRESH_DAYS:-14}
+      Seed__AdminEmail: ${ADMIN_EMAIL:?Falta ADMIN_EMAIL en el archivo .env}
+      Seed__AdminPassword: ${ADMIN_PASSWORD:?Falta ADMIN_PASSWORD en el archivo .env}
+      # El frontend viaja en el mismo origen, así que no hay peticiones entre dominios.
+      Cors__AllowedOrigins__0: ${PUBLIC_URL:-https://automargin.andyjara.dev}
+    volumes:
+      - api_logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [interna]
+
+  web:
+    build:
+      context: ./frontend/remates-web
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      # Solo en la interfaz local: nada de esto se expone a internet directamente.
+      - "127.0.0.1:${PUBLIC_PORT:-8080}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    networks: [interna]
+
+volumes:
+  postgres_data:
+  api_logs:
+
+networks:
+  interna:
+    driver: bridge

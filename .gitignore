@@ -12,6 +12,8 @@ logs/
 
 # Secretos y entorno
 .env
+.env.prod
+.env.production
 appsettings.Development.local.json
 appsettings.Local.json
 *.pfx

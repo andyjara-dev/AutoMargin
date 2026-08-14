@@ -5,6 +5,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, debounceTime, of, startWith, switchMap, tap } from 'rxjs';
 
 import { clp, num } from '../../core/format';
+import { describeHttpError } from '../../core/http-error';
 import {
   VEHICLE_STATUS_LABELS,
   VehicleStatus,
@@ -66,11 +67,7 @@ export class VehicleList {
     return light ? `light light--${light.toLowerCase()}` : 'light light--none';
   }
 
-  private describe(err: { status?: number }): string {
-    if (err?.status === 0) return 'No hay conexión con la API.';
-    if (err?.status === 500) {
-      return 'La API respondió con un error. Es probable que PostgreSQL no esté disponible.';
-    }
-    return 'No se pudo cargar el listado de vehículos.';
+  private describe(err: unknown): string {
+    return describeHttpError(err, 'No se pudo cargar el listado de vehiculos.');
   }
 }

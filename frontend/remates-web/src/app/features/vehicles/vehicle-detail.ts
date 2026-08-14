@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { catchError, of, tap } from 'rxjs';
 
 import { annualizedPct, clp, num, pct } from '../../core/format';
+import { describeHttpError } from '../../core/http-error';
 import { VEHICLE_STATUS_LABELS } from '../../core/models/auth.models';
 import {
   EXPENSE_CATEGORY_LABELS,
@@ -128,10 +129,7 @@ export class VehicleDetail {
     return value > 0 ? 'bad' : 'good';
   }
 
-  private describe(err: { status?: number; error?: { title?: string } }): string {
-    if (err?.status === 0) return 'No hay conexión con la API.';
-    if (err?.error?.title) return err.error.title;
-    if (err?.status === 404) return 'No se encontró el vehículo.';
-    return 'No se pudo completar la operación.';
+  private describe(err: unknown): string {
+    return describeHttpError(err);
   }
 }

@@ -12,7 +12,13 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
   const auth = inject(AuthService);
   const token = auth.accessToken;
 
-  const isOwnApi = request.url.startsWith(API_BASE_URL);
+  // En producción la URL base es vacía porque la API va en el mismo origen. Comprobar
+  // startsWith('') daría cierto para cualquier dirección y el token acabaría viajando a
+  // hosts externos, así que en ese caso solo se aceptan rutas relativas.
+  const isOwnApi = API_BASE_URL
+    ? request.url.startsWith(API_BASE_URL)
+    : request.url.startsWith('/');
+
   const isAuthEndpoint = AUTH_ENDPOINTS.some((path) => request.url.includes(path));
 
   const authorized =

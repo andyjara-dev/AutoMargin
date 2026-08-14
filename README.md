@@ -149,6 +149,20 @@ dotnet ef database update --project src/Remates.Infrastructure
 exportando antes `ConnectionStrings__Postgres`, ya que la herramienta de EF no lee los user-secrets
 de la API.
 
+## Desplegar en un servidor
+
+```bash
+cp .env.prod.example .env    # y completar los secretos
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+Levanta PostgreSQL, la API y un Nginx que sirve el frontend y reenvía `/api` internamente.
+Publica un solo puerto en `127.0.0.1:8080`, pensado para que el servidor web del host haga de
+proxy y gestione el certificado.
+
+Los pasos completos, la configuración de Nginx, los respaldos y el diagnóstico están en
+[docs/DESPLIEGUE.md](docs/DESPLIEGUE.md).
+
 ## Las fórmulas
 
 Notación: `S` venta neta · `F` costos fijos post-compra · `α` tasa proporcional al martillo ·

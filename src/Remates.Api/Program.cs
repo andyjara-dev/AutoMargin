@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.OpenApi;
 using Remates.Api.Auth;
 using Remates.Api.Services;
@@ -86,6 +87,19 @@ builder.Services.AddCors(options =>
         .AllowAnyMethod());
 });
 
+// Detrás de un proxy inverso, la petición llega por HTTP aunque el cliente use HTTPS.
+// Sin leer estas cabeceras la aplicación cree que el esquema es http, y si además está
+// activa la redirección a HTTPS se produce un bucle infinito de redirecciones.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+
+    // El proxy es de confianza y está en la red interna de Docker, cuya IP no se conoce de
+    // antemano. Limpiar las listas permite aceptar sus cabeceras.
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUser, HttpCurrentUser>();
@@ -108,6 +122,7 @@ builder.Services.AddProblemDetails(options =>
 
 var app = builder.Build();
 
+app.UseForwardedHeaders();
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 
@@ -127,8 +142,10 @@ if (app.Environment.IsDevelopment())
         options.RoutePrefix = "swagger";
     });
 }
-else
+else if (app.Configuration.GetValue("ForceHttpsRedirect", false))
 {
+    // Solo si la API se expone directamente a internet. Detrás de un proxy que ya termina
+    // TLS, redirigir aquí es innecesario y arriesga un bucle si las cabeceras no llegan bien.
     app.UseHttpsRedirection();
 }
 

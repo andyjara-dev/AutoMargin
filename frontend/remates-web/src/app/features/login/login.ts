@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { Logo } from '../../shared/logo';
 
+import { describeHttpError } from '../../core/http-error';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
@@ -49,17 +50,9 @@ export class Login {
   }
 
   private describe(err: { status?: number }): string {
-    if (err?.status === 0) {
-      return 'No hay conexión con la API. Verifica que esté corriendo en http://localhost:5044.';
-    }
-
+    // El 401 en el login significa credenciales incorrectas, no sesión expirada.
     if (err?.status === 401) return 'Correo o contraseña incorrectos.';
 
-    if (err?.status === 500) {
-      return 'La API respondió con un error. Es probable que PostgreSQL no esté disponible: ' +
-             'la autenticación necesita la base de datos.';
-    }
-
-    return 'No se pudo iniciar sesión.';
+    return describeHttpError(err, 'No se pudo iniciar sesión.');
   }
 }

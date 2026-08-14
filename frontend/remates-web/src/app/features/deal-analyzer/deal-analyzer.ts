@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { catchError, debounceTime, of, switchMap, tap } from 'rxjs';
 
 import { annualizedPct, clp, num, pct } from '../../core/format';
+import { describeHttpError } from '../../core/http-error';
 import {
   DamageCategory,
   DamageSeverity,
@@ -293,17 +294,6 @@ export class DealAnalyzer {
   }
 
   private describeError(err: unknown): string {
-    const problem = err as { status?: number; error?: { errors?: Record<string, string[]> } };
-
-    if (problem?.status === 0) {
-      return 'No hay conexión con la API. Verifica que Remates.Api esté corriendo en http://localhost:5044.';
-    }
-
-    const validation = problem?.error?.errors;
-    if (validation) {
-      return Object.values(validation).flat().join(' ');
-    }
-
-    return 'No se pudo calcular el análisis.';
+    return describeHttpError(err, 'No se pudo calcular el análisis.');
   }
 }
