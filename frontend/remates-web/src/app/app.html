@@ -1,7 +1,13 @@
 <nav class="app-nav">
-  <span class="app-nav__brand">AutoMargin</span>
-  <a routerLink="/analizador" routerLinkActive="active">Analizador</a>
-  <a routerLink="/manual" routerLinkActive="active">Manual</a>
+  <a class="brand" routerLink="/analizador">
+    <span class="brand__name">AutoMargin</span>
+    <span class="brand__by">by andyjara<span class="brand__tld">.dev</span></span>
+  </a>
+
+  <div class="app-nav__links">
+    <a routerLink="/analizador" routerLinkActive="active">Analizador</a>
+    <a routerLink="/manual" routerLinkActive="active">Manual</a>
+  </div>
 </nav>
 
 <router-outlet />

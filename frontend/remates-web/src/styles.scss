@@ -1,26 +1,61 @@
-/* Sistema de diseño base. Orientado a decisiones: denso, legible, sin adornos. */
+/* ============================================================
+   AutoMargin — sistema de diseño
+   Paleta heredada de la identidad de andyjara.dev:
+     #2563EB → #0EA5E9 → #22D3EE  sobre  #0B0F19 / #F8FAFC
+   Los neutros siguen la escala slate, que es la familia de la
+   que provienen esos azules.
+   ============================================================ */
 
 :root {
   color-scheme: dark;
 
-  --bg: #0d1117;
-  --surface: #161b22;
-  --surface-2: #1c2430;
-  --border: #2a323d;
-  --text: #e6edf3;
-  --text-dim: #9aa7b4;
-  --text-faint: #6b7684;
+  /* ---- Marca ---- */
+  --brand-deep: #2563EB;   /* azul profundo, inicio del gradiente */
+  --brand: #0EA5E9;        /* azul de trabajo: enlaces, foco, acentos */
+  --brand-bright: #22D3EE; /* cian, cierre del gradiente */
 
-  --accent: #4a9eff;
-  --green: #2ea043;
-  --green-soft: #1a3a24;
-  --yellow: #d29922;
-  --yellow-soft: #3a2f10;
-  --red: #da3633;
-  --red-soft: #3d1c1c;
+  --brand-gradient: linear-gradient(120deg, var(--brand-deep) 0%, var(--brand) 55%, var(--brand-bright) 100%);
+
+  --accent: var(--brand);
+  --accent-soft: rgba(14, 165, 233, .12);
+  --accent-line: rgba(14, 165, 233, .35);
+  --on-accent: #04121F;    /* texto sobre fondos de marca */
+
+  /* ---- Superficies ---- */
+  --bg: #0B0F19;
+  --surface: #0F172A;
+  --surface-2: #1B2740;
+  --border: #24334A;
+
+  /* ---- Texto ---- */
+  --text: #F8FAFC;
+  --text-dim: #94A3B8;
+  --text-faint: #64748B;
+
+  /* ---- Semáforo ----
+     Deliberadamente cálidos y saturados para que nunca se confundan
+     con el cian de la marca: el semáforo es información crítica. */
+  --green: #22C55E;
+  --green-text: #4ADE80;
+  --green-soft: rgba(34, 197, 94, .10);
+
+  --yellow: #F59E0B;
+  --yellow-text: #FBBF24;
+  --yellow-soft: rgba(245, 158, 11, .10);
+
+  --red: #EF4444;
+  --red-text: #FCA5A5;
+  --red-soft: rgba(239, 68, 68, .10);
+
+  /* ---- Código y fórmulas ---- */
+  --code-bg: #070B14;
+  --code-text: #BAE6FD;
+  --code-key: #7DD3FC;
 
   --radius: 10px;
   --radius-sm: 6px;
+
+  --mono: 'Cascadia Mono', 'JetBrains Mono', Consolas, monospace;
 }
 
 * { box-sizing: border-box; }
@@ -33,6 +68,7 @@ html, body {
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   font-size: 14px;
   line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
 h1, h2, h3 { margin: 0; font-weight: 600; }
@@ -52,8 +88,22 @@ input[type='number'], input[type='text'], select {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   outline: none;
+  transition: border-color .12s ease, box-shadow .12s ease;
 
-  &:focus { border-color: var(--accent); }
+  &:focus {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
 }
 
 input[type='number'] { text-align: right; font-variant-numeric: tabular-nums; }
+
+input[type='checkbox'] { accent-color: var(--brand); }
+
+::selection { background: var(--accent-line); color: var(--text); }
+
+/* Barras de scroll acordes al fondo oscuro */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--surface-2) transparent;
+}

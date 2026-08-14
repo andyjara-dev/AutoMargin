@@ -150,7 +150,7 @@ table.editable {
   background: var(--surface-2);
 }
 
-.ladder__fill { position: absolute; inset: 0 auto 0 0; border-radius: 999px; background: rgba(46, 160, 67, .35); }
+.ladder__fill { position: absolute; inset: 0 auto 0 0; border-radius: 999px; background: rgba(34, 197, 94, .30); }
 
 .ladder__mark {
   position: absolute;
@@ -184,14 +184,14 @@ table.editable {
 
 .headroom { font-size: 13px; color: var(--text-dim); margin-top: 6px;
 
-  &--negative { color: #ff9b9b; }
+  &--negative { color: var(--red-text); }
 }
 
 .gates {
   margin: 14px 0 0;
   padding-left: 18px;
   font-size: 12.5px;
-  color: #ffbcbc;
+  color: var(--red-text);
 
   li { margin-bottom: 4px; }
 }
@@ -219,14 +219,14 @@ table.editable {
 .kpi__label { display: block; font-size: 11px; color: var(--text-faint); }
 .kpi__value { display: block; font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; margin-top: 2px; }
 
-.negative { color: #ff9b9b; }
+.negative { color: var(--red-text); }
 
 /* ---------- Tablas de lectura ---------- */
 
 table.readout {
   font-size: 13px;
 
-  td { padding: 5px 0; border-bottom: 1px solid rgba(42, 50, 61, .5); }
+  td { padding: 5px 0; border-bottom: 1px solid rgba(36, 51, 74, .5); }
   td:last-child { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
   th { text-align: left; padding: 0 0 8px; font-size: 11px; color: var(--text-faint); font-weight: 500; }
@@ -238,8 +238,8 @@ table.readout {
 
   &--grid td:not(:first-child) { text-align: right; }
 
-  .tone-good td:first-child { color: #7ee2a0; }
-  .tone-bad td:first-child { color: #ff9b9b; }
+  .tone-good td:first-child { color: var(--green-text); }
+  .tone-bad td:first-child { color: var(--red-text); }
 }
 
 /* ---------- Componentes del score ---------- */
@@ -256,7 +256,7 @@ table.readout {
 .component__points { color: var(--text-faint); font-variant-numeric: tabular-nums; }
 
 .bar { height: 6px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
-.bar__fill { height: 100%; background: var(--accent); border-radius: 999px; }
+.bar__fill { height: 100%; background: var(--brand-gradient); border-radius: 999px; }
 
 .component__why { margin: 6px 0 0; font-size: 11.5px; color: var(--text-faint); line-height: 1.5; }
 

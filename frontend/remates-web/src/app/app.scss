@@ -1,14 +1,52 @@
 .app-nav {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 28px;
   padding: 0 24px;
-  height: 46px;
-  background: var(--surface);
+  height: 54px;
+  background: rgba(15, 23, 42, .82);
+  backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
   z-index: 20;
+}
+
+/* ---- Lockup de marca: AutoMargin by andyjara.dev ---- */
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  text-decoration: none;
+  line-height: 1.15;
+}
+
+.brand__name {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: .01em;
+
+  /* El gradiente de la identidad, aplicado al texto */
+  background: var(--brand-gradient);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.brand__by {
+  font-size: 10px;
+  letter-spacing: .04em;
+  color: var(--text-faint);
+}
+
+.brand__tld { color: var(--brand); }
+
+/* ---- Navegación ---- */
+
+.app-nav__links {
+  display: flex;
+  gap: 4px;
 
   a {
     padding: 6px 14px;
@@ -16,17 +54,9 @@
     font-size: 13px;
     color: var(--text-dim);
     text-decoration: none;
+    transition: color .12s ease, background-color .12s ease;
 
     &:hover { color: var(--text); background: var(--surface-2); }
-    &.active { color: var(--accent); background: rgba(74, 158, 255, .12); }
+    &.active { color: var(--brand-bright); background: var(--accent-soft); }
   }
-}
-
-.app-nav__brand {
-  font-weight: 700;
-  font-size: 13px;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-  margin-right: 16px;
 }
