@@ -1,19 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="AutoMargin">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 120" role="img" aria-label="AutoMargin">
   <defs>
-    <linearGradient id="am" x1="10%" y1="0%" x2="95%" y2="100%">
+    <linearGradient id="am" x1="8%" y1="5%" x2="92%" y2="95%">
       <stop offset="0%" stop-color="#2563EB"/>
-      <stop offset="55%" stop-color="#0EA5E9"/>
+      <stop offset="52%" stop-color="#0EA5E9"/>
       <stop offset="100%" stop-color="#22D3EE"/>
     </linearGradient>
   </defs>
 
-  <!-- La A: un solo trazo continuo, de esquina a esquina pasando por el vértice -->
-  <path d="M 16 101 L 55 27 Q 60 18 65 27 L 104 101"
-        fill="none" stroke="url(#am)" stroke-width="11"
-        stroke-linecap="round" stroke-linejoin="round"/>
+  <g fill="none" stroke="url(#am)" stroke-linecap="round" stroke-linejoin="round">
+    <!-- La A: chevron ancho con el vértice generosamente redondeado -->
+    <path d="M 12 106 L 51 26 Q 58 12 65 26 L 88 73" stroke-width="12"/>
 
-  <!-- La silueta del auto, que además cierra la A por abajo -->
-  <path d="M 33 88 C 43 70, 63 64, 78 73 C 90 80, 89 95, 77 95 C 66 95, 60 87, 47 87"
-        fill="none" stroke="url(#am)" stroke-width="9.5"
-        stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- El auto: trazo horizontal que cruza la pierna derecha y cierra en el lóbulo trasero -->
+    <path d="M 28 92 C 45 68, 74 62, 95 74 C 112 84, 110 104, 92 104 C 76 104, 66 94, 46 92"
+          stroke-width="10.5"/>
+  </g>
 </svg>

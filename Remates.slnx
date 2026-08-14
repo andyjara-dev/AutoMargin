@@ -7,4 +7,7 @@
   <Folder Name="/tests/">
     <Project Path="tests/Remates.Domain.Tests/Remates.Domain.Tests.csproj" />
   </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/Remates.LogoTracer/Remates.LogoTracer.csproj" />
+  </Folder>
 </Solution>
