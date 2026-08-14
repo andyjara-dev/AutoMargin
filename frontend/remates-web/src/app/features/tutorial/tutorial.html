@@ -340,6 +340,9 @@
             <strong>Carga los datos del auto y del remate.</strong> Año, kilometraje, precio actual
             del remate y en cuántos días crees que lo venderás. Si no tienes idea de los días, deja
             45: es un número prudente.
+            <br />
+            El precio actual lo escribes tú: antes del remate, el mínimo que publica el martillero;
+            durante el remate, lo que va ofreciendo la sala.
           </li>
           <li>
             <strong>Busca autos parecidos publicados y cárgalos como comparables.</strong> Entra a
@@ -711,7 +714,7 @@
           <tbody>
             <tr>
               <td><span class="chip chip--now">Precio actual</span></td>
-              <td>Dónde va el remate en este momento.</td>
+              <td>Dónde va el remate en este momento. <strong>Lo escribes tú</strong>; el sistema no lo obtiene de ninguna parte.</td>
               <td>—</td>
             </tr>
             <tr>
@@ -1279,6 +1282,45 @@
           cualquier dato, los resultados se actualizan. Prueba mover el precio del remate hacia arriba
           y mira cómo el semáforo cambia de verde a amarillo y luego a rojo.
         </div>
+
+        <h3>De dónde sale el «precio actual del lote»</h3>
+
+        <p>
+          <strong>Lo escribes tú.</strong> El sistema no lo consulta en ningún sitio: no está
+          conectado a los remates. Y eso no es una carencia, es cómo está pensado para usarse.
+        </p>
+
+        <div class="split">
+          <div class="split__col">
+            <h3>Antes del remate</h3>
+            <p>
+              Pones el precio mínimo o la tasación que publica el martillero, para decidir si el
+              vehículo merece que vayas. Es el análisis de escritorio, con calma.
+            </p>
+          </div>
+          <div class="split__col">
+            <h3>Durante el remate</h3>
+            <p>
+              Con el analizador abierto en el teléfono, vas subiendo ese número mientras suben las
+              ofertas en la sala. El semáforo cambia en vivo. Cuando se pone rojo, te bajas.
+            </p>
+          </div>
+        </div>
+
+        <div class="callout callout--key">
+          <strong>La puja máxima no depende de ese campo.</strong> Sale del valor de mercado, los
+          costos y el tiempo. El precio actual solo se compara contra ella.
+          <br /><br />
+          Puedes dejarlo en cero y la puja máxima se calcula igual. De hecho es la forma más
+          ordenada de trabajar: primero averiguas tu techo con calma, lo anotas, y recién después
+          vas al remate. El campo existe para que en la sala puedas ver cuánto margen te queda.
+        </div>
+
+        <p class="note">
+          En una etapa posterior está previsto conectar fuentes de remates para que ese campo se
+          llene solo. Se dejó para el final a propósito: depende de la estructura de cada sitio y
+          de sus términos de uso, y el sistema tiene que servir sin eso.
+        </p>
       </section>
 
       <!-- ====================================================== -->
@@ -1571,6 +1613,34 @@
               Porque la plata inmovilizada cuesta, y porque la utilidad que exiges crece con el tiempo.
               Un auto que tarda 90 días en venderse tiene que comprarse más barato que uno idéntico que
               sale en 30.
+            </p>
+          </div>
+
+          <div class="faq__item">
+            <strong>¿De dónde saca el sistema el precio actual del remate?</strong>
+            <p>
+              De ninguna parte: lo escribes tú. No está conectado a los remates. Antes de ir, pones
+              el mínimo que publica el martillero para decidir si vale la pena; en la sala, vas
+              subiendo el número mientras suben las ofertas y miras cómo cambia el semáforo.
+              La puja máxima no depende de ese campo, así que puedes dejarlo en cero y calcular tu
+              techo con calma antes de salir de casa.
+            </p>
+          </div>
+
+          <div class="faq__item">
+            <strong>¿Puedo usarlo desde el teléfono en pleno remate?</strong>
+            <p>
+              Para eso está pensado el recálculo instantáneo. La pantalla se adapta a pantallas
+              pequeñas y no hay botón de «calcular»: cambias el precio y el veredicto se actualiza
+              solo. Lo que sí necesitas es conexión, porque los cálculos ocurren en el servidor.
+            </p>
+          </div>
+
+          <div class="faq__item">
+            <strong>¿Cómo cambio mi contraseña?</strong>
+            <p>
+              En <em>Mi cuenta</em>, haciendo clic en tu nombre arriba a la derecha. Pide la
+              contraseña actual y cierra las demás sesiones abiertas al cambiarla.
             </p>
           </div>
 
