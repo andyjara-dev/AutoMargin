@@ -8,14 +8,15 @@ using Remates.Domain.Parameters;
 namespace Remates.Api.Controllers;
 
 /// <summary>
-/// Simulador sin persistencia. Se deja abierto a propósito: es la única parte del sistema que
-/// funciona sin base de datos, y conviene que siga disponible desde el recinto del remate aunque
-/// falle todo lo demás. No expone datos del negocio, solo transforma números.
-/// Si se quiere cerrar, basta cambiar AllowAnonymous por Authorize.
+/// Simulador sin persistencia.
+///
+/// Requiere sesión aunque no toque la base de datos: no expone registros del negocio, pero sí
+/// los parámetros con que se calcula (comisión, ROI objetivo, márgenes), que son la metodología
+/// del negocio. Publicado en internet, dejarlo abierto equivale a regalarla.
 /// </summary>
 [ApiController]
 [Route("api/analysis")]
-[AllowAnonymous]
+[Authorize]
 [Produces("application/json")]
 public sealed class AnalysisController : ControllerBase
 {

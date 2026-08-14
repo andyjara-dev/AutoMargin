@@ -62,8 +62,12 @@ public sealed class DbSeeder(
 
         if (!result.Succeeded)
         {
-            logger.LogError("No se pudo crear el administrador: {Errors}",
-                string.Join(", ", result.Errors.Select(e => e.Description)));
+            // Sin esta cuenta nadie puede entrar, y el síntoma visible es un 401 al iniciar
+            // sesión, que no dice nada sobre la causa real. Conviene que el log sea explícito.
+            logger.LogError(
+                "NO SE CREÓ EL ADMINISTRADOR y por eso el login va a fallar con 401. Motivo: {Errors}. " +
+                "La contraseña debe tener al menos 10 caracteres, con mayúscula, minúscula y dígito.",
+                string.Join(" | ", result.Errors.Select(e => e.Description)));
             return;
         }
 

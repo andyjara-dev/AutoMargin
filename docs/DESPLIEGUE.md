@@ -276,9 +276,48 @@ docker compose -f docker-compose.prod.yml ps               # estado de salud
 | Bucle de redirecciones | Lo mismo, o quedó activo `ForceHttpsRedirect` con el proxy ya terminando TLS. |
 | Sesión que se cierra sola | Cambió `JWT_SIGNING_KEY` entre despliegues: invalida todos los tokens emitidos. |
 | `password authentication failed` | Se cambió `POSTGRES_PASSWORD` después del primer arranque. La base conserva la original. |
+| El login responde 401 con las credenciales del `.env` | La cuenta no llegó a crearse. Ver abajo. |
 | Una ruta inexistente devuelve 200 | Es correcto: Angular maneja el enrutado y cualquier ruta desconocida entrega el `index.html`. |
 | `bind: address already in use` | El `PUBLIC_PORT` lo usa otro contenedor. Comprobar con `ss -ltnp` o `docker ps` y elegir otro. |
 | NPM devuelve 502 | Si NPM corre en modo host, `Forward Hostname` debe ser `127.0.0.1`, no el nombre del contenedor. |
+
+## El login responde 401 con las credenciales del `.env`
+
+Significa que la cuenta de administrador **no llegó a crearse**. El log lo dice:
+
+```bash
+docker compose -f docker-compose.prod.yml logs api | grep -i -E "administrador|admin"
+```
+
+Las tres causas posibles:
+
+| Mensaje en el log | Causa |
+|---|---|
+| `NO SE CREÓ EL ADMINISTRADOR` | La contraseña no cumple la política: mínimo 10 caracteres, con mayúscula, minúscula y dígito. |
+| `No hay Seed:AdminPassword configurada` | El `.env` no tenía la variable en el primer arranque. |
+| `Administrador creado: ...` | Sí se creó. Entonces la contraseña que estás usando no es la que había en ese momento. |
+
+Ojo con dos caracteres en el `.env`: **`#` inicia un comentario** y trunca el valor, y **`$` se
+interpreta como variable**. Si la contraseña los lleva, quedó guardada distinta de lo que crees.
+Comprueba qué recibió realmente el contenedor:
+
+```bash
+docker compose -f docker-compose.prod.yml exec api printenv Seed__AdminPassword
+```
+
+### Recrear la cuenta
+
+Corrige la contraseña en el `.env`, borra el usuario y reinicia. El sembrado lo vuelve a crear:
+
+```bash
+docker compose -f docker-compose.prod.yml exec -T postgres psql -U automargin automargin -c "delete from app_user;"
+```
+
+```bash
+docker compose -f docker-compose.prod.yml restart api
+```
+
+Esto solo borra la cuenta de acceso. Los vehículos, análisis e historial no se tocan.
 
 ## Notas de seguridad
 

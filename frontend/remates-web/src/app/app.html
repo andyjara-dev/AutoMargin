@@ -1,5 +1,5 @@
 <nav class="app-nav">
-  <a class="brand" routerLink="/analizador">
+  <a class="brand" [routerLink]="isAuthenticated() ? '/dashboard' : '/login'">
     <app-logo [size]="30" />
     <span class="brand__text">
       <span class="brand__name"><span class="brand__auto">Auto</span><span class="brand__margin">Margin</span></span>
@@ -10,13 +10,11 @@
   <div class="app-nav__links">
     @if (isAuthenticated()) {
       <a routerLink="/dashboard" routerLinkActive="active">Estado</a>
-    }
-    <a routerLink="/analizador" routerLinkActive="active">Analizador</a>
-    @if (isAuthenticated()) {
+      <a routerLink="/analizador" routerLinkActive="active">Analizador</a>
       <a routerLink="/vehiculos" routerLinkActive="active">Vehículos</a>
       <a routerLink="/parametros" routerLinkActive="active">Parámetros</a>
+      <a routerLink="/manual" routerLinkActive="active">Manual</a>
     }
-    <a routerLink="/manual" routerLinkActive="active">Manual</a>
   </div>
 
   <div class="app-nav__session">
