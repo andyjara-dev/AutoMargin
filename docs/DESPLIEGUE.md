@@ -254,19 +254,38 @@ del `.env`.
 
 ## Actualizar
 
+Usa **el mismo comando con el que instalaste**, ni más ni menos. Lo que decide es cómo está
+conectado tu proxy, no que uses NPM o no:
+
 ```bash
 cd /opt/automargin
 git pull
 
-# Con Nginx Proxy Manager
-docker compose -f docker-compose.prod.yml -f docker-compose.npm.yml up -d --build
-
-# Con Nginx del sistema
+# NPM en modo host, o Nginx del sistema
 docker compose -f docker-compose.prod.yml up -d --build
+
+# NPM en una red de Docker (solo si configuraste NPM_NETWORK en el paso 5a)
+docker compose -f docker-compose.prod.yml -f docker-compose.npm.yml up -d --build
 ```
+
+> Si agregas `-f docker-compose.npm.yml` sin tener esa red, verás
+> `network nginxproxymanager_default declared as external, but could not be found` y los
+> contenedores no se reemplazan. Quita el segundo `-f` y listo.
 
 Las migraciones nuevas se aplican solas al arrancar. Los contenedores se reemplazan uno a uno,
 así que la interrupción es de unos segundos.
+
+El frontend se compila **dentro** de la imagen, así que `git pull` por sí solo no cambia nada de
+lo que sirve nginx: hace falta el `--build`. Y una vez reconstruido, el navegador puede seguir
+mostrando la versión anterior desde su caché — recarga con Ctrl+F5 antes de dar por fallido un
+despliegue. Para saber si el problema está en el servidor o en el navegador, pregúntale al
+contenedor por algo que solo exista en la versión nueva:
+
+```bash
+docker compose -f docker-compose.prod.yml exec web grep -rlo "mercado" /usr/share/nginx/html/ | head -3
+```
+
+Si devuelve archivos, el servidor ya está actualizado y lo que falta es limpiar la caché.
 
 ## Respaldos
 
