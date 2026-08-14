@@ -59,8 +59,17 @@ public sealed class MercadoLibreSource(
 
             if (!response.IsSuccessStatusCode)
             {
-                logger.LogWarning("MercadoLibre respondió {Status} a {Url}", response.StatusCode, url);
-                return MarketSearchOutcome.Failed(Name, $"La API respondió {(int)response.StatusCode}.");
+                // El código solo no basta para actuar: un 403 puede ser falta de permisos, una
+                // categoría inexistente o un endpoint restringido, y MercadoLibre distingue esos
+                // casos en el cuerpo. Sin leerlo, el usuario queda con un número y sin salida.
+                var detail = await ReadErrorMessageAsync(response, ct);
+
+                logger.LogWarning("MercadoLibre respondió {Status} a {Url}: {Detail}",
+                    response.StatusCode, url, detail ?? "(sin detalle)");
+
+                return MarketSearchOutcome.Failed(Name, detail is null
+                    ? $"La API respondió {(int)response.StatusCode}."
+                    : $"La API respondió {(int)response.StatusCode}: {detail}");
             }
 
             var payload = await response.Content.ReadFromJsonAsync<JsonElement>(ct);
@@ -98,7 +107,9 @@ public sealed class MercadoLibreSource(
 
         if (!response.IsSuccessStatusCode)
         {
-            logger.LogWarning("MercadoLibre rechazó las credenciales con {Status}", response.StatusCode);
+            logger.LogWarning("MercadoLibre rechazó las credenciales con {Status}: {Detail}",
+                response.StatusCode, await ReadErrorMessageAsync(response, ct) ?? "(sin detalle)");
+
             return null;
         }
 
@@ -113,6 +124,49 @@ public sealed class MercadoLibreSource(
         _tokenExpiresAt = timeProvider.GetUtcNow().AddSeconds(seconds - 60);
 
         return _token;
+    }
+
+    /// <summary>
+    /// Saca el motivo del error del cuerpo de la respuesta. MercadoLibre devuelve un JSON con
+    /// «message» y «error»; si viniera otra cosa, se muestra el texto recortado antes que nada.
+    /// </summary>
+    private static async Task<string?> ReadErrorMessageAsync(HttpResponseMessage response, CancellationToken ct)
+    {
+        try
+        {
+            var body = await response.Content.ReadAsStringAsync(ct);
+            if (string.IsNullOrWhiteSpace(body)) return null;
+
+            try
+            {
+                using var json = JsonDocument.Parse(body);
+                var root = json.RootElement;
+
+                var message = root.TryGetProperty("message", out var m) ? m.GetString() : null;
+                var error = root.TryGetProperty("error", out var e) ? e.GetString() : null;
+
+                var text = string.Join(" · ", new[] { message, error }
+                    .Where(s => !string.IsNullOrWhiteSpace(s)));
+
+                if (!string.IsNullOrWhiteSpace(text)) return Trim(text);
+            }
+            catch (JsonException)
+            {
+                // No era JSON; sirve igual el texto crudo.
+            }
+
+            return Trim(body);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            return null;
+        }
+    }
+
+    private static string Trim(string text)
+    {
+        var single = string.Join(' ', text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+        return single.Length <= 200 ? single : single[..200] + "…";
     }
 
     private string BuildSearchUrl(MarketSearchQuery query)
