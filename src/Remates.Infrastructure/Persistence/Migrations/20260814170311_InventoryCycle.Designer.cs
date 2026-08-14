@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Remates.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using Remates.Infrastructure.Persistence;
 namespace Remates.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(RematesDbContext))]
-    partial class RematesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260814170311_InventoryCycle")]
+    partial class InventoryCycle
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

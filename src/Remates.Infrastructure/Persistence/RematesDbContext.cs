@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Remates.Infrastructure.Entities;
 
 namespace Remates.Infrastructure.Persistence;
@@ -28,6 +29,14 @@ public class RematesDbContext(DbContextOptions<RematesDbContext> options)
 
     public DbSet<DealAnalysisSnapshot> DealAnalyses => Set<DealAnalysisSnapshot>();
 
+    public DbSet<Purchase> Purchases => Set<Purchase>();
+    public DbSet<Expense> Expenses => Set<Expense>();
+    public DbSet<Listing> Listings => Set<Listing>();
+    public DbSet<PriceChange> PriceChanges => Set<PriceChange>();
+    public DbSet<Sale> Sales => Set<Sale>();
+    public DbSet<CashMovement> CashMovements => Set<CashMovement>();
+    public DbSet<PredictionOutcome> PredictionOutcomes => Set<PredictionOutcome>();
+
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
@@ -38,7 +47,32 @@ public class RematesDbContext(DbContextOptions<RematesDbContext> options)
         builder.ApplyConfigurationsFromAssembly(typeof(RematesDbContext).Assembly);
 
         ApplyMoneyPrecision(builder);
+        ApplyUtcNormalization(builder);
         ApplySnakeCaseNames(builder);
+    }
+
+    /// <summary>
+    /// Normaliza toda fecha a UTC antes de escribirla.
+    ///
+    /// PostgreSQL solo acepta offset cero en 'timestamp with time zone', así que una fecha
+    /// enviada desde Chile (-03:00 o -04:00) hace fallar la escritura entera. Convertirlo aquí
+    /// evita tener que acordarse en cada servicio, que es donde tarde o temprano se olvida.
+    /// </summary>
+    private static void ApplyUtcNormalization(ModelBuilder builder)
+    {
+        var converter = new ValueConverter<DateTimeOffset, DateTimeOffset>(
+            toProvider => toProvider.ToUniversalTime(),
+            fromProvider => fromProvider);
+
+        var nullableConverter = new ValueConverter<DateTimeOffset?, DateTimeOffset?>(
+            toProvider => toProvider.HasValue ? toProvider.Value.ToUniversalTime() : null,
+            fromProvider => fromProvider);
+
+        foreach (var property in builder.Model.GetEntityTypes().SelectMany(t => t.GetProperties()))
+        {
+            if (property.ClrType == typeof(DateTimeOffset)) property.SetValueConverter(converter);
+            else if (property.ClrType == typeof(DateTimeOffset?)) property.SetValueConverter(nullableConverter);
+        }
     }
 
     /// <summary>
