@@ -21,18 +21,27 @@
   h1 { font-size: 19px; }
 }
 
-.panel__brand { display: flex; flex-direction: column; gap: 1px; margin-bottom: 6px; }
+.panel__brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 10px;
+  text-align: center;
+}
 
-.panel__name {
-  font-size: 17px;
-  font-weight: 700;
+.panel__name { font-size: 22px; font-weight: 600; letter-spacing: -.01em; margin-top: 8px; }
+
+.auto { color: var(--text); }
+
+.margin {
   background: var(--brand-gradient);
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
 }
 
-.panel__by { font-size: 10px; letter-spacing: .04em; color: var(--text-faint); }
+.panel__by { font-size: 10px; font-weight: 300; letter-spacing: .05em; color: var(--text-faint); }
 .tld { color: var(--brand); }
 
 .panel__lead { margin: -8px 0 4px; font-size: 12.5px; color: var(--text-dim); }

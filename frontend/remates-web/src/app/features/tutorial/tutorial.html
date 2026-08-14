@@ -371,7 +371,20 @@
             caliente. Cuando en la sala te den ganas de subir «un poquito más», ese es exactamente el
             momento para el que fue calculado.
           </li>
+          <li>
+            <strong>Si ganas, registra la compra</strong> en la ficha del vehículo, y desde ahí ve
+            cargando los gastos hasta venderlo. El ciclo completo está explicado más abajo.
+          </li>
         </ol>
+
+        <div class="plain">
+          <strong>Las cinco pantallas.</strong>
+          <em>Estado</em> resume el negocio y avisa qué necesita atención.
+          <em>Analizador</em> decide cuánto pujar.
+          <em>Vehículos</em> lista lo que tienes y abre la ficha de cada uno.
+          <em>Parámetros</em> ajusta los umbrales.
+          <em>Manual</em> es esto que estás leyendo.
+        </div>
       </section>
 
       <!-- ====================================================== -->
@@ -1026,6 +1039,105 @@
       </section>
 
       <!-- ====================================================== -->
+      <section id="dos-utilidades">
+        <h2><span class="num">13</span> Las dos utilidades</h2>
+
+        <p>
+          Cuando vendes un auto, el sistema te muestra <strong>dos</strong> cifras de ganancia
+          distintas. No es un error ni una sutileza contable: responden preguntas diferentes.
+        </p>
+
+        <div class="split">
+          <div class="split__col">
+            <h3>Utilidad de caja</h3>
+            <p class="split__lead">Lo que efectivamente entró al bolsillo.</p>
+            <div class="formula formula--sm">
+              venta − todo lo desembolsado
+            </div>
+            <p>
+              Es el número que cuadra con tu cuenta corriente. Si vendiste en $11.250.000 y habías
+              gastado $7.686.600 entre compra, comisión y arreglos, tu utilidad de caja es
+              $3.353.400. Ese dinero existe.
+            </p>
+          </div>
+
+          <div class="split__col">
+            <h3>Utilidad económica</h3>
+            <p class="split__lead">Lo que ganaste descontando el costo de haber tenido la plata detenida.</p>
+            <div class="formula formula--sm">
+              utilidad de caja − costo del capital
+            </div>
+            <p>
+              Los mismos $3.353.400, menos los $215.225 que costó tener $7,7 millones inmovilizados
+              durante 42 días: <strong>$3.138.175</strong>.
+            </p>
+          </div>
+        </div>
+
+        <div class="callout callout--key">
+          <strong>Por qué existen las dos.</strong> Imagina dos autos que te dejaron exactamente
+          $3.000.000 de caja. Uno lo vendiste en 20 días; el otro tardó 120. La caja dice que
+          rindieron igual, y es mentira: con el primero pudiste comprar otro auto cuatro veces
+          antes de que el segundo se vendiera.
+          <br /><br />
+          La utilidad económica es la que hace visible esa diferencia. Y es la que el sistema usa
+          para comparar contra lo proyectado, porque el análisis también descontaba el costo del
+          capital. Usar la de caja inflaría artificialmente el acierto del sistema.
+        </div>
+
+        <div class="plain">
+          <strong>Cuál mirar.</strong> La de caja, para saber cuánto dinero tienes. La económica,
+          para saber si el negocio fue bueno y para comparar una operación con otra.
+        </div>
+      </section>
+
+      <!-- ====================================================== -->
+      <section id="ciclo">
+        <h2>El ciclo de un vehículo</h2>
+
+        <p>
+          Cada auto recorre el sistema en el mismo orden. Estas son las pantallas que tocas en cada
+          etapa y qué se registra en cada una.
+        </p>
+
+        <ol class="steps">
+          <li>
+            <strong>Analizas la oportunidad</strong> — en el <em>Analizador</em>, o creando el
+            vehículo desde <em>Vehículos</em> y cargándole comparables y daños. Obtienes la puja
+            máxima y el semáforo.
+          </li>
+          <li>
+            <strong>Vas al remate</strong> con ese número. Si ganas, registras la compra en la ficha
+            del vehículo: precio de martillo y comisión pagada.
+          </li>
+          <li>
+            <strong>Cargas los gastos</strong> a medida que ocurren: reparación, repuestos, mano de
+            obra, transporte, detailing, transferencia. Cada uno se compara contra lo presupuestado.
+          </li>
+          <li>
+            <strong>Publicas</strong> el auto, y si hace falta ajustas el precio. Cada ajuste queda
+            registrado.
+          </li>
+          <li>
+            <strong>Registras la venta.</strong> Ahí el sistema congela el resultado real y guarda
+            la comparación contra lo que había proyectado. Esa comparación es lo que después permite
+            saber qué se subestima de forma sistemática.
+          </li>
+          <li>
+            <strong>Revisas el estado del negocio</strong> en el dashboard: capital disponible,
+            rentabilidad acumulada y lo que requiere atención.
+          </li>
+        </ol>
+
+        <div class="callout callout--warn">
+          <strong>El paso 1 no es opcional.</strong> Puedes registrar una compra sin haber analizado
+          el vehículo antes, y el sistema te dejará. Pero al venderlo no habrá con qué comparar el
+          resultado, y esa operación no aportará nada al aprendizaje. El dashboard te avisa cuando
+          esto ocurre.
+        </div>
+      </section>
+
+      <!-- ====================================================== -->
       <section id="ejemplo">
         <h2>Ejemplo completo con números</h2>
 
@@ -1139,9 +1251,12 @@
 
       <!-- ====================================================== -->
       <section id="leer-pantalla">
-        <h2>Cómo leer la pantalla</h2>
+        <h2>Analizador</h2>
 
-        <p>La columna de resultados está ordenada de la conclusión al detalle. Léela de arriba hacia abajo:</p>
+        <p>
+          Es la pantalla de decisión: la que usas <em>antes</em> de comprar. La columna de
+          resultados está ordenada de la conclusión al detalle. Léela de arriba hacia abajo:
+        </p>
 
         <ol class="steps">
           <li><strong>Tarjeta del veredicto.</strong> Semáforo, puntaje, puja máxima en grande, la barra con los tres precios y los bloqueos. Con esto decides.</li>
@@ -1164,6 +1279,175 @@
           cualquier dato, los resultados se actualizan. Prueba mover el precio del remate hacia arriba
           y mira cómo el semáforo cambia de verde a amarillo y luego a rojo.
         </div>
+      </section>
+
+      <!-- ====================================================== -->
+      <section id="pantalla-estado">
+        <h2>Estado del negocio</h2>
+
+        <p>
+          El dashboard responde tres preguntas: <strong>cuánta plata tengo disponible</strong>,
+          <strong>cuánto he ganado</strong> y <strong>qué necesita atención hoy</strong>. Está
+          ordenado en ese último orden a propósito: lo accionable va primero.
+        </p>
+
+        <h3>Requiere atención</h3>
+        <p>
+          Las alertas salen ordenadas por gravedad y, dentro de cada nivel, por monto comprometido.
+          Cada una trae una acción sugerida, porque una lista de problemas sin qué hacer al respecto
+          se convierte en ruido que uno aprende a ignorar.
+        </p>
+
+        <table class="doc-table">
+          <thead>
+            <tr><th>Alerta</th><th>Qué significa</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Inventario estancado</td><td>Lleva más días de los tolerados sin venderse. Al doble del límite pasa a crítica.</td></tr>
+            <tr><td>Revisar precio</td><td>Publicado hace tiempo y sin movimiento. Suele ser precio alto.</td></tr>
+            <tr><td>Reparación sobre presupuesto</td><td>Costó más de lo estimado. Aparece también en los vendidos, porque de ahí sale el aprendizaje.</td></tr>
+            <tr><td>Margen bajo</td><td>Lo proyectado ya no compensa. Si lo invertido supera el valor de venta, es crítica.</td></tr>
+            <tr><td>Concentración de capital</td><td>Un solo vehículo se lleva demasiado del capital total.</td></tr>
+            <tr><td>Compra sin análisis</td><td>Se registró sin análisis previo: al venderlo no habrá con qué comparar.</td></tr>
+            <tr><td>Capital disponible bajo</td><td>Casi todo está inmovilizado. Conviene cerrar ventas antes de otro remate.</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Capital</h3>
+        <div class="terms">
+          <div><dt>Aportado</dt><dd>Lo que has puesto de tu bolsillo, menos lo que has retirado.</dd></div>
+          <div><dt>Disponible</dt><dd>Efectivo libre ahora mismo: aportes − compras − gastos + ventas. Es con lo que puedes ir a un remate mañana.</dd></div>
+          <div><dt>Inmovilizado</dt><dd>Lo que está metido en autos sin vender. La barra muestra qué fracción del total representa: mientras más llena, menos margen de maniobra.</dd></div>
+        </div>
+
+        <h3>Inventario y rentabilidad</h3>
+        <p>
+          El <strong>valor esperado</strong> y la <strong>utilidad potencial</strong> solo consideran
+          los vehículos que tienen valuación. Si compraste uno sin analizarlo, queda fuera y la
+          pantalla te dice cuántos y por cuánto: contarlo en cero haría aparecer una pérdida que
+          no existe.
+        </p>
+
+        <div class="callout callout--warn">
+          <strong>Los promedios con poca historia no son promedios.</strong> Bajo diez operaciones
+          cerradas, la pantalla advierte antes de mostrar el ROI y el ranking por modelo. Con una
+          sola venta, «Toyota rinde 40%» no distingue un buen modelo de una operación afortunada,
+          y el sistema lo dice en vez de dejar que parezca un hallazgo.
+        </div>
+      </section>
+
+      <!-- ====================================================== -->
+      <section id="pantalla-vehiculos">
+        <h2>Vehículos y su ficha</h2>
+
+        <p>
+          El listado muestra todos los vehículos con el resultado de su último análisis: puja
+          máxima, puntaje y semáforo. Se puede filtrar por estado y buscar por marca, modelo o
+          patente. Al hacer clic en uno se abre su ficha.
+        </p>
+
+        <h3>La ficha</h3>
+        <p>Es donde vive el vehículo desde que lo compras hasta que lo vendes. Tiene cinco bloques:</p>
+
+        <ol class="steps">
+          <li>
+            <strong>Resultado.</strong> Capital desembolsado, las dos utilidades, costo del capital
+            y rentabilidad. Mientras no vendas, la etiqueta dice «cifras provisionales»: los números
+            cambian con cada gasto que cargues.
+          </li>
+          <li>
+            <strong>Reparación: presupuesto contra real.</strong> Agrupa reparación, repuestos y mano
+            de obra, porque el análisis los estima como una cifra única. Si te pasaste, el bloque se
+            pone rojo.
+          </li>
+          <li>
+            <strong>Gastos por categoría.</strong> Real contra presupuestado. Un guion en el
+            presupuesto significa que el análisis no estima esa categoría por separado,
+            <em>no</em> que se haya gastado de más.
+          </li>
+          <li>
+            <strong>Registrar gasto.</strong> Categoría, monto, detalle y proveedor. Cada gasto
+            genera además un movimiento de caja.
+          </li>
+          <li>
+            <strong>Registrar venta.</strong> Precio, costos de venta, comprador y forma de pago.
+          </li>
+        </ol>
+
+        <div class="callout callout--key">
+          <strong>Registrar la venta cierra la operación.</strong> El sistema congela el resultado
+          real y guarda la comparación contra lo que había proyectado. A partir de ahí los
+          formularios desaparecen y aparece la tabla <em>«qué tan bien acertó el análisis»</em>.
+          No se puede deshacer desde la pantalla.
+        </div>
+
+        <h3>Qué tan bien acertó el análisis</h3>
+        <p>
+          Compara cuatro cosas: precio de venta, reparación, días y utilidad. El signo del error
+          importa:
+        </p>
+
+        <table class="doc-table">
+          <thead>
+            <tr><th>Fila</th><th>Error positivo significa</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Precio de venta</td><td>Vendiste por <strong>encima</strong> de lo proyectado. Bueno.</td></tr>
+            <tr class="tone-bad"><td>Reparación</td><td>Costó <strong>más</strong> de lo estimado. Es el sesgo habitual.</td></tr>
+            <tr class="tone-bad"><td>Días de venta</td><td>Tardó <strong>más</strong> de lo previsto.</td></tr>
+            <tr><td>Utilidad</td><td>Ganaste <strong>más</strong> de lo proyectado.</td></tr>
+          </tbody>
+        </table>
+
+        <p>
+          Una operación aislada no dice nada. Veinte operaciones con la reparación siempre en
+          positivo dicen que tus estimaciones de daño son optimistas, y ahí sí puedes corregir.
+        </p>
+      </section>
+
+      <!-- ====================================================== -->
+      <section id="pantalla-parametros">
+        <h2>Parámetros</h2>
+
+        <p>
+          Todos los umbrales que gobiernan los cálculos, agrupados por tema y con una explicación
+          de qué mueve cada uno. Los porcentajes se escriben como número normal: para 1,5% se
+          escribe <strong>1,5</strong>, no 0,015.
+        </p>
+
+        <div class="callout callout--key">
+          <strong>Guardar crea una versión nueva.</strong> No modifica la existente. Cada análisis
+          registra con qué versión se calculó, así que subir hoy el ROI objetivo <em>no</em> altera
+          la puja máxima de una compra que decidiste el mes pasado. Si dentro de seis meses revisas
+          por qué pagaste lo que pagaste, encuentras los parámetros exactos de ese momento.
+        </div>
+
+        <h3>Qué grupo tocar según lo que quieras lograr</h3>
+
+        <table class="doc-table">
+          <thead>
+            <tr><th>Si quieres…</th><th>Ajusta</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Ser más exigente y comprar menos</td><td>Utilidad mínima o ROI anual objetivo, en <em>Umbrales de decisión</em>.</td></tr>
+            <tr><td>Que el sistema sea más prudente ante lo desconocido</td><td>Margen de seguridad base.</td></tr>
+            <tr><td>Corregir la brecha entre precio pedido y pagado</td><td>Brecha de negociación, en <em>Mercado</em>.</td></tr>
+            <tr><td>Reflejar que tu capital cuesta más</td><td>Costo mensual del capital, en <em>Tiempo y capital</em>.</td></tr>
+            <tr><td>Que avise antes de que un auto se estanque</td><td>Días máximos en inventario, en <em>Alertas</em>.</td></tr>
+            <tr><td>Cambiar qué pesa más en el puntaje</td><td><em>Pesos del score</em>. No necesitan sumar 100: se normalizan.</td></tr>
+          </tbody>
+        </table>
+
+        <div class="plain">
+          <strong>Anota el motivo del cambio.</strong> El campo existe porque dentro de unos meses,
+          al revisar por qué una compra se decidió con otro criterio, esa nota es lo único que lo
+          explica. El historial de versiones queda al final de la pantalla.
+        </div>
+
+        <p class="note">
+          Solo un administrador puede guardar cambios. El botón «cargar valores de fábrica» rellena
+          el formulario con los valores originales, pero no guarda nada hasta que confirmes.
+        </p>
       </section>
 
       <!-- ====================================================== -->
@@ -1322,6 +1606,7 @@
           <div><dt>Escenario</dt><dd>Una versión del mismo negocio bajo distintos supuestos: optimista, esperado o pesimista.</dd></div>
           <div><dt>F</dt><dd>Los costos fijos posteriores a la compra. No cambian según el precio que pagues.</dd></div>
           <div><dt>Gate / bloqueo</dt><dd>Una condición que fuerza el semáforo a rojo sin importar el puntaje.</dd></div>
+          <div><dt>Gasto presupuestado</dt><dd>Lo que el análisis había estimado para esa categoría. Un guion significa que no la estima por separado, no que sea cero.</dd></div>
           <div><dt>Gravamen</dt><dd>Una carga legal sobre el auto. Mientras no se alce, el auto responde por una deuda ajena a ti.</dd></div>
           <div><dt>Holgura</dt><dd>La diferencia entre la puja máxima y el precio actual del remate. Si es negativa, ya te pasaste.</dd></div>
           <div><dt>IVA</dt><dd>Impuesto al Valor Agregado, 19% en Chile. Acá aparece sobre la comisión del martillero.</dd></div>
@@ -1345,6 +1630,9 @@
           <div><dt>Transferencia</dt><dd>El trámite de poner el auto a tu nombre. Tiene un costo fijo y un impuesto porcentual.</dd></div>
           <div><dt>U</dt><dd>La utilidad mínima que exiges para que valga la pena entrar al negocio.</dd></div>
           <div><dt>Utilidad</dt><dd>La ganancia en pesos: lo que queda después de descontar absolutamente todo.</dd></div>
+          <div><dt>Utilidad de caja</dt><dd>La que cuadra con tu cuenta corriente: venta menos todo lo desembolsado.</dd></div>
+          <div><dt>Utilidad económica</dt><dd>La de caja menos el costo de haber tenido la plata inmovilizada. Es la única comparable con lo que proyectó el análisis.</dd></div>
+          <div><dt>Versión de parámetros</dt><dd>Una fotografía de todos los umbrales. Cada análisis guarda con cuál se calculó, para poder auditarlo después.</dd></div>
         </dl>
       </section>
 

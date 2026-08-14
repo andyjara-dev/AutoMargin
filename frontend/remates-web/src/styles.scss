@@ -1,18 +1,15 @@
 /* ============================================================
    AutoMargin — sistema de diseño
-   Paleta heredada de la identidad de andyjara.dev:
-     #2563EB → #0EA5E9 → #22D3EE  sobre  #0B0F19 / #F8FAFC
-   Los neutros siguen la escala slate, que es la familia de la
-   que provienen esos azules.
+   Paleta y tipografía del manual de marca de andyjara.dev.
    ============================================================ */
 
 :root {
   color-scheme: dark;
 
   /* ---- Marca ---- */
-  --brand-deep: #2563EB;   /* azul profundo, inicio del gradiente */
-  --brand: #0EA5E9;        /* azul de trabajo: enlaces, foco, acentos */
-  --brand-bright: #22D3EE; /* cian, cierre del gradiente */
+  --brand-deep: #2563EB;   /* azul profundo */
+  --brand: #0EA5E9;        /* azul eléctrico: enlaces, foco, acentos */
+  --brand-bright: #22D3EE; /* cian brillante */
 
   --brand-gradient: linear-gradient(120deg, var(--brand-deep) 0%, var(--brand) 55%, var(--brand-bright) 100%);
 
@@ -21,20 +18,22 @@
   --accent-line: rgba(14, 165, 233, .35);
   --on-accent: #04121F;    /* texto sobre fondos de marca */
 
-  /* ---- Superficies ---- */
+  /* ---- Superficies ----
+     El fondo es más oscuro que el gris oscuro de la paleta para que las tarjetas,
+     que sí lo usan, se despeguen del lienzo. */
   --bg: #0B0F19;
-  --surface: #0F172A;
-  --surface-2: #1B2740;
-  --border: #24334A;
+  --surface: #151C2B;
+  --surface-2: #1F2937;    /* gris oscuro del manual */
+  --border: #2A3646;
 
   /* ---- Texto ---- */
-  --text: #F8FAFC;
-  --text-dim: #94A3B8;
-  --text-faint: #64748B;
+  --text: #FFFFFF;         /* blanco */
+  --text-dim: #94A3B8;     /* gris neutro del manual */
+  --text-faint: #6B7A8C;
 
   /* ---- Semáforo ----
-     Deliberadamente cálidos y saturados para que nunca se confundan
-     con el cian de la marca: el semáforo es información crítica. */
+     Deliberadamente cálidos y saturados para que nunca se confundan con el cian
+     de la marca: el semáforo es información crítica. */
   --green: #22C55E;
   --green-text: #4ADE80;
   --green-soft: rgba(34, 197, 94, .10);
@@ -55,6 +54,7 @@
   --radius: 10px;
   --radius-sm: 6px;
 
+  --font: 'Poppins', 'Segoe UI', system-ui, -apple-system, sans-serif;
   --mono: 'Cascadia Mono', 'JetBrains Mono', Consolas, monospace;
 }
 
@@ -65,13 +65,17 @@ html, body {
   padding: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: var(--font);
   font-size: 14px;
+  font-weight: 400;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3 { margin: 0; font-weight: 600; }
+/* Poppins es más redonda y ancha que Segoe: los títulos necesitan menos peso visual
+   y un interletrado ligeramente cerrado para no verse infantiles. */
+h1, h2, h3 { margin: 0; font-weight: 600; letter-spacing: -.01em; }
+h1 { letter-spacing: -.02em; }
 
 table { border-collapse: collapse; width: 100%; }
 
@@ -81,7 +85,7 @@ input, select, button {
   color: inherit;
 }
 
-input[type='number'], input[type='text'], select {
+input[type='number'], input[type='text'], input[type='email'], input[type='password'], select {
   width: 100%;
   padding: 6px 8px;
   background: var(--surface-2);
@@ -96,13 +100,13 @@ input[type='number'], input[type='text'], select {
   }
 }
 
+/* Las cifras se alinean en columna: sin esto, comparar montos en una tabla obliga a leer dígito a dígito. */
 input[type='number'] { text-align: right; font-variant-numeric: tabular-nums; }
 
 input[type='checkbox'] { accent-color: var(--brand); }
 
 ::selection { background: var(--accent-line); color: var(--text); }
 
-/* Barras de scroll acordes al fondo oscuro */
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--surface-2) transparent;

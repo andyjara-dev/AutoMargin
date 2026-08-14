@@ -3,8 +3,8 @@
   align-items: center;
   gap: 28px;
   padding: 0 24px;
-  height: 54px;
-  background: rgba(15, 23, 42, .82);
+  height: 58px;
+  background: rgba(21, 28, 43, .85);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border);
   position: sticky;
@@ -12,22 +12,24 @@
   z-index: 20;
 }
 
-/* ---- Lockup de marca: AutoMargin by andyjara.dev ---- */
+/* ---- Lockup: isotipo + AutoMargin by andyjara.dev ---- */
 
 .brand {
   display: flex;
-  flex-direction: column;
-  gap: 1px;
+  align-items: center;
+  gap: 10px;
   text-decoration: none;
-  line-height: 1.15;
+  flex: none;
 }
 
-.brand__name {
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: .01em;
+.brand__text { display: flex; flex-direction: column; gap: 0; line-height: 1.1; }
 
-  /* El gradiente de la identidad, aplicado al texto */
+.brand__name { font-size: 16px; font-weight: 600; letter-spacing: -.01em; }
+
+.brand__auto { color: var(--text); }
+
+/* «Margin» lleva el gradiente: es la mitad que nombra la tesis del producto. */
+.brand__margin {
   background: var(--brand-gradient);
   background-clip: text;
   -webkit-background-clip: text;
@@ -35,8 +37,9 @@
 }
 
 .brand__by {
-  font-size: 10px;
-  letter-spacing: .04em;
+  font-size: 9.5px;
+  font-weight: 300;
+  letter-spacing: .05em;
   color: var(--text-faint);
 }
 
@@ -46,19 +49,21 @@
 
 .app-nav__links {
   display: flex;
-  gap: 4px;
+  gap: 2px;
   flex: 1;
 
   a {
-    padding: 6px 14px;
+    padding: 6px 13px;
     border-radius: var(--radius-sm);
     font-size: 13px;
+    font-weight: 400;
     color: var(--text-dim);
     text-decoration: none;
     transition: color .12s ease, background-color .12s ease;
+    white-space: nowrap;
 
     &:hover { color: var(--text); background: var(--surface-2); }
-    &.active { color: var(--brand-bright); background: var(--accent-soft); }
+    &.active { color: var(--brand-bright); background: var(--accent-soft); font-weight: 500; }
   }
 }
 
@@ -69,11 +74,12 @@
   align-items: center;
   gap: 10px;
   font-size: 12px;
+  flex: none;
 }
 
 .session__user {
   color: var(--text-dim);
-  max-width: 200px;
+  max-width: 180px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -83,7 +89,7 @@
   border: 1px solid var(--border);
   background: none;
   color: var(--text-dim);
-  padding: 4px 10px;
+  padding: 5px 11px;
   border-radius: var(--radius-sm);
   font-size: 12px;
   cursor: pointer;
@@ -94,7 +100,7 @@
 .session__in {
   color: var(--brand);
   text-decoration: none;
-  padding: 4px 10px;
+  padding: 5px 11px;
   border: 1px solid var(--accent-line);
   border-radius: var(--radius-sm);
 

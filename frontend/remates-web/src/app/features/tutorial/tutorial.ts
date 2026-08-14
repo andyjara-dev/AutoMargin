@@ -35,9 +35,15 @@ export class Tutorial {
     { group: 'Los conceptos', id: 'score', label: '10. El puntaje' },
     { group: 'Los conceptos', id: 'gates', label: '11. Los bloqueos' },
     { group: 'Los conceptos', id: 'semaforo', label: '12. El semáforo' },
+    { group: 'Los conceptos', id: 'dos-utilidades', label: '13. Las dos utilidades' },
+
+    { group: 'Las pantallas', id: 'ciclo', label: 'El ciclo de un vehículo' },
+    { group: 'Las pantallas', id: 'leer-pantalla', label: 'Analizador' },
+    { group: 'Las pantallas', id: 'pantalla-estado', label: 'Estado del negocio' },
+    { group: 'Las pantallas', id: 'pantalla-vehiculos', label: 'Vehículos y su ficha' },
+    { group: 'Las pantallas', id: 'pantalla-parametros', label: 'Parámetros' },
 
     { group: 'En la práctica', id: 'ejemplo', label: 'Ejemplo completo con números' },
-    { group: 'En la práctica', id: 'leer-pantalla', label: 'Cómo leer la pantalla' },
     { group: 'En la práctica', id: 'errores', label: 'Errores comunes' },
     { group: 'En la práctica', id: 'faq', label: 'Preguntas frecuentes' },
 
