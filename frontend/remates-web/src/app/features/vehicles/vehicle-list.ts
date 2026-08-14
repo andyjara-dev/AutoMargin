@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, debounceTime, of, startWith, switchMap, tap } from 'rxjs';
 
@@ -13,7 +14,7 @@ import { VehiclesService } from '../../core/services/vehicles.service';
 
 @Component({
   selector: 'app-vehicle-list',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './vehicle-list.html',
   styleUrl: './vehicle-list.scss'
 })

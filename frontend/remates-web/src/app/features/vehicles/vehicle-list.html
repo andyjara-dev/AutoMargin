@@ -51,7 +51,7 @@
         <tbody>
           @for (v of items(); track v.id) {
             <tr>
-              <td class="strong">{{ v.label }}</td>
+              <td class="strong"><a [routerLink]="['/vehiculos', v.id]">{{ v.label }}</a></td>
               <td>{{ statusLabels[v.status] }}</td>
               <td class="right">{{ num(v.mileageKm) }}</td>
               <td class="right" [class.warn]="v.comparableCount < 3">{{ v.comparableCount }}</td>

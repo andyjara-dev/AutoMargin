@@ -1,0 +1,266 @@
+<div class="detail">
+  @if (financials(); as f) {
+    <header class="head">
+      <div>
+        <a routerLink="/vehiculos" class="back">← Vehículos</a>
+        <h1>{{ f.label }}</h1>
+        <p class="subtitle">
+          {{ statusLabels[f.status] }}
+          @if (f.purchaseDate) {
+            · comprado hace {{ f.performance.daysInInventory }} días
+          }
+        </p>
+      </div>
+
+      @if (!isClosed()) {
+        <span class="pill pill--open">Cifras provisionales</span>
+      } @else {
+        <span class="pill pill--closed">Operación cerrada</span>
+      }
+    </header>
+
+    @if (error()) {
+      <div class="alert">{{ error() }}</div>
+    }
+
+    <!-- ---------- Resultado ---------- -->
+    <section class="card">
+      <h2>Resultado</h2>
+      <div class="kpis">
+        <div class="kpi">
+          <span class="kpi__label">Capital desembolsado</span>
+          <span class="kpi__value">{{ clp(f.performance.totalCashInvested) }}</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi__label">Utilidad de caja</span>
+          <span class="kpi__value" [class.negative]="f.performance.profitCash < 0">
+            {{ clp(f.performance.profitCash) }}
+          </span>
+        </div>
+        <div class="kpi kpi--highlight">
+          <span class="kpi__label">Utilidad económica</span>
+          <span class="kpi__value" [class.negative]="f.performance.profitEconomic < 0">
+            {{ clp(f.performance.profitEconomic) }}
+          </span>
+        </div>
+        <div class="kpi">
+          <span class="kpi__label">Costo del capital</span>
+          <span class="kpi__value">{{ clp(f.performance.capitalCost) }}</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi__label">ROI económico</span>
+          <span class="kpi__value">{{ pct(f.performance.roiEconomic) }}</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi__label">ROI anualizado</span>
+          <span class="kpi__value">
+            {{ isClosed() ? annualizedPct(f.performance.roiAnnualized) : '—' }}
+          </span>
+        </div>
+      </div>
+
+      <p class="hint">
+        La <strong>utilidad de caja</strong> es lo que cuadra con la cuenta corriente. La
+        <strong>económica</strong> descuenta además el capital inmovilizado durante los
+        {{ f.performance.daysInInventory }} días, y es la única comparable con lo que proyectó
+        el análisis.
+      </p>
+    </section>
+
+    <!-- ---------- Reparación ---------- -->
+    @if (f.repair.budgeted > 0 || f.repair.actual > 0) {
+    <section class="card">
+      <h2>Reparación: presupuesto contra real</h2>
+      <div class="repair" [class.repair--over]="f.repair.overBudget">
+        <div>
+          <span class="repair__label">Presupuestado</span>
+          <span class="repair__value">{{ clp(f.repair.budgeted) }}</span>
+        </div>
+        <div>
+          <span class="repair__label">Gastado</span>
+          <span class="repair__value">{{ clp(f.repair.actual) }}</span>
+        </div>
+        <div>
+          <span class="repair__label">Desviación</span>
+          <span class="repair__value" [class]="varianceTone(f.repair.variance)">
+            {{ clp(f.repair.variance) }}
+            @if (f.repair.variancePct != null) {
+              <small>({{ pct(f.repair.variancePct) }})</small>
+            }
+          </span>
+        </div>
+      </div>
+      <p class="hint">
+        Agrupa reparación, repuestos y mano de obra, porque el análisis los estima como una sola
+        cifra. Compararlos por separado haría creer que va bajo presupuesto cuando no lo está.
+      </p>
+    </section>
+    }
+
+    <!-- ---------- Gastos ---------- -->
+    <section class="card">
+      <h2>Gastos por categoría</h2>
+      <table class="readout">
+        <thead>
+          <tr><th>Categoría</th><th class="right">Real</th><th class="right">Presupuesto</th><th class="right">Desviación</th></tr>
+        </thead>
+        <tbody>
+          @for (c of f.expensesByCategory; track c.category) {
+            <tr>
+              <td>{{ categoryLabels[c.category] }}</td>
+              <td class="right">{{ clp(c.actual) }}</td>
+              <td class="right">{{ c.budgeted != null ? clp(c.budgeted) : '—' }}</td>
+              <td class="right" [class]="varianceTone(c.variance)">
+                {{ c.variance != null ? clp(c.variance) : '—' }}
+              </td>
+            </tr>
+          }
+          <tr class="readout__total">
+            <td>Total</td>
+            <td class="right">{{ clp(f.totalExpenses) }}</td>
+            <!-- Sin análisis previo no hay presupuesto contra el cual desviarse. -->
+            <td class="right">{{ f.totalBudgeted > 0 ? clp(f.totalBudgeted) : '—' }}</td>
+            <td class="right" [class]="varianceTone(f.totalBudgeted > 0 ? f.totalExpenses - f.totalBudgeted : 0)">
+              {{ f.totalBudgeted > 0 ? clp(f.totalExpenses - f.totalBudgeted) : '—' }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="hint">
+        Un guion en el presupuesto significa que el análisis no estima esa categoría por separado,
+        no que se haya gastado de más.
+      </p>
+    </section>
+
+    <!-- ---------- Registrar gasto ---------- -->
+    @if (!isClosed()) {
+      <section class="card">
+        <h2>Registrar gasto</h2>
+        <form class="expense-form" [formGroup]="expenseForm" (ngSubmit)="addExpense()">
+          <label>Categoría
+            <select formControlName="category">
+              @for (c of categories; track c[0]) {
+                <option [value]="c[0]">{{ c[1] }}</option>
+              }
+            </select>
+          </label>
+          <label>Monto
+            <input type="number" formControlName="amount" step="10000" />
+          </label>
+          <label>Detalle
+            <input type="text" formControlName="description" />
+          </label>
+          <label>Proveedor
+            <input type="text" formControlName="supplier" />
+          </label>
+          <button type="submit" class="btn-primary">Agregar</button>
+        </form>
+      </section>
+    }
+
+    <!-- ---------- Detalle de gastos ---------- -->
+    @if (expenses().length) {
+      <section class="card">
+        <h2>Detalle</h2>
+        <div class="table-scroll">
+          <table class="readout readout--grid">
+            <thead>
+              <tr><th>Categoría</th><th>Detalle</th><th>Proveedor</th><th class="right">Monto</th><th></th></tr>
+            </thead>
+            <tbody>
+              @for (e of expenses(); track e.id) {
+                <tr>
+                  <td>{{ categoryLabels[e.category] }}</td>
+                  <td>{{ e.description || '—' }}</td>
+                  <td>{{ e.supplier || '—' }}</td>
+                  <td class="right">{{ clp(e.amount) }}</td>
+                  <td>
+                    @if (!isClosed()) {
+                      <button type="button" class="btn-icon" (click)="removeExpense(e.id)">×</button>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+
+    <!-- ---------- Predicción contra realidad ---------- -->
+    @if (f.comparison; as c) {
+      <section class="card">
+        <h2>Qué tan bien acertó el análisis</h2>
+        <table class="readout readout--grid">
+          <thead>
+            <tr><th></th><th class="right">Proyectado</th><th class="right">Real</th><th class="right">Error</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Precio de venta</td>
+              <td class="right">{{ clp(c.predictedSaleValue) }}</td>
+              <td class="right">{{ clp(c.actualSaleValue) }}</td>
+              <td class="right" [class]="varianceTone(-c.saleValueErrorPct)">{{ pct(c.saleValueErrorPct) }}</td>
+            </tr>
+            <tr>
+              <td>Reparación</td>
+              <td class="right">{{ clp(c.predictedRepairCost) }}</td>
+              <td class="right">{{ clp(c.actualRepairCost) }}</td>
+              <td class="right" [class]="varianceTone(c.repairCostErrorPct)">{{ pct(c.repairCostErrorPct) }}</td>
+            </tr>
+            <tr>
+              <td>Días de venta</td>
+              <td class="right">{{ c.predictedDays }}</td>
+              <td class="right">{{ c.actualDays }}</td>
+              <td class="right" [class]="varianceTone(c.daysErrorPct)">{{ pct(c.daysErrorPct) }}</td>
+            </tr>
+            <tr class="readout__total">
+              <td>Utilidad</td>
+              <td class="right">{{ clp(c.predictedProfit) }}</td>
+              <td class="right">{{ clp(c.actualProfit) }}</td>
+              <td class="right" [class]="varianceTone(-c.profitErrorPct)">{{ pct(c.profitErrorPct) }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="hint">
+          En reparación y días, un error <strong>positivo</strong> significa que costó más o tardó
+          más de lo estimado. Estos registros son la materia prima del aprendizaje: con suficientes
+          operaciones cerradas, revelan qué se subestima de forma sistemática.
+        </p>
+      </section>
+    }
+
+    <!-- ---------- Registrar venta ---------- -->
+    @if (!isClosed() && f.purchaseDate) {
+      <section class="card card--sale">
+        <h2>Registrar venta</h2>
+        @if (saleError()) {
+          <div class="alert">{{ saleError() }}</div>
+        }
+        <form class="sale-form" [formGroup]="saleForm" (ngSubmit)="registerSale()">
+          <label>Precio de venta
+            <input type="number" formControlName="salePrice" step="100000" />
+          </label>
+          <label>Costos de venta
+            <input type="number" formControlName="saleCosts" step="10000" />
+          </label>
+          <label>Comprador
+            <input type="text" formControlName="buyerName" />
+          </label>
+          <label>Forma de pago
+            <input type="text" formControlName="paymentMethod" />
+          </label>
+          <button type="submit" class="btn-primary">Cerrar la operación</button>
+        </form>
+        <p class="hint">
+          Al registrar la venta se congela el resultado real y se guarda la comparación contra lo
+          que proyectó el análisis. No se puede deshacer desde la pantalla.
+        </p>
+      </section>
+    }
+  } @else if (error()) {
+    <div class="alert">{{ error() }}</div>
+  } @else {
+    <p class="loading">Cargando…</p>
+  }
+</div>

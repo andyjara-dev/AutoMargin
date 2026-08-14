@@ -28,6 +28,13 @@ export const routes: Routes = [
       import('./features/vehicles/vehicle-list').then((m) => m.VehicleList),
     title: 'Vehículos · AutoMargin'
   },
+  {
+    path: 'vehiculos/:id',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/vehicles/vehicle-detail').then((m) => m.VehicleDetail),
+    title: 'Ficha del vehículo · AutoMargin'
+  },
   { path: '', pathMatch: 'full', redirectTo: 'analizador' },
   { path: '**', redirectTo: 'analizador' }
 ];
