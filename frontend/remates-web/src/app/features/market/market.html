@@ -1,0 +1,234 @@
+<div class="market">
+  <header class="head">
+    <div>
+      <h1>Comparables de mercado</h1>
+      <p class="subtitle">
+        Reúne avisos de vehículos parecidos al que quieres comprar. De ellos sale el valor de
+        mercado, y de ahí la puja máxima. Con menos de tres comparables el análisis se bloquea.
+      </p>
+    </div>
+    @if (searching()) {
+      <span class="pill">Buscando…</span>
+    }
+  </header>
+
+  @if (targetVehicle(); as v) {
+    <p class="target">
+      Buscando comparables para
+      <a [routerLink]="['/vehiculos', v.id]"><strong>{{ v.label }}</strong></a>.
+      Tiene {{ v.comparableCount }} cargados;
+      @if (v.comparableCount < 3) {
+        <span class="target__warn">le faltan {{ 3 - v.comparableCount }} para que el análisis se desbloquee.</span>
+      } @else {
+        <span>agregar más estrecha el rango.</span>
+      }
+    </p>
+  }
+
+  <div class="columns">
+    <section class="panel">
+      <h2>Buscar en portales</h2>
+      <p class="hint">
+        Consulta las fuentes configuradas. Se pide poco y con pausa entre peticiones: la idea es
+        consultar los sitios, no rastrearlos.
+      </p>
+
+      <form [formGroup]="searchForm" (ngSubmit)="search()" class="form">
+        <label>
+          <span>Marca</span>
+          <input type="text" formControlName="make" placeholder="Toyota" />
+        </label>
+        <label>
+          <span>Modelo</span>
+          <input type="text" formControlName="model" placeholder="Yaris" />
+        </label>
+        <label>
+          <span>Año</span>
+          <input type="number" formControlName="year" placeholder="2018" />
+        </label>
+        <label>
+          <span>Tolerancia de años</span>
+          <input type="number" formControlName="yearTolerance" min="0" max="5" />
+        </label>
+        <label>
+          <span>Región</span>
+          <input type="text" formControlName="region" placeholder="Metropolitana" />
+        </label>
+        <label>
+          <span>Máximo de avisos</span>
+          <input type="number" formControlName="limit" min="1" max="50" />
+        </label>
+
+        <button type="submit" class="btn-primary" [disabled]="searching()">Buscar</button>
+      </form>
+
+      @if (sources().length) {
+        <ul class="sources">
+          @for (s of sources(); track s.name) {
+            <li [class.off]="!s.configured" [class.bad]="s.problem">
+              <strong>{{ s.name }}</strong>
+              @if (!s.configured) {
+                <span>no configurada</span>
+              } @else if (s.problem) {
+                <span>{{ s.problem }}</span>
+              } @else {
+                <span>{{ s.results }} avisos</span>
+              }
+            </li>
+          }
+        </ul>
+      }
+
+      @if (fromCache()) {
+        <p class="hint muted">Resultados de la última consulta guardada, para no repetir la petición.</p>
+      }
+    </section>
+
+    <section class="panel">
+      <h2>Pegar un aviso</h2>
+      <p class="hint">
+        Funciona con cualquier portal, incluidos los que no permiten lectura automatizada. Copia el
+        texto del aviso que estás mirando y el sistema extrae precio, año y kilometraje.
+      </p>
+
+      <form [formGroup]="pasteForm" (ngSubmit)="parse()" class="paste">
+        <textarea
+          formControlName="text"
+          rows="6"
+          placeholder="Toyota Yaris Sport 2018, 92.000 km, automático, bencina, Región Metropolitana. $ 9.800.000"
+        ></textarea>
+        <button type="submit" class="btn-primary">Reconocer datos</button>
+      </form>
+
+      @if (parseError()) {
+        <div class="alert">{{ parseError() }}</div>
+      }
+
+      @if (parsed(); as p) {
+        <div class="parsed">
+          <dl>
+            <div><dt>Precio</dt><dd>{{ clp(p.price) }}</dd></div>
+            <div><dt>Año</dt><dd>{{ p.year ?? '—' }}</dd></div>
+            <div><dt>Kilometraje</dt><dd>{{ num(p.mileageKm) }}</dd></div>
+            <div><dt>Marca</dt><dd>{{ p.make ?? '—' }}</dd></div>
+            <div><dt>Transmisión</dt><dd>{{ p.transmission ?? '—' }}</dd></div>
+            <div><dt>Región</dt><dd>{{ p.region ?? '—' }}</dd></div>
+          </dl>
+
+          @if (p.missing.length) {
+            <p class="hint warn">No se reconoció: {{ p.missing.join(', ') }}.</p>
+          }
+
+          @if (p.isUsable) {
+            <button type="button" class="btn-ghost" (click)="acceptParsed()">
+              Agregar a la selección
+            </button>
+          } @else {
+            <p class="hint warn">
+              Sin precio y año no sirve como comparable. Revisa que hayas pegado el aviso completo.
+            </p>
+          }
+        </div>
+      }
+    </section>
+  </div>
+
+  @if (error()) {
+    <div class="alert">{{ error() }}</div>
+  }
+
+  @if (imported()) {
+    <div class="ok">{{ imported() }}</div>
+  }
+
+  @if (candidates().length) {
+    <section class="results">
+      <header class="results__head">
+        <h2>{{ candidates().length }} avisos · {{ selected().length }} seleccionados</h2>
+        <div class="results__actions">
+          <button type="button" class="btn-ghost" (click)="toggleAll(true)">Seleccionar todos</button>
+          <button type="button" class="btn-ghost" (click)="toggleAll(false)">Ninguno</button>
+        </div>
+      </header>
+
+      @if (selectedMedian(); as median) {
+        <p class="hint">
+          Mediana de lo seleccionado: <strong>{{ clp(median) }}</strong>. Es un precio de lista, no
+          de transacción: el sistema le descuenta la brecha de negociación al valorizar.
+        </p>
+      }
+
+      <div class="table-scroll">
+        <table class="grid">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Aviso</th>
+              <th>Fuente</th>
+              <th class="right">Año</th>
+              <th class="right">Km</th>
+              <th class="right">Precio</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (c of candidates(); track $index) {
+              <tr [class.picked]="c.selected">
+                <td>
+                  <input
+                    type="checkbox"
+                    [checked]="c.selected"
+                    (change)="toggle($index)"
+                    [attr.aria-label]="'Seleccionar aviso de ' + c.result.year"
+                  />
+                </td>
+                <td class="title">
+                  @if (c.result.url) {
+                    <a [href]="c.result.url" target="_blank" rel="noopener noreferrer">
+                      {{ c.result.title || 'Ver aviso' }}
+                    </a>
+                  } @else {
+                    {{ c.result.title || 'Sin título' }}
+                  }
+                  @if (c.result.region) {
+                    <span class="muted"> · {{ c.result.region }}</span>
+                  }
+                </td>
+                <td><span class="tag">{{ c.result.source }}</span></td>
+                <td class="right">{{ c.result.year }}</td>
+                <td class="right">{{ num(c.result.mileageKm) }}</td>
+                <td class="right strong">{{ clp(c.result.listedPrice) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <form [formGroup]="targetForm" (ngSubmit)="importSelected()" class="import">
+        <label>
+          <span>Cargar como comparables de</span>
+          <select formControlName="vehicleId">
+            <option [ngValue]="null">Elegir vehículo…</option>
+            @for (v of vehicleOptions(); track v.id) {
+              <option [ngValue]="v.id">{{ v.label }} ({{ v.comparableCount }} cargados)</option>
+            }
+          </select>
+        </label>
+
+        <button
+          type="submit"
+          class="btn-primary"
+          [disabled]="importing() || selected().length === 0 || !targetForm.getRawValue().vehicleId"
+        >
+          Importar {{ selected().length }} seleccionados
+        </button>
+      </form>
+
+      @if (vehicleOptions().length === 0) {
+        <p class="hint warn">
+          No hay vehículos registrados todavía. Crea uno en
+          <a routerLink="/vehiculos">Vehículos</a> para poder cargarle comparables.
+        </p>
+      }
+    </section>
+  }
+</div>

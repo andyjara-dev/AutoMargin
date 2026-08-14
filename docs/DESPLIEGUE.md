@@ -77,6 +77,36 @@ chmod 600 .env
 > La contraseña del administrador también se usa solo la **primera vez**, cuando se crea la
 > cuenta. Cambiarla después en el `.env` no tiene efecto: el sembrado no toca un usuario existente.
 
+## 3b. Fuentes de mercado (opcional)
+
+La pantalla **Mercado** busca avisos comparables en portales de venta de autos. Todo lo de esta
+sección es opcional: sin configurar nada, la pantalla funciona igual y la búsqueda informa que
+las fuentes no están configuradas, en vez de mostrar cero resultados sin explicación. El pegado
+manual de avisos no depende de ninguna credencial.
+
+| Fuente | Cómo se integra |
+|---|---|
+| **MercadoLibre** | API oficial. Registrar una aplicación en [developers.mercadolibre.cl](https://developers.mercadolibre.cl/) y cargar `ML_CLIENT_ID` y `ML_CLIENT_SECRET`. Es la vía estable. |
+| **Yapo** | Lectura del HTML de su búsqueda pública, que su `robots.txt` permite. Se activa con `YAPO_ENABLED=true`. Frágil: un rediseño del sitio la degrada. |
+| **Chileautos** | No se integra. Su `robots.txt` prohíbe la lectura automatizada de las rutas necesarias, y el sistema no las pide. Para esos avisos se usa el pegado manual. |
+
+Las consultas salen con un agente que se identifica, con un mínimo de segundos entre peticiones
+a un mismo sitio (`MARKET_MIN_SECONDS`, por defecto 3) y con un tope bajo de resultados. Bajar
+ese intervalo es pedir un bloqueo.
+
+```bash
+# Editar .env y dejar, por ejemplo:
+#   ML_CLIENT_ID=1234567890123456
+#   ML_CLIENT_SECRET=...
+#   YAPO_ENABLED=false
+```
+
+Los cambios se aplican recreando el contenedor, no reiniciándolo:
+
+```bash
+docker compose -f docker-compose.prod.yml up -d api
+```
+
 ## 4. Levantar
 
 ```bash

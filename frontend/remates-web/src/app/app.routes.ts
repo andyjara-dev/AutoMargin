@@ -43,6 +43,12 @@ export const routes: Routes = [
     title: 'Ficha del vehículo · AutoMargin'
   },
   {
+    path: 'mercado',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/market/market').then((m) => m.Market),
+    title: 'Comparables de mercado · AutoMargin'
+  },
+  {
     path: 'parametros',
     canActivate: [authGuard],
     loadComponent: () => import('./features/parameters/parameters').then((m) => m.Parameters),

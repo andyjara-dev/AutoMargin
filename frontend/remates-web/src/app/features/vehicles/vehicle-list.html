@@ -54,7 +54,15 @@
               <td class="strong"><a [routerLink]="['/vehiculos', v.id]">{{ v.label }}</a></td>
               <td>{{ statusLabels[v.status] }}</td>
               <td class="right">{{ num(v.mileageKm) }}</td>
-              <td class="right" [class.warn]="v.comparableCount < 3">{{ v.comparableCount }}</td>
+              <td class="right" [class.warn]="v.comparableCount < 3">
+                <a
+                  [routerLink]="['/mercado']"
+                  [queryParams]="{ vehiculo: v.id }"
+                  [title]="v.comparableCount < 3
+                    ? 'Faltan comparables: con menos de tres el análisis se bloquea. Buscar más.'
+                    : 'Buscar más comparables'"
+                >{{ v.comparableCount }}</a>
+              </td>
               <td class="right">{{ v.damageCount }}</td>
               <td class="right">{{ v.lastMaxBid != null ? clp(v.lastMaxBid) : '—' }}</td>
               <td class="right">{{ v.lastScore != null ? v.lastScore : '—' }}</td>

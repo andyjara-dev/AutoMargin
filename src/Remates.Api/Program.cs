@@ -112,6 +112,7 @@ builder.Services.AddScoped<VehicleAnalysisService>();
 builder.Services.AddScoped<InventoryService>();
 builder.Services.AddScoped<DashboardService>();
 builder.Services.AddScoped<DemoDataSeeder>();
+builder.Services.AddScoped<MarketSearchService>();
 
 builder.Services.AddProblemDetails(options =>
 {

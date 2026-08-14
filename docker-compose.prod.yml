@@ -45,6 +45,12 @@ services:
       Seed__AdminPassword: ${ADMIN_PASSWORD:?Falta ADMIN_PASSWORD en el archivo .env}
       # El frontend viaja en el mismo origen, así que no hay peticiones entre dominios.
       Cors__AllowedOrigins__0: ${PUBLIC_URL:-https://automargin.andyjara.dev}
+      # Fuentes de mercado. Todas opcionales: sin credenciales la búsqueda informa que la
+      # fuente no está configurada y el pegado manual sigue funcionando igual.
+      MarketSources__MercadoLibre__ClientId: ${ML_CLIENT_ID:-}
+      MarketSources__MercadoLibre__ClientSecret: ${ML_CLIENT_SECRET:-}
+      MarketSources__Yapo__Enabled: ${YAPO_ENABLED:-false}
+      MarketSources__MinSecondsBetweenRequests: ${MARKET_MIN_SECONDS:-3}
     volumes:
       - api_logs:/app/logs
     depends_on:

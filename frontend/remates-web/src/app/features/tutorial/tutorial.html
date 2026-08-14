@@ -345,10 +345,11 @@
             durante el remate, lo que va ofreciendo la sala.
           </li>
           <li>
-            <strong>Busca autos parecidos publicados y cárgalos como comparables.</strong> Entra a
-            los portales de venta de autos, busca el mismo modelo, año similar y kilometraje similar,
-            y anota el precio, el año y los kilómetros de cada uno. Con menos de tres, el sistema
-            bloquea el análisis: con dos datos no se puede estimar nada.
+            <strong>Busca autos parecidos publicados y cárgalos como comparables.</strong> La
+            pantalla <a routerLink="/mercado">Mercado</a> hace este trabajo: busca en los portales
+            configurados y, para los avisos que encuentres por tu cuenta, te deja pegar el texto y
+            extrae solo el precio, el año y los kilómetros. Con menos de tres, el sistema bloquea
+            el análisis: con dos datos no se puede estimar nada.
           </li>
           <li>
             <strong>Anota los daños que ves.</strong> Cada uno con tres números: lo <em>menos</em>
@@ -1448,6 +1449,130 @@
       </section>
 
       <!-- ====================================================== -->
+      <section id="pantalla-mercado">
+        <h2>Comparables de mercado</h2>
+
+        <p>
+          Es la pantalla que reúne los avisos de vehículos parecidos al que quieres comprar. De
+          esos avisos sale el valor de mercado, y del valor de mercado sale la puja máxima. Dicho
+          de otra forma: <strong>todo el análisis se apoya en lo que cargues aquí</strong>. Con
+          menos de tres comparables el sistema se bloquea y no entrega recomendación.
+        </p>
+
+        <p>
+          Existe para ahorrarte el trabajo que hoy haces abriendo pestañas y anotando cifras a
+          mano. Ese trabajo no solo es lento: es donde se cometen los errores de dedo, y un dígito
+          de más en un precio mueve la puja máxima de verdad.
+        </p>
+
+        <h3>Los dos caminos</h3>
+
+        <ol class="steps">
+          <li>
+            <strong>Buscar en portales.</strong> Escribes marca, modelo y año, y el sistema
+            consulta las fuentes que estén configuradas. Cada fuente responde por separado y su
+            estado se muestra abajo: cuántos avisos trajo, o por qué no trajo ninguno. Si una
+            falla, las demás siguen funcionando.
+          </li>
+          <li>
+            <strong>Pegar un aviso.</strong> Copias el texto del aviso que estás mirando y el
+            sistema extrae precio, año, kilometraje, marca, transmisión y región. Funciona con
+            cualquier portal, incluidos los que no permiten lectura automatizada. Lo que no logre
+            reconocer te lo dice en la línea «No se reconoció».
+          </li>
+        </ol>
+
+        <div class="callout callout--key">
+          <strong>Nada entra solo al cálculo.</strong> Buscar y pegar solo llenan una lista de
+          candidatos. Tú marcas cuáles sirven y presionas <em>Importar</em>. La fuente propone;
+          la decisión de qué es comparable sigue siendo tuya.
+        </div>
+
+        <h3>Cómo elegir bien</h3>
+        <p>
+          Un comparable sirve cuando el auto es parecido <em>de verdad</em>. Antes de marcarlo,
+          mira tres cosas:
+        </p>
+
+        <table class="doc-table">
+          <thead>
+            <tr><th>Qué mirar</th><th>Por qué importa</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Año</td>
+              <td>El sistema ajusta por diferencia de año, pero el ajuste es una aproximación. Mientras más cerca del año objetivo, menos corrección hace falta.</td>
+            </tr>
+            <tr>
+              <td>Kilometraje</td>
+              <td>Igual que el año: se ajusta, pero un auto con el triple de kilómetros ya es otro producto.</td>
+            </tr>
+            <tr>
+              <td>Región</td>
+              <td>Un auto en Punta Arenas no compite con uno en Santiago, y traerlo cuesta. Si el aviso es de otra región, o lo descartas o asumes el traslado.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>
+          Mientras marcas avisos, la pantalla te muestra la <strong>mediana de lo
+          seleccionado</strong>. Es una referencia rápida para notar si estás mezclando cosas que
+          no se parecen: si la mediana salta mucho al marcar un aviso más, probablemente ese aviso
+          no corresponde.
+        </p>
+
+        <div class="callout">
+          <strong>Ojo: son precios de lista, no de venta.</strong> Lo que ves publicado es lo que
+          el vendedor <em>pide</em>, no lo que recibe. El sistema le resta la brecha de
+          negociación (un parámetro que tú configuras) antes de usarlo. Por eso no debes
+          descontarlo tú también: sería descontar dos veces y te dejaría comprando por debajo de
+          lo que el negocio permite.
+        </div>
+
+        <h3>Desde la lista de vehículos</h3>
+        <p>
+          En <a routerLink="/vehiculos">Vehículos</a>, la columna de comparables es un enlace.
+          Cuando aparece en amarillo significa que ese vehículo tiene menos de tres y su análisis
+          está bloqueado; al hacer clic llegas a esta pantalla con la búsqueda ya hecha con los
+          datos de ese vehículo y el destino de importación preseleccionado.
+        </p>
+
+        <h3>Sobre las fuentes automáticas</h3>
+        <p>
+          Las fuentes vienen apagadas y se encienden en la configuración del servidor. No todas
+          son iguales:
+        </p>
+
+        <table class="doc-table">
+          <thead>
+            <tr><th>Fuente</th><th>Cómo funciona</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>MercadoLibre</td>
+              <td>Tiene API oficial. Hay que registrar una aplicación y cargar sus credenciales. Es la vía más estable.</td>
+            </tr>
+            <tr>
+              <td>Yapo</td>
+              <td>Se lee su página pública de búsqueda, que su robots.txt permite. Es frágil: si el sitio cambia de diseño, trae menos resultados o ninguno.</td>
+            </tr>
+            <tr>
+              <td>Chileautos</td>
+              <td>No se integra. Su robots.txt prohíbe la lectura automatizada de las rutas necesarias, y el sistema no las pide. Para esos avisos, se usa el pegado.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>
+          Cuando una fuente no está configurada, la pantalla lo dice con todas sus letras en vez
+          de mostrar cero resultados sin explicación. Eso importa: «no hay avisos» y «no pregunté»
+          son cosas muy distintas, y confundirlas te haría creer que un modelo no se vende cuando
+          en realidad nadie miró.
+        </p>
+      </section>
+
+      <!-- ====================================================== -->
+
       <section id="pantalla-parametros">
         <h2>Parámetros</h2>
 

@@ -2,7 +2,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Remates.Domain.Market;
 using Remates.Infrastructure.Auth;
+using Remates.Infrastructure.MarketSources;
 using Remates.Infrastructure.Entities;
 using Remates.Infrastructure.Persistence;
 
@@ -57,6 +59,29 @@ public static class DependencyInjection
         services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<DbSeeder>();
+
+        services.AddRematesMarketSources(configuration);
+
+        return services;
+    }
+
+    /// <summary>
+    /// Fuentes de mercado. Cada una es un adaptador independiente: si una cambia o deja de
+    /// estar disponible, las demás siguen funcionando.
+    /// </summary>
+    private static IServiceCollection AddRematesMarketSources(
+        this IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<MarketSourceOptions>(configuration.GetSection(MarketSourceOptions.SectionName));
+
+        services.AddMemoryCache();
+        services.AddHttpClient();
+
+        // Compartido entre fuentes: el intervalo se cuenta por host, no por adaptador.
+        services.AddSingleton<HostRateLimiter>();
+
+        services.AddScoped<IMarketSource, MercadoLibreSource>();
+        services.AddScoped<IMarketSource, YapoSource>();
 
         return services;
     }

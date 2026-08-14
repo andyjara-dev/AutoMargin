@@ -41,6 +41,7 @@ export class Tutorial {
     { group: 'Las pantallas', id: 'leer-pantalla', label: 'Analizador' },
     { group: 'Las pantallas', id: 'pantalla-estado', label: 'Estado del negocio' },
     { group: 'Las pantallas', id: 'pantalla-vehiculos', label: 'Vehículos y su ficha' },
+    { group: 'Las pantallas', id: 'pantalla-mercado', label: 'Comparables de mercado' },
     { group: 'Las pantallas', id: 'pantalla-parametros', label: 'Parámetros' },
 
     { group: 'En la práctica', id: 'ejemplo', label: 'Ejemplo completo con números' },

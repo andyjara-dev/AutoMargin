@@ -87,6 +87,9 @@ table.grid {
   td.right, th.right { text-align: right; font-variant-numeric: tabular-nums; }
   td.warn { color: var(--yellow-text); }
 
+  td.right a { color: inherit; text-decoration: none; border-bottom: 1px dotted currentcolor; }
+  td.right a:hover { color: var(--brand); }
+
   tbody tr:hover td { background: rgba(148, 163, 184, .05); }
 }
 
