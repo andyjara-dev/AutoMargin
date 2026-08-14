@@ -277,6 +277,7 @@ docker compose -f docker-compose.prod.yml ps               # estado de salud
 | Sesión que se cierra sola | Cambió `JWT_SIGNING_KEY` entre despliegues: invalida todos los tokens emitidos. |
 | `password authentication failed` | Se cambió `POSTGRES_PASSWORD` después del primer arranque. La base conserva la original. |
 | El login responde 401 con las credenciales del `.env` | La cuenta no llegó a crearse. Ver abajo. |
+| Un cambio en el `.env` no surte efecto | Se usó `restart` en vez de `up -d`. Las variables se fijan al crear el contenedor. |
 | Una ruta inexistente devuelve 200 | Es correcto: Angular maneja el enrutado y cualquier ruta desconocida entrega el `index.html`. |
 | `bind: address already in use` | El `PUBLIC_PORT` lo usa otro contenedor. Comprobar con `ss -ltnp` o `docker ps` y elegir otro. |
 | NPM devuelve 502 | Si NPM corre en modo host, `Forward Hostname` debe ser `127.0.0.1`, no el nombre del contenedor. |
@@ -307,17 +308,24 @@ docker compose -f docker-compose.prod.yml exec api printenv Seed__AdminPassword
 
 ### Recrear la cuenta
 
-Corrige la contraseña en el `.env`, borra el usuario y reinicia. El sembrado lo vuelve a crear:
+Corrige la contraseña en el `.env` y **recrea** el contenedor:
+
+```bash
+docker compose -f docker-compose.prod.yml up -d api
+```
+
+> Tiene que ser `up -d`, **no `restart`**. Un reinicio arranca el mismo contenedor con las
+> variables que ya tenía: las del `.env` se fijan al crearlo, así que el cambio no se aplicaría
+> y el error se repetiría idéntico.
+
+Si la cuenta **sí llegó a crearse** antes con otra contraseña, hay que borrarla primero, porque
+el sembrado no toca un usuario existente:
 
 ```bash
 docker compose -f docker-compose.prod.yml exec -T postgres psql -U automargin automargin -c "delete from app_user;"
 ```
 
-```bash
-docker compose -f docker-compose.prod.yml restart api
-```
-
-Esto solo borra la cuenta de acceso. Los vehículos, análisis e historial no se tocan.
+Eso solo borra la cuenta de acceso. Los vehículos, análisis e historial no se tocan.
 
 ## Notas de seguridad
 
