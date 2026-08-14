@@ -42,8 +42,9 @@ public sealed class MercadoLibreSource(
 
             return _options.MercadoLibre.Enabled
                 ? "Faltan las credenciales. Definir MarketSources__MercadoLibre__ClientId y ClientSecret."
-                : "Desactivada. Su API ya no permite buscar avisos de terceros, así que encenderla " +
-                  "solo agregaría un error permanente. Para este portal, usa el pegado de avisos.";
+                : "Desactivada. Su API solo permite buscar publicaciones de un vendedor concreto, " +
+                  "no del marketplace completo, así que encenderla solo agregaría un error " +
+                  "permanente. Para este portal, usa el pegado de avisos.";
         }
     }
 
@@ -143,12 +144,13 @@ public sealed class MercadoLibreSource(
     /// </summary>
     private static string Explain(System.Net.HttpStatusCode status, string? detail) => (int)status switch
     {
-        // MercadoLibre dejó de abrir la búsqueda de avisos de terceros a las aplicaciones.
-        // No hay permiso que activar en el panel de desarrollador: es su decisión, no un error
-        // de configuración, y conviene decirlo para no mandar a nadie a buscar una casilla.
-        403 => "MercadoLibre no habilita la búsqueda de avisos de terceros para aplicaciones. " +
-               "No es un problema de tus credenciales ni de los permisos que marcaste. " +
-               "Para avisos de este portal, usa el pegado de avisos.",
+        // La búsqueda abierta del marketplace no existe en la API. Su documentación solo ofrece
+        // /sites/{site}/search acotado a un vendedor, con seller_id o nickname. No hay permiso
+        // que activar en el panel de desarrollador, así que conviene decirlo para no mandar a
+        // nadie a buscar una casilla que no está.
+        403 => "La API de MercadoLibre solo permite buscar publicaciones de un vendedor concreto, " +
+               "no del marketplace completo. No es un problema de tus credenciales ni de los " +
+               "permisos que marcaste. Para avisos de este portal, usa el pegado de avisos.",
 
         401 => "Las credenciales fueron rechazadas. Revisa MarketSources__MercadoLibre__ClientId " +
                "y ClientSecret.",

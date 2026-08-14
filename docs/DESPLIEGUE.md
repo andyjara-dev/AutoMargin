@@ -86,13 +86,23 @@ manual de avisos no depende de ninguna credencial.
 
 | Fuente | Estado |
 |---|---|
-| **MercadoLibre** | **No disponible.** Su API responde `403 forbidden` a `/sites/{site}/search` con token de aplicación: la búsqueda de avisos de terceros dejó de otorgarse. No es configurable — ningún permiso del panel de desarrollador lo destraba. El adaptador se conserva apagado (`ML_ENABLED=false`) por si el acceso vuelve. |
+| **MercadoLibre** | **No sirve para comparables.** Su API no ofrece búsqueda abierta del marketplace: [Ítems y Búsquedas](https://developers.mercadolibre.cl/es_ar/items-y-busquedas) solo documenta `/sites/{site}/search` acotado a un vendedor (`seller_id` o `nickname`). Sin ese parámetro responde `403`. No es configurable. El adaptador se conserva apagado (`ML_ENABLED=false`) por si abren la búsqueda general. |
 | **Yapo** | Funciona. Lectura del HTML de su búsqueda pública, que su `robots.txt` permite. Se activa con `YAPO_ENABLED=true`. Frágil: un rediseño del sitio la degrada. |
 | **Chileautos** | No se integra. Su `robots.txt` prohíbe la lectura automatizada de las rutas necesarias, y el sistema no las pide. Para esos avisos se usa el pegado manual. |
 
 > Verificado el 14-08-2026 con credenciales válidas: el token se emite sin problema y la búsqueda
 > devuelve `{"message":"forbidden","error":"forbidden","status":403,"cause":[]}`. El `cause` vacío
 > es la negativa genérica; cuando falta un scope concreto, MercadoLibre lo nombra ahí.
+>
+> La guía de vehículos de MercadoLibre es enteramente para vendedores —publicar, paquetes, leads,
+> créditos preaprobados—, y su página «Localiza vehículos» trata de IDs de ubicación para publicar,
+> no de buscar. No hay un camino oficial para leer avisos de otros vendedores.
+>
+> Queda una vía teórica que **no conviene usar**: consultar vendedor por vendedor con
+> `/users/{user_id}/items/search` sobre un puñado de automotoras conocidas. Daría una muestra
+> sesgada hacia precios de automotora, que son más altos que los de particular. Eso inflaría el
+> valor de mercado y con él la puja máxima, que es justo el error que este sistema existe para
+> evitar. Es preferible no tener la fuente que tenerla sesgada.
 
 Las consultas salen con un agente que se identifica, con un mínimo de segundos entre peticiones
 a un mismo sitio (`MARKET_MIN_SECONDS`, por defecto 3) y con un tope bajo de resultados. Bajar
