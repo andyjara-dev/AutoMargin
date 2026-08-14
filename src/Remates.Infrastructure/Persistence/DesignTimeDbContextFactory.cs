@@ -11,6 +11,8 @@ public sealed class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<Rem
 {
     public RematesDbContext CreateDbContext(string[] args)
     {
+        // Para aplicar migraciones contra una base externa, exportar la cadena antes de ejecutar:
+        //   $env:ConnectionStrings__Postgres = "Host=...;Database=...;Username=...;Password=...;SSL Mode=Require"
         var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__Postgres")
             ?? "Host=localhost;Port=5432;Database=remates;Username=remates;Password=remates_dev_password";
 

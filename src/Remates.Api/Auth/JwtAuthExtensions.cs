@@ -17,8 +17,11 @@ public static class JwtAuthExtensions
         if (string.IsNullOrWhiteSpace(jwt.SigningKey) || jwt.SigningKey.Length < 32)
         {
             throw new InvalidOperationException(
-                "Jwt:SigningKey debe tener al menos 32 caracteres. En producción debe llegar por " +
-                "variable de entorno (Jwt__SigningKey), nunca versionada en appsettings.");
+                "Falta Jwt:SigningKey, o tiene menos de 32 caracteres. Nunca debe versionarse. " +
+                "En desarrollo se define con user-secrets:\n" +
+                "  dotnet user-secrets set \"Jwt:SigningKey\" \"<48+ caracteres aleatorios>\" --project src/Remates.Api\n" +
+                "En producción, por variable de entorno Jwt__SigningKey. " +
+                "Ver la sección de puesta en marcha del README.");
         }
 
         services

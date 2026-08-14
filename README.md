@@ -64,11 +64,40 @@ tool-calling sobre endpoints read-only. El LLM narra números que le entrega la 
 
 ## Cómo correrlo
 
+**0. Secretos** (una sola vez)
+
+Ningún secreto se versiona. Se definen con `dotnet user-secrets`, que los guarda fuera del
+repositorio, en el perfil del usuario.
+
+```bash
+dotnet user-secrets set "ConnectionStrings:Postgres" "Host=TU_HOST;Port=5432;Database=TU_BD;Username=TU_USUARIO;Password=TU_CLAVE;SSL Mode=Require;Trust Server Certificate=true" --project src/Remates.Api
+```
+
+```bash
+dotnet user-secrets set "Seed:AdminPassword" "TU_CLAVE_DE_ADMINISTRADOR" --project src/Remates.Api
+```
+
+La clave de firma JWT conviene generarla al azar, sin escribirla ni verla:
+
+```bash
+pwsh -c "dotnet user-secrets set 'Jwt:SigningKey' ([Convert]::ToBase64String((1..48 | %{ Get-Random -Max 256 }))) --project src/Remates.Api"
+```
+
+Si `Seed:AdminPassword` no está definida, la API arranca igual pero no crea el administrador y lo
+advierte en el log. Si falta `Jwt:SigningKey`, la API no arranca: firmar tokens con una clave
+conocida sería peor que no arrancar.
+
+En producción, las mismas claves se pasan por variables de entorno:
+`ConnectionStrings__Postgres`, `Jwt__SigningKey`, `Seed__AdminPassword`.
+
 **1. API** (puerto 5044, Swagger en `/swagger`)
 
 ```bash
 dotnet run --project "src/Remates.Api" --launch-profile http
 ```
+
+Al arrancar aplica las migraciones pendientes y siembra los datos base. Si la base no responde,
+arranca igual y solo quedan disponibles los endpoints que no la necesitan.
 
 **2. Frontend** (puerto 4200)
 
@@ -87,13 +116,26 @@ npm start --prefix frontend/remates-web
 dotnet test
 ```
 
-**4. Base de datos** (aún no la usa el código; queda lista para el Paso 2)
+**4. Base de datos**
+
+El sistema funciona con cualquier PostgreSQL 16: local, en contenedor o gestionado en la nube
+(Neon, Supabase, Railway, un VPS). Solo cambia la cadena de conexión del paso 0.
+
+Para levantarlo en contenedor, copiar `.env.example` a `.env` y:
 
 ```bash
-docker compose up -d
+docker compose up -d postgres
 ```
 
-Copiar `.env.example` a `.env` antes de levantar los contenedores. pgAdmin queda en `localhost:5050`.
+Con un proveedor gestionado casi siempre hace falta `SSL Mode=Require` en la cadena de conexión.
+Las migraciones se aplican solas al arrancar la API; para aplicarlas a mano:
+
+```bash
+dotnet ef database update --project src/Remates.Infrastructure
+```
+
+exportando antes `ConnectionStrings__Postgres`, ya que la herramienta de EF no lee los user-secrets
+de la API.
 
 ## Las fórmulas
 
