@@ -12,6 +12,9 @@
     @if (isAuthenticated()) {
       <a routerLink="/vehiculos" routerLinkActive="active">Vehículos</a>
     }
+    @if (isAuthenticated()) {
+      <a routerLink="/parametros" routerLinkActive="active">Parámetros</a>
+    }
     <a routerLink="/manual" routerLinkActive="active">Manual</a>
   </div>
 

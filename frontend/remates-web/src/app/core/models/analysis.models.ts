@@ -95,6 +95,10 @@ export interface AnalysisParameters {
   yearAdjustPct: number;
   maxComparableAdjustmentPct: number;
   minComparables: number;
+  maxDaysInInventory: number;
+  listedTooLongDays: number;
+  minMarginPct: number;
+  repairOverBudgetTolerancePct: number;
   pessimisticSaleFactor: number;
   pessimisticDaysFactor: number;
   optimisticDaysFactor: number;

@@ -1,0 +1,121 @@
+<div class="parameters">
+  <header class="head">
+    <div>
+      <h1>Parámetros</h1>
+      <p class="subtitle">
+        Gobiernan todos los cálculos del sistema. Los valores por defecto son un punto de partida
+        razonable para Chile, no una recomendación: ajústalos con tus números reales.
+      </p>
+    </div>
+    @if (current(); as c) {
+      <span class="pill">Activo: {{ c.name }}</span>
+    }
+  </header>
+
+  <div class="banner banner--key">
+    Guardar <strong>crea una versión nueva</strong> y la deja activa. Los análisis ya calculados
+    siguen apuntando a la versión con la que se decidieron, así que cambiar un umbral hoy no
+    altera retroactivamente una compra del mes pasado.
+  </div>
+
+  @if (error()) {
+    <div class="banner banner--error">{{ error() }}</div>
+  }
+  @if (saved()) {
+    <div class="banner banner--ok">{{ saved() }}</div>
+  }
+
+  @if (current()) {
+    @for (group of groups; track group.title) {
+      <section class="card">
+        <h2>{{ group.title }}</h2>
+        <p class="intro">{{ group.intro }}</p>
+
+        @if (group.fields.length) {
+          <div class="fields">
+            @for (f of group.fields; track f.key) {
+              <label class="field">
+                <span class="field__label">{{ f.label }}</span>
+                <span class="field__input">
+                  <input
+                    type="number"
+                    [value]="displayValue(f)"
+                    (input)="setValue(f, $event)"
+                    [step]="f.kind === 'rate' ? 0.1 : f.kind === 'money' ? 10000 : 1" />
+                  <span class="field__suffix">{{ suffix(f.kind) }}</span>
+                </span>
+                <span class="field__help">{{ f.help }}</span>
+              </label>
+            }
+          </div>
+        } @else {
+          <!-- Pesos del score -->
+          <div class="fields">
+            @for (f of weightFields; track f.key) {
+              <label class="field">
+                <span class="field__label">{{ f.label }}</span>
+                <span class="field__input">
+                  <input type="number" [value]="weightValue(f)" (input)="setWeight(f, $event)" step="1" />
+                  <span class="field__suffix">pts</span>
+                </span>
+              </label>
+            }
+          </div>
+          <p class="intro">Suman {{ weightTotal() }} puntos.</p>
+        }
+      </section>
+    }
+
+    <section class="card card--save">
+      <h2>Guardar como versión nueva</h2>
+      <form class="save-form" [formGroup]="form" (ngSubmit)="save()">
+        <label>Nombre
+          <input type="text" formControlName="name" placeholder="Ej: Más exigente en autos caros" />
+        </label>
+        <label>Motivo del cambio
+          <input type="text" formControlName="note" placeholder="Por qué se ajustó" />
+        </label>
+        <button type="submit" class="btn-primary" [disabled]="saving()">
+          {{ saving() ? 'Guardando…' : 'Guardar versión' }}
+        </button>
+        <button type="button" class="btn-ghost" (click)="restoreDefaults()">
+          Cargar valores de fábrica
+        </button>
+      </form>
+      <p class="intro">
+        Anotar el motivo importa: dentro de seis meses, al revisar por qué una compra se decidió
+        con otro criterio, esta nota es lo único que lo explica.
+      </p>
+    </section>
+
+    @if (history().length) {
+      <section class="card">
+        <h2>Historial de versiones</h2>
+        <div class="table-scroll">
+          <table class="grid">
+            <thead>
+              <tr><th>Versión</th><th>Desde</th><th>Motivo</th><th>Creada por</th><th></th></tr>
+            </thead>
+            <tbody>
+              @for (v of history(); track v.id) {
+                <tr>
+                  <td class="strong">{{ v.name }}</td>
+                  <td>{{ v.validFrom | date: 'dd-MM-yyyy HH:mm' }}</td>
+                  <td>{{ v.note || '—' }}</td>
+                  <td>{{ v.createdBy || '—' }}</td>
+                  <td>
+                    @if (v.isActive) {
+                      <span class="tag tag--active">activa</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+  } @else if (!error()) {
+    <p class="loading">Cargando…</p>
+  }
+</div>

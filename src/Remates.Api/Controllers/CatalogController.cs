@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Remates.Domain.Parameters;
-using Remates.Api.Services;
 using Remates.Infrastructure.Entities;
 using Remates.Infrastructure.Persistence;
 
@@ -11,7 +9,7 @@ namespace Remates.Api.Controllers;
 [ApiController]
 [Authorize]
 [Produces("application/json")]
-public sealed class CatalogController(RematesDbContext db, ParameterProvider parameters) : ControllerBase
+public sealed class CatalogController(RematesDbContext db) : ControllerBase
 {
     [HttpGet("api/catalog/makes")]
     [ProducesResponseType<IReadOnlyList<object>>(StatusCodes.Status200OK)]
@@ -56,14 +54,5 @@ public sealed class CatalogController(RematesDbContext db, ParameterProvider par
             .ToListAsync(ct);
 
         return Ok(baselines);
-    }
-
-    /// <summary>Parámetros activos con los que se calcula todo.</summary>
-    [HttpGet("api/parameters/active")]
-    [ProducesResponseType<AnalysisParameters>(StatusCodes.Status200OK)]
-    public async Task<ActionResult<AnalysisParameters>> ActiveParameters(CancellationToken ct)
-    {
-        var (set, values) = await parameters.GetActiveAsync(ct);
-        return Ok(new { set.Id, set.Name, set.ValidFrom, Parameters = values });
     }
 }

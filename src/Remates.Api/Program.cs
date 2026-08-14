@@ -1,15 +1,36 @@
 using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Mvc;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.OpenApi;
 using Remates.Api.Auth;
 using Remates.Api.Services;
 using Remates.Api.Startup;
+using Remates.Api.Validation;
 using Remates.Infrastructure;
 using Remates.Infrastructure.Persistence;
+using Serilog;
+using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
 
 const string AngularCorsPolicy = "angular-dev";
+
+// Logging estructurado: los eventos llevan sus datos como campos, no embebidos en el texto,
+// de modo que después se pueden filtrar y agregar sin analizar cadenas.
+builder.Host.UseSerilog((context, services, configuration) => configuration
+    .ReadFrom.Configuration(context.Configuration)
+    .ReadFrom.Services(services)
+    .Enrich.FromLogContext()
+    .MinimumLevel.Information()
+    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+    .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning)
+    .WriteTo.Console(outputTemplate:
+        "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
+    .WriteTo.File("logs/automargin-.log",
+        rollingInterval: RollingInterval.Day,
+        retainedFileCountLimit: 14,
+        outputTemplate:
+        "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}"));
 
 builder.Services
     .AddControllers()
@@ -19,6 +40,9 @@ builder.Services
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
         options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
     });
+
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<SimulateAnalysisValidator>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -73,12 +97,26 @@ builder.Services.AddScoped<ParameterProvider>();
 builder.Services.AddScoped<VehicleAnalysisService>();
 builder.Services.AddScoped<InventoryService>();
 builder.Services.AddScoped<DashboardService>();
+builder.Services.AddScoped<DemoDataSeeder>();
 
-builder.Services.AddProblemDetails();
+builder.Services.AddProblemDetails(options =>
+{
+    // Toda respuesta de error lleva el identificador de la petición, para poder cruzarla con el log.
+    options.CustomizeProblemDetails = context =>
+        context.ProblemDetails.Extensions["traceId"] = context.HttpContext.TraceIdentifier;
+});
 
 var app = builder.Build();
 
 app.UseExceptionHandler();
+app.UseStatusCodePages();
+
+// Una línea por petición con método, ruta, código y duración, en vez de varias por cada etapa.
+app.UseSerilogRequestLogging(options =>
+{
+    options.MessageTemplate =
+        "{RequestMethod} {RequestPath} respondió {StatusCode} en {Elapsed:0} ms";
+});
 
 if (app.Environment.IsDevelopment())
 {

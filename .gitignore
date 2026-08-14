@@ -7,6 +7,9 @@ obj/
 artifacts/
 TestResults/
 
+# Logs de Serilog
+logs/
+
 # Secretos y entorno
 .env
 appsettings.Development.local.json

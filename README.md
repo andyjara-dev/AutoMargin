@@ -26,10 +26,19 @@ end-to-end. Sin base de datos todavía (Paso 2).
 | 2 | PostgreSQL, EF Core, JWT + roles, CRUD de vehículos | ✅ |
 | 3 | Inventario, gastos reales, venta, rentabilidad real | ✅ |
 | 4 | Dashboard y alertas | ✅ |
-| 5 | Cierre del MVP (validación, logging, seeds de demo) | pendiente |
+| 5 | Cierre del MVP (parámetros, validación, logging, demo) | ✅ |
 
-Pantallas: `/dashboard` (estado del negocio), `/analizador`, `/vehiculos`, `/vehiculos/:id`
-(ficha con gastos y venta) y `/manual`.
+**MVP completo.** Pantallas: `/dashboard` (estado del negocio), `/analizador`, `/vehiculos`,
+`/vehiculos/:id` (ficha con gastos y venta), `/parametros` y `/manual`.
+
+Para poblar el sistema con un historial ficticio y poder recorrerlo, con sesión de administrador:
+
+```bash
+curl -X POST http://localhost:5044/api/dev/seed-demo -H "Authorization: Bearer TU_TOKEN"
+```
+
+Solo funciona en desarrollo: mezclar datos ficticios con operaciones reales haría irreconocibles
+las cifras del negocio.
 
 ## Arquitectura
 
