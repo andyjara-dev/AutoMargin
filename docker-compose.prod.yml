@@ -59,7 +59,7 @@ services:
     restart: unless-stopped
     ports:
       # Solo en la interfaz local: nada de esto se expone a internet directamente.
-      - "127.0.0.1:${PUBLIC_PORT:-8080}:80"
+      - "127.0.0.1:${PUBLIC_PORT:-8090}:80"
     depends_on:
       api:
         condition: service_healthy

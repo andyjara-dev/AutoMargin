@@ -92,31 +92,50 @@ curl -s http://127.0.0.1:8080/health                  # {"status":"ok","database
 
 ## 5a. Con Nginx Proxy Manager
 
-Si usas NPM, no hace falta publicar ningún puerto en el host: NPM también corre en Docker y puede
-hablar con el contenedor directamente por la red interna. El tráfico nunca sale de Docker.
-
-Averigua el nombre de la red de NPM:
+Primero hay que saber **cómo está conectado NPM**, porque de eso depende cómo lo alcanza:
 
 ```bash
-docker network ls | grep -i proxy
+docker inspect nginx-proxy-manager --format '{{.HostConfig.NetworkMode}}'
 ```
 
-Añádelo al `.env` y levanta con el complemento:
+### Si responde `host`
+
+NPM comparte la red del servidor y no resuelve nombres de contenedor. Se le apunta al puerto
+local, que es lo que ya publica el compose base.
+
+Comprueba antes que el puerto esté libre:
 
 ```bash
-echo "NPM_NETWORK=nginxproxymanager_default" >> .env    # ajustar al nombre real
+ss -ltnp | grep 8090       # sin salida significa que está libre
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+En NPM → **Proxy Hosts** → **Add Proxy Host**, con `Forward Hostname` = `127.0.0.1` y
+`Forward Port` = el valor de `PUBLIC_PORT`.
+
+### Si responde `bridge` o el nombre de una red
+
+NPM vive en una red de Docker y puede hablar con el contenedor directamente, sin pasar por el
+host. Es preferible: el tráfico no sale de Docker y no hace falta exponer ningún puerto.
+
+```bash
+docker inspect nginx-proxy-manager --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{end}}'
+echo "NPM_NETWORK=<la red que devolvió>" >> .env
 
 docker compose -f docker-compose.prod.yml -f docker-compose.npm.yml up -d --build
 ```
 
-Luego, en la interfaz de NPM → **Proxy Hosts** → **Add Proxy Host**:
+En NPM, `Forward Hostname` = `automargin-web` y `Forward Port` = `80`.
+
+> Debe ser `automargin-web`, no `web`: es un alias definido a propósito, porque «web» podría
+> colisionar con otro stack en la misma red.
+
+### El resto de la configuración, en ambos casos
 
 | Pestaña | Campo | Valor |
 |---|---|---|
 | Details | Domain Names | `automargin.andyjara.dev` |
 | Details | Scheme | `http` |
-| Details | Forward Hostname / IP | `automargin-web` |
-| Details | Forward Port | `80` |
 | Details | Block Common Exploits | activado |
 | Details | Websockets Support | desactivado (no se usan) |
 | SSL | SSL Certificate | Request a new SSL Certificate |
@@ -132,12 +151,7 @@ client_max_body_size 20m;
 NPM ya envía `X-Forwarded-Proto`, `X-Forwarded-For` y `Host`, que es justo lo que la API necesita
 para saber que el cliente llegó por HTTPS. No hay que configurar nada más.
 
-> **`Forward Hostname` debe ser `automargin-web`**, no `web` ni `localhost`. Es un alias de red
-> definido a propósito: usar solo «web» arriesga que colisione con otro stack en la misma red, y
-> `localhost` apuntaría al propio contenedor de NPM.
-
-Con NPM puedes saltarte los pasos 5 y 6. El puerto en `127.0.0.1` se mantiene publicado por si
-necesitas diagnosticar desde el servidor con `curl`.
+Con NPM puedes saltarte los pasos 5b y 6.
 
 ## 5b. Con Nginx instalado en el sistema
 
@@ -255,6 +269,8 @@ docker compose -f docker-compose.prod.yml ps               # estado de salud
 | Sesión que se cierra sola | Cambió `JWT_SIGNING_KEY` entre despliegues: invalida todos los tokens emitidos. |
 | `password authentication failed` | Se cambió `POSTGRES_PASSWORD` después del primer arranque. La base conserva la original. |
 | Una ruta inexistente devuelve 200 | Es correcto: Angular maneja el enrutado y cualquier ruta desconocida entrega el `index.html`. |
+| `bind: address already in use` | El `PUBLIC_PORT` lo usa otro contenedor. Comprobar con `ss -ltnp` o `docker ps` y elegir otro. |
+| NPM devuelve 502 | Si NPM corre en modo host, `Forward Hostname` debe ser `127.0.0.1`, no el nombre del contenedor. |
 
 ## Notas de seguridad
 
