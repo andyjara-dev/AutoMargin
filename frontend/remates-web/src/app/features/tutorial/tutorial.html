@@ -1,0 +1,1415 @@
+<div class="tutorial">
+  <header class="doc-head">
+    <div>
+      <h1>Manual de AutoMargin</h1>
+      <p class="lead">
+        Guía completa, escrita para alguien que parte de cero. Cada sigla, cada símbolo y cada
+        fórmula se explican primero en palabras normales y después en números. No necesitas saber
+        de finanzas ni de autos para entenderla.
+      </p>
+    </div>
+    <a routerLink="/analizador" class="btn-primary">Ir al analizador →</a>
+  </header>
+
+  <div class="doc-layout">
+    <!-- ================= ÍNDICE ================= -->
+    <nav class="toc">
+      @for (group of groups; track group) {
+        <span class="toc__title">{{ group }}</span>
+        <ul>
+          @for (entry of entriesOf(group); track entry.id) {
+            <li>
+              <a
+                [href]="'#' + entry.id"
+                [class.active]="activeId() === entry.id"
+                (click)="scrollTo(entry.id, $event)"
+              >{{ entry.label }}</a>
+            </li>
+          }
+        </ul>
+      }
+    </nav>
+
+    <!-- ================= CONTENIDO ================= -->
+    <article class="doc">
+
+      <!-- ====================================================== -->
+      <section id="el-negocio">
+        <h2>El negocio en simple</h2>
+
+        <p>
+          El negocio tiene cuatro momentos, y este sistema existe para acertar en el primero, que es
+          el único donde todavía puedes decidir:
+        </p>
+
+        <div class="pipeline">
+          <div class="pipeline__step">
+            <span class="pipeline__n">1</span>
+            <strong>Compras barato</strong>
+            <p>En un remate, un auto que un banco o una empresa está rematando porque su dueño dejó de pagar.</p>
+          </div>
+          <div class="pipeline__step">
+            <span class="pipeline__n">2</span>
+            <strong>Lo arreglas</strong>
+            <p>Reparaciones, pintura, neumáticos, limpieza profunda, trámites.</p>
+          </div>
+          <div class="pipeline__step">
+            <span class="pipeline__n">3</span>
+            <strong>Lo vendes</strong>
+            <p>A precio de mercado, que debería ser bastante más alto que lo que pagaste.</p>
+          </div>
+          <div class="pipeline__step">
+            <span class="pipeline__n">4</span>
+            <strong>Ganas la diferencia</strong>
+            <p>Lo que sobra después de descontar absolutamente todos los gastos.</p>
+          </div>
+        </div>
+
+        <p>
+          Suena simple, y ahí está la trampa. Los pasos 2, 3 y 4 <strong>ya no los controlas</strong>:
+          una vez que el martillo cae, la reparación cuesta lo que cuesta, el auto se demora lo que se
+          demora y el mercado paga lo que paga. La única decisión realmente tuya es
+          <strong>cuánto pagas en el paso 1</strong>.
+        </p>
+
+        <div class="callout callout--key">
+          <strong>La regla fundamental de este sistema.</strong> Nunca recomienda comprar solo porque
+          un auto esté barato. Un auto barato con una reparación cara, papeles enredados o que se
+          queda seis meses sin venderse es un mal negocio, no una oportunidad. Lo único que importa es
+          la comparación entre el precio del remate y el <em>máximo que te conviene pagar</em>.
+        </div>
+
+        <h3>Qué sí hace el sistema</h3>
+        <ul>
+          <li>Estima en cuánto podrías vender el auto, usando avisos reales de autos parecidos.</li>
+          <li>Suma <em>todos</em> los gastos, incluidos los que la mayoría olvida.</li>
+          <li>Considera cuánto te cuesta tener la plata metida en un auto mientras no se vende.</li>
+          <li>Calcula el precio máximo que puedes pagar y te avisa cuando el remate lo cruza.</li>
+          <li>Te muestra el caso bueno, el esperado y el malo, y bloquea la compra si el caso malo es intolerable.</li>
+          <li>Explica cada número: nada aparece sin su razón al lado.</li>
+        </ul>
+
+        <h3>Qué no hace</h3>
+        <ul>
+          <li>No revisa el auto por ti. No reemplaza a un mecánico.</li>
+          <li>No revisa los papeles por ti. Eso se hace en el Registro Civil.</li>
+          <li>No sabe cuánto vale el auto: sabe lo que tú le informaste.</li>
+          <li>No adivina si vas a ganar el remate. Te dice hasta dónde te conviene llegar.</li>
+          <li>No da consejos legales ni tributarios.</li>
+        </ul>
+      </section>
+
+      <!-- ====================================================== -->
+      <section id="palabras">
+        <h2>Las palabras del remate</h2>
+
+        <p>
+          Antes de cualquier fórmula, el vocabulario básico. Si ya lo manejas, salta a la sección
+          siguiente.
+        </p>
+
+        <dl class="terms">
+          <div>
+            <dt>Remate</dt>
+            <dd>
+              Una venta pública donde varios interesados ofrecen dinero por un bien y se lo lleva
+              quien ofrece más. Los autos que aparecen ahí suelen venir de deudas impagas: alguien
+              dejó de pagar su crédito y el banco recupera el vehículo para venderlo.
+            </dd>
+          </div>
+          <div>
+            <dt>Martillero</dt>
+            <dd>
+              La persona o empresa que dirige el remate. Cobra una <strong>comisión</strong>, es
+              decir un porcentaje del precio final, por hacer ese trabajo. En Chile suele rondar el
+              10%.
+            </dd>
+          </div>
+          <div>
+            <dt>Lote</dt>
+            <dd>Cada cosa que se remata por separado. En este caso, cada auto es un lote.</dd>
+          </div>
+          <div>
+            <dt>Pujar / puja</dt>
+            <dd>
+              Ofrecer dinero por un lote. Cada oferta es una puja. La <strong>puja máxima</strong> es
+              el tope que te pones antes de empezar, para no dejarte llevar por el momento.
+            </dd>
+          </div>
+          <div>
+            <dt>Adjudicación / precio de martillo</dt>
+            <dd>
+              El precio final al que se cierra la venta, el que gritó el martillero antes de dar el
+              golpe. Es el punto de partida de todos los cálculos.
+            </dd>
+          </div>
+          <div>
+            <dt>IVA</dt>
+            <dd>
+              Impuesto al Valor Agregado. En Chile es un 19% que se suma a muchos servicios. Acá
+              aparece porque la comisión del martillero normalmente lo lleva: si la comisión es
+              $500.000, pagas $595.000.
+            </dd>
+          </div>
+          <div>
+            <dt>Transferencia</dt>
+            <dd>
+              El trámite de poner el auto a tu nombre. Tiene un costo fijo (notaría, gestoría) y un
+              impuesto que es un porcentaje del valor, alrededor del 1,5%.
+            </dd>
+          </div>
+          <div>
+            <dt>Detailing</dt>
+            <dd>
+              Limpieza y preparación estética profunda antes de publicar el auto: pulido, tratamiento
+              de tapiz, motor limpio. Sube el precio de venta y acelera la venta.
+            </dd>
+          </div>
+          <div>
+            <dt>Prenda o gravamen</dt>
+            <dd>
+              Una marca legal sobre el auto que dice que sirve de garantía de una deuda. Si no está
+              «alzada» (levantada), no puedes venderlo tranquilo. Es de los problemas más caros que
+              existen en este negocio.
+            </dd>
+          </div>
+          <div>
+            <dt>Encargo por robo</dt>
+            <dd>
+              El auto está denunciado como robado. Comprarlo es perderlo. Se verifica en el Registro
+              Civil antes de pujar, sin excepción.
+            </dd>
+          </div>
+          <div>
+            <dt>TAG</dt>
+            <dd>
+              El sistema de peaje de las autopistas urbanas. Las deudas de TAG <strong>siguen al
+              vehículo</strong>, no al dueño anterior: si no las revisas, las pagas tú.
+            </dd>
+          </div>
+          <div>
+            <dt>Capital</dt>
+            <dd>
+              La plata que tienes para trabajar. Si tienes $40 millones y metes $8 en un auto, te
+              quedan $32 para el siguiente. Esos $8 están <strong>inmovilizados</strong> hasta que el
+              auto se venda.
+            </dd>
+          </div>
+        </dl>
+      </section>
+
+      <!-- ====================================================== -->
+      <section id="idea-central">
+        <h2>La idea central: la puja máxima</h2>
+
+        <p>
+          En un remate el precio sube rápido y tienes que decidir en segundos si sigues o te bajas.
+          La puja máxima es el número que toma esa decisión por ti: mientras el precio esté por
+          debajo, sigues; cuando lo cruza, te bajas. Sin discutir contigo mismo.
+        </p>
+
+        <p>La lógica cabe en una línea:</p>
+
+        <div class="formula formula--hero">
+          Puja máxima = lo que puedo vender − todo lo que voy a gastar − lo mínimo que quiero ganar
+          − un colchón por lo que no sé
+        </div>
+
+        <p>Cada uno de esos cuatro pedazos tiene su vuelta, y por eso hace falta un sistema y no una calculadora:</p>
+
+        <div class="reasons">
+          <div class="reason">
+            <strong>Lo que puedo vender</strong>
+            <p>
+              No es el precio que ves publicado en los avisos. Nadie vende al precio publicado: hay
+              que descontar la negociación. Y hay que usar el escenario prudente, no el mejor.
+            </p>
+          </div>
+          <div class="reason">
+            <strong>Todo lo que voy a gastar</strong>
+            <p>
+              Hay gastos que dependen del propio precio que pagues (la comisión sube si pujas más
+              alto), y está el costo de tener la plata inmovilizada mientras el auto no se vende.
+            </p>
+          </div>
+          <div class="reason">
+            <strong>Lo mínimo que quiero ganar</strong>
+            <p>
+              No puede ser un monto fijo para todos los autos. Ganar $1.500.000 en un auto de $5
+              millones es excelente; en uno de $30 millones inmovilizados tres meses, es regalar la
+              plata.
+            </p>
+          </div>
+          <div class="reason">
+            <strong>Un colchón por lo que no sé</strong>
+            <p>
+              Tampoco puede ser un porcentaje fijo. Si no pudiste encender el motor y solo
+              conseguiste dos avisos de referencia, sabes mucho menos que si tienes informe de taller
+              y diez comparables.
+            </p>
+          </div>
+        </div>
+
+        <div class="callout callout--warn">
+          <strong>Por qué el colchón importa tanto: la maldición del ganador.</strong> En una
+          subasta, el que gana es el que ofreció más. Y el que ofrece más suele ser el que fue más
+          optimista al estimar. Es decir: <em>el solo hecho de haber ganado hace probable que hayas
+          sobrepagado</em>. No es mala suerte, es matemática de subastas. El colchón existe para
+          compensarlo.
+        </div>
+      </section>
+
+      <!-- ====================================================== -->
+      <section id="simbolos">
+        <h2>Los cinco símbolos que verás</h2>
+
+        <p>
+          En las fórmulas se usan letras para no repetir frases largas. Son solo abreviaturas. Estas
+          cinco aparecen en todo el sistema:
+        </p>
+
+        <table class="doc-table doc-table--symbols">
+          <thead>
+            <tr><th>Símbolo</th><th>Se lee</th><th>Qué es, en palabras</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="sym">S</span></td>
+              <td>«ese»</td>
+              <td>
+                <strong>Venta neta.</strong> Lo que realmente te queda del precio de venta, después
+                de descontar la provisión de garantía y los gastos de publicación.
+              </td>
+            </tr>
+            <tr>
+              <td><span class="sym">F</span></td>
+              <td>«efe»</td>
+              <td>
+                <strong>Costos fijos.</strong> Todo lo que vas a gastar después de comprar y que
+                <em>no</em> cambia según el precio que pagues: reparación, transporte, detailing,
+                trámites, imprevistos.
+              </td>
+            </tr>
+            <tr>
+              <td><span class="sym">α</span></td>
+              <td>«alfa»</td>
+              <td>
+                <strong>Tasa proporcional.</strong> El porcentaje del precio de compra que se te va
+                en comisión, IVA e impuesto de transferencia. Si pujas más alto, esto sube también.
+              </td>
+            </tr>
+            <tr>
+              <td><span class="sym">k</span></td>
+              <td>«ka»</td>
+              <td>
+                <strong>Factor de tiempo.</strong> Un multiplicador un poquito mayor que 1 que
+                encarece toda la operación según cuántos días tarde en venderse. Con 45 días vale
+                más o menos 1,02, o sea un 2% más caro.
+              </td>
+            </tr>
+            <tr>
+              <td><span class="sym">U</span></td>
+              <td>«u»</td>
+              <td>
+                <strong>Utilidad mínima.</strong> Lo menos que estás dispuesto a ganar para que valga
+                la pena meterse.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>
+          Además verás <span class="sym sym--inline">P</span>, que es simplemente el
+          <strong>precio de compra</strong> que se está evaluando.
+        </p>
+
+        <div class="callout">
+          <strong>Cómo leer una fórmula.</strong> Cuando veas algo como
+          <em>P × (1 + α)</em>, léelo así: «el precio, más su porcentaje de comisiones». Multiplicar
+          por (1 + un porcentaje) es la forma corta de decir «agrégale ese porcentaje». Si α es 13%,
+          entonces (1 + α) = 1,13, y multiplicar por 1,13 es agregar un 13%.
+        </div>
+      </section>
+
+      <!-- ====================================================== -->
+      <section id="flujo">
+        <h2>Cómo se usa, paso a paso</h2>
+
+        <ol class="steps">
+          <li>
+            <strong>Carga los datos del auto y del remate.</strong> Año, kilometraje, precio actual
+            del remate y en cuántos días crees que lo venderás. Si no tienes idea de los días, deja
+            45: es un número prudente.
+          </li>
+          <li>
+            <strong>Busca autos parecidos publicados y cárgalos como comparables.</strong> Entra a
+            los portales de venta de autos, busca el mismo modelo, año similar y kilometraje similar,
+            y anota el precio, el año y los kilómetros de cada uno. Con menos de tres, el sistema
+            bloquea el análisis: con dos datos no se puede estimar nada.
+          </li>
+          <li>
+            <strong>Anota los daños que ves.</strong> Cada uno con tres números: lo <em>menos</em>
+            que podría costar arreglarlo, lo <em>más probable</em> y lo <em>más</em> que podría
+            costar. Si no tienes idea, pon un rango ancho. El sistema lo va a castigar, y está bien
+            que lo haga.
+          </li>
+          <li>
+            <strong>Di la verdad sobre qué pudiste revisar.</strong> Si no lograste encender el
+            motor, márcalo. Es el campo que más gente maquilla y el que más caro termina saliendo.
+          </li>
+          <li>
+            <strong>Declara el estado de los papeles.</strong> Si hay una prenda sin alzar, un
+            encargo por robo o cualquier problema legal sin resolver, marca «Alto» y el sistema
+            bloqueará la compra.
+          </li>
+          <li>
+            <strong>Lee el veredicto.</strong> Primero el semáforo y la puja máxima. Después baja al
+            detalle para entender por qué.
+          </li>
+          <li>
+            <strong>Anota la puja máxima y ve al remate.</strong> Ese número no se renegocia en
+            caliente. Cuando en la sala te den ganas de subir «un poquito más», ese es exactamente el
+            momento para el que fue calculado.
+          </li>
+        </ol>
+      </section>
+
+      <!-- ====================================================== -->
+      <section id="valor-mercado">
+        <h2><span class="num">1</span> Valor de mercado</h2>
+
+        <p>
+          Todo el cálculo depende de una pregunta: <strong>¿en cuánto vas a vender este auto?</strong>
+          El sistema la responde con <strong>comparables</strong>, que son avisos reales de autos
+          parecidos que tú mismo cargas.
+        </p>
+
+        <h3>Por qué hay que «normalizar» los comparables</h3>
+        <p>
+          Ningún aviso es idéntico a tu auto. Uno tiene más kilómetros, otro es un año más viejo. Así
+          que el sistema corrige el precio de cada aviso para dejarlo comparable con el tuyo.
+        </p>
+
+        <div class="plain">
+          <strong>En simple:</strong> si el auto del aviso tiene 20.000 km más que el tuyo, vale
+          menos que el tuyo. Entonces el sistema le sube el precio en el papel, para saber cuánto
+          valdría <em>si tuviera los kilómetros del tuyo</em>. Lo mismo con el año: si el del aviso
+          es más viejo, le sube el precio.
+        </div>
+
+        <div class="formula">
+          precio ajustado = precio del aviso × (1 + ajuste por kilómetros + ajuste por año)
+        </div>
+
+        <ul>
+          <li>Por defecto, <strong>0,4% por cada 1.000 km</strong> de diferencia.</li>
+          <li>Por defecto, <strong>5% por cada año</strong> de diferencia.</li>
+          <li>El ajuste total se topa en 35%, para que un aviso demasiado distinto no mande en el resultado.</li>
+        </ul>
+
+        <h3>Percentiles: qué son</h3>
+        <div class="plain">
+          <strong>En simple:</strong> ordena todos los precios de menor a mayor. El
+          <strong>percentil 25</strong> es el precio que deja un cuarto de los avisos por debajo —o
+          sea, un precio más bien bajo. El <strong>percentil 50</strong> es el del medio, también
+          llamado <strong>mediana</strong>. El <strong>percentil 75</strong> deja tres cuartos por
+          debajo: un precio más bien alto.
+          <br /><br />
+          Se usa la mediana en vez del promedio porque el promedio se deforma con un solo aviso
+          absurdo. Si nueve autos valen $10 millones y uno está publicado en $40 millones por error,
+          el promedio se dispara pero la mediana ni se inmuta.
+        </div>
+
+        <h3>Los tres valores de mercado</h3>
+
+        <table class="doc-table">
+          <thead>
+            <tr><th>Valor</th><th>Cómo sale</th><th>Para qué sirve</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Optimista</strong></td>
+              <td>Percentil 75</td>
+              <td>El escenario favorable. Referencia para fijar el precio de publicación.</td>
+            </tr>
+            <tr>
+              <td><strong>Esperado</strong></td>
+              <td>Percentil 50 (mediana)</td>
+              <td>El valor más probable.</td>
+            </tr>
+            <tr>
+              <td><strong>Conservador</strong></td>
+              <td>Percentil 25, menos la brecha de negociación</td>
+              <td><strong>Es la base de todo el cálculo de la puja máxima.</strong> Se usa el prudente a propósito.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="callout">
+          <strong>Brecha de negociación.</strong> Los portales muestran precios <em>pedidos</em>, no
+          precios <em>pagados</em>. Casi nadie vende al precio publicado: la venta real ocurre entre
+          un 5% y un 12% más abajo. El sistema descuenta 7% por defecto. Cuando tengas ventas propias,
+          ajusta ese número con tus datos reales.
+        </div>
+
+        <h3>Dispersión</h3>
+        <p>
+          Es cuán parecidos o distintos son los precios entre sí. Si todos los avisos rondan los $12
+          millones, la dispersión es baja y el mercado es predecible. Si van de $9 a $16 millones, la
+          dispersión es alta y sabes menos de lo que crees. Una dispersión alta aumenta el colchón de
+          seguridad.
+        </p>
+
+        <h3>La casilla «Atípico»</h3>
+        <p>
+          Sirve para dejar fuera un aviso que claramente no corresponde —versión equivocada, precio
+          absurdo, auto chocado publicado como sano— sin tener que borrarlo. Queda registrado pero no
+          entra al cálculo.
+        </p>
+      </section>
+
+      <!-- ====================================================== -->
+      <section id="costos">
+        <h2><span class="num">2</span> Costos fijos y proporcionales</h2>
+
+        <p>
+          Acá está la parte que casi todos calculan mal. Los gastos posteriores a la compra se
+          dividen en dos familias, y la diferencia entre ellas cambia el resultado.
+        </p>
+
+        <div class="split">
+          <div class="split__col">
+            <h3>Costos fijos <span class="sym sym--inline">F</span></h3>
+            <p class="split__lead">No cambian aunque pagues más o menos por el auto.</p>
+            <ul>
+              <li>Reparaciones (el valor esperado del rango)</li>
+              <li>Transporte desde donde está el auto</li>
+              <li>Detailing y preparación</li>
+              <li>Trámite de transferencia (la parte fija)</li>
+              <li>Otros gastos que ya conoces</li>
+              <li><strong>Imprevistos:</strong> un porcentaje extra sobre reparación, transporte y detailing</li>
+            </ul>
+            <div class="plain plain--sm">
+              <strong>Por qué los imprevistos:</strong> las reparaciones casi nunca salen en lo
+              presupuestado. Se destapa algo más al desarmar. Ese 10% por defecto no es pesimismo, es
+              experiencia.
+            </div>
+          </div>
+
+          <div class="split__col">
+            <h3>Costos proporcionales <span class="sym sym--inline">α</span></h3>
+            <p class="split__lead">Son un porcentaje del precio de compra. Si pujas más alto, suben.</p>
+            <ul>
+              <li>Comisión del martillero (10% por defecto)</li>
+              <li>IVA sobre esa comisión (19%)</li>
+              <li>Gastos administrativos del remate en porcentaje</li>
+              <li>Impuesto de transferencia (1,5% por defecto)</li>
+            </ul>
+            <div class="formula formula--sm">
+              α = comisión × (1 + IVA) + admin% + transferencia%
+            </div>
+            <div class="plain plain--sm">
+              Con los valores por defecto: 10% × 1,19 + 1,5% = <strong>13,4%</strong>. Es decir, por
+              cada $1.000.000 que pujes, gastas $134.000 extra solo en comisiones e impuestos.
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout--warn">
+          <strong>El error clásico: restar la comisión como monto fijo.</strong> Mucha gente estima
+          «la comisión serán unos $250.000» y la resta. Pero eso supone que ya sabes cuál será el
+          precio final… que es justamente lo que estás tratando de calcular. Es como calcular la
+          propina antes de saber cuánto vas a comer.
+          <br /><br />
+          En autos caros ese error hace que creas que puedes pagar más de lo que realmente puedes. Por
+          eso el sistema mete esos costos dentro de α y despeja el precio con álgebra, en vez de
+          adivinar.
+        </div>
+
+        <h3>Lo que se descuenta del precio de venta</h3>
+        <p>Del otro lado también hay gastos, que se restan antes de cualquier cálculo:</p>
+        <ul>
+          <li>
+            <strong>Provisión de garantía</strong> (2% por defecto). Si vendes autos habitualmente, la
+            ley del consumidor te obliga a responder por fallas. Algunos autos te van a volver. Eso es
+            un costo esperado, no una posibilidad remota, así que se guarda un porcentaje desde el
+            principio.
+          </li>
+          <li>
+            <strong>Publicación y marketing</strong> (0,5% por defecto). Fotos, avisos destacados,
+            comisiones de portales.
+          </li>
+        </ul>
+
+        <div class="formula">
+          S = valor conservador × (1 − provisión de garantía − marketing)
+        </div>
+        <div class="plain">
+          <strong>En simple:</strong> «de lo que creo que voy a vender, me quedo con esto después de
+          apartar la garantía y pagar la publicación».
+        </div>
+      </section>
+
+      <!-- ====================================================== -->
+      <section id="tiempo">
+        <h2><span class="num">3</span> El tiempo y el costo del dinero</h2>
+
+        <div class="callout callout--key">
+          Ganar 15% en 20 días y ganar 15% en 120 días <strong>no es el mismo negocio</strong>. Con
+          el primero das seis vueltas al capital en un año. Con el segundo, tres. La misma plata rinde
+          el doble.
+        </div>
+
+        <p>
+          Por eso el tiempo entra en la fórmula desde el principio. La plata que está metida en un
+          auto no está disponible para comprar el siguiente, y eso tiene un precio: si la pediste
+          prestada, son los intereses; si es tuya, es lo que dejaste de ganar en otra cosa.
+        </p>
+
+        <div class="formula">
+          k = 1 + costo mensual del capital × (días estimados ÷ 30)
+        </div>
+
+        <div class="plain">
+          <strong>En simple:</strong> con un costo de 1,5% mensual y 45 días de venta,
+          <br />k = 1 + 0,015 × (45 ÷ 30) = 1 + 0,0225 = <strong>1,0225</strong>.
+          <br /><br />
+          Ese 1,0225 multiplica toda la plata que pusiste: la operación te sale un 2,25% más cara que
+          si hubieras vendido el mismo día. Mientras más días, más grande es k y más caro sale todo.
+        </div>
+      </section>
+
+      <!-- ====================================================== -->
+      <section id="roi">
+        <h2><span class="num">4</span> Utilidad, margen y ROI</h2>
+
+        <p>Tres formas de medir si el negocio fue bueno. Son distintas y sirven para cosas distintas.</p>
+
+        <div class="metric">
+          <h3>Utilidad</h3>
+          <p class="metric__def">Lo que te quedó en el bolsillo, en pesos.</p>
+          <div class="formula formula--sm">Utilidad = venta neta − costo total</div>
+          <p class="metric__use">Es el número más concreto, pero no permite comparar operaciones de distinto tamaño.</p>
+        </div>
+
+        <div class="metric">
+          <h3>ROI (Retorno sobre la Inversión)</h3>
+          <p class="metric__def">
+            <strong>ROI</strong> viene del inglés <em>Return On Investment</em>. Responde: por cada
+            peso que puse, ¿cuánto gané?
+          </p>
+          <div class="formula formula--sm">ROI = utilidad ÷ costo total</div>
+          <div class="plain plain--sm">
+            <strong>Ejemplo:</strong> pusiste $8.000.000 y ganaste $2.400.000. ROI = 2.400.000 ÷
+            8.000.000 = 0,30, o sea <strong>30%</strong>. Por cada $100 que pusiste, ganaste $30.
+          </div>
+        </div>
+
+        <div class="metric">
+          <h3>ROI anualizado</h3>
+          <p class="metric__def">
+            El mismo ROI, pero llevado a «cuánto rendiría esto si lo repitiera todo el año». Es la
+            <strong>única métrica que permite comparar dos oportunidades distintas entre sí</strong>.
+          </p>
+          <div class="formula formula--sm">
+            ROI anualizado = (1 + ROI)<sup>365 ÷ días</sup> − 1
+          </div>
+          <div class="plain plain--sm">
+            <strong>Qué significa ese exponente.</strong> El «elevado a 365 ÷ días» es la forma
+            matemática de decir «cuántas veces cabe esta operación en un año». Si la operación dura
+            30 días, cabe 12,2 veces al año, y cada vuelta multiplica la anterior.
+            <br /><br />
+            <strong>Ejemplo:</strong> 30% en 30 días no es 30% al año, es mucho más: repitiendo eso
+            doce veces, el resultado se acerca al 2.000% anual. Por eso el sistema prefiere autos
+            rentables <em>y rápidos</em>.
+          </div>
+        </div>
+
+        <div class="metric">
+          <h3>Margen sobre la venta</h3>
+          <p class="metric__def">Qué porcentaje del precio de venta es ganancia.</p>
+          <div class="formula formula--sm">Margen = utilidad ÷ precio de venta</div>
+          <p class="metric__use">
+            Útil para negociar: si tu margen es 25%, sabes cuánto puedes bajar el precio antes de
+            quedarte sin ganancia.
+          </p>
+        </div>
+
+        <div class="callout">
+          <strong>Por qué el ROI anualizado a veces se ve enorme.</strong> Una operación de 30 días
+          con buen retorno puede anualizar en cifras de cuatro dígitos, porque la fórmula supone que
+          reinviertes doce veces al año. En la práctica no vas a encontrar doce oportunidades así
+          seguidas. Pero como <em>comparador</em> entre dos autos sigue siendo la métrica correcta.
+          Por eso la pantalla la muestra acotada a «más de 1.000%» cuando se dispara.
+        </div>
+      </section>
+
+      <!-- ====================================================== -->
+      <section id="utilidad-minima">
+        <h2><span class="num">5</span> Cuánto quieres ganar <span class="sym sym--inline">U</span></h2>
+
+        <p>
+          Es el piso: lo menos que aceptas ganar para que valga la pena meterse. El sistema toma el
+          <strong>mayor</strong> de dos criterios, porque uno solo no funciona en todos los casos.
+        </p>
+
+        <div class="formula">
+          U = el mayor entre ( monto mínimo fijo )  y  ( ROI anual objetivo × días ÷ 365 × capital comprometido )
+        </div>
+
+        <div class="split">
+          <div class="split__col">
+            <h3>Criterio del monto fijo</h3>
+            <p>
+              «No me muevo por menos de $1.500.000». Manda en los autos baratos, donde un porcentaje
+              daría una cifra que no paga el trabajo de ir al remate, trasladar, reparar, publicar y
+              vender.
+            </p>
+          </div>
+          <div class="split__col">
+            <h3>Criterio del retorno anual</h3>
+            <p>
+              «Mi plata tiene que rendir al menos 35% al año». Manda en los autos caros o lentos,
+              donde ganar $1.500.000 sobre $30 millones inmovilizados tres meses sería un mal negocio
+              disfrazado.
+            </p>
+          </div>
+        </div>
+
+        <div class="plain">
+          <strong>Cómo leerlo en la pantalla:</strong> el sistema te dice cuál de los dos criterios
+          se aplicó. Si siempre manda el monto fijo, probablemente lo tienes demasiado alto. Si
+          siempre manda el retorno anual, es que estás mirando autos caros o de rotación lenta.
+        </div>
+      </section>
+
+      <!-- ====================================================== -->
+      <section id="terna">
+        <h2><span class="num">6</span> Los tres precios clave</h2>
+
+        <p>
+          Toda la decisión se resume en tres números, que aparecen juntos en la barra del veredicto:
+        </p>
+
+        <table class="doc-table">
+          <thead>
+            <tr><th>Precio</th><th>Qué significa</th><th>Qué pasa si lo cruzas</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="chip chip--now">Precio actual</span></td>
+              <td>Dónde va el remate en este momento.</td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td><span class="chip chip--max">Puja máxima</span></td>
+              <td>El techo. Comprando justo ahí, ganas exactamente lo mínimo que exigiste.</td>
+              <td>Semáforo rojo: ya no cumples tu propio objetivo.</td>
+            </tr>
+            <tr>
+              <td><span class="chip chip--be">Punto de equilibrio</span></td>
+              <td>El precio en que no ganas ni pierdes: la utilidad es exactamente cero.</td>
+              <td>Pierdes plata. Literalmente.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="plain">
+          <strong>«Punto de equilibrio» también se dice «break-even».</strong> Es el mismo concepto:
+          el punto donde las cuentas quedan empatadas.
+        </div>
+
+        <h3>Las fórmulas</h3>
+
+        <div class="formula formula--stack">
+          <div>Costo total(P) = P × (1 + α) × k  +  F × k</div>
+          <div>Utilidad(P) = S − Costo total(P)</div>
+          <div class="formula__sep"></div>
+          <div>Punto de equilibrio = (S ÷ k − F) ÷ (1 + α)</div>
+          <div>Puja teórica = (S − U − F × k) ÷ ((1 + α) × k)</div>
+          <div><strong>PUJA MÁXIMA = Puja teórica × (1 − colchón de seguridad)</strong></div>
+        </div>
+
+        <div class="plain">
+          <strong>Traducción del costo total:</strong> «el precio que pago, más sus comisiones,
+          más todos los gastos fijos, y todo eso encarecido por el tiempo que tarde en venderse».
+          <br /><br />
+          <strong>Traducción de la puja teórica:</strong> «de lo que voy a recibir, saco lo que quiero
+          ganar y los gastos fijos; lo que queda es lo que puedo pagar, descontando que sobre ese
+          precio todavía tendré que pagar comisiones».
+          <br /><br />
+          <strong>Por qué se divide.</strong> Dividir por (1 + α) es deshacer la suma de comisiones.
+          Si sabes que puedes gastar $1.134.000 en total y las comisiones son 13,4%, el precio del
+          auto tiene que ser $1.134.000 ÷ 1,134 = $1.000.000. Así se evita el error de restar una
+          comisión que todavía no sabes cuánto será.
+        </div>
+
+        <div class="callout">
+          <strong>Lee la distancia entre la puja máxima y el equilibrio.</strong> Si están muy cerca,
+          el negocio es frágil: cualquier error te deja perdiendo. Si están lejos, tienes espacio para
+          equivocarte. Es una lectura rápida de cuán apretado está el deal.
+        </div>
+      </section>
+
+      <!-- ====================================================== -->
+      <section id="margen-seguridad">
+        <h2><span class="num">7</span> El colchón de seguridad</h2>
+
+        <p>
+          Es el descuento final que se le hace a la puja teórica. <strong>No es un porcentaje
+          fijo:</strong> crece según lo poco que sepas de <em>este</em> auto en particular.
+        </p>
+
+        <table class="doc-table">
+          <thead>
+            <tr><th>Qué lo empuja hacia arriba</th><th>De dónde sale</th><th>Aporta hasta</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Base</td>
+              <td>Un piso constante, configurable</td>
+              <td>5%</td>
+            </tr>
+            <tr>
+              <td>No saber cuánto costará la reparación</td>
+              <td>Qué tan ancho es el rango entre tu mínimo y tu máximo</td>
+              <td>20%</td>
+            </tr>
+            <tr>
+              <td>Un mercado con precios disparejos</td>
+              <td>Dispersión de los comparables</td>
+              <td>15%</td>
+            </tr>
+            <tr>
+              <td>Tener pocos comparables</td>
+              <td>Mientras menos avisos cargaste, más sube</td>
+              <td>10%</td>
+            </tr>
+            <tr>
+              <td>Papeles con problemas</td>
+              <td>El nivel de riesgo documental que declaraste</td>
+              <td>10%</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>El total se acota entre 3% y 25%: nunca menos de 3, nunca más de 25.</p>
+
+        <div class="callout callout--key">
+          <strong>Esto es información accionable, no un castigo.</strong> Si el colchón te parece
+          alto, la pantalla te muestra exactamente qué lo está inflando. Muchas veces la solución es
+          simple: cargar tres comparables más, o pedir un presupuesto de taller para estrechar el
+          rango de reparación. El colchón te está diciendo, en pesos, cuánto te cuesta no haber hecho
+          la tarea.
+        </div>
+      </section>
+
+      <!-- ====================================================== -->
+      <section id="escenarios">
+        <h2><span class="num">8</span> Los tres escenarios</h2>
+
+        <p>El sistema calcula siempre tres versiones del mismo negocio, al precio que estás mirando:</p>
+
+        <table class="doc-table">
+          <thead>
+            <tr><th>Escenario</th><th>Precio de venta</th><th>Reparación</th><th>Días</th></tr>
+          </thead>
+          <tbody>
+            <tr class="tone-good">
+              <td>Optimista — todo sale bien</td>
+              <td>Valor esperado (mediana)</td>
+              <td>El mínimo de tu rango</td>
+              <td>70% de lo estimado</td>
+            </tr>
+            <tr>
+              <td>Esperado — lo más probable</td>
+              <td>Valor conservador</td>
+              <td>El valor esperado</td>
+              <td>Lo que estimaste</td>
+            </tr>
+            <tr class="tone-bad">
+              <td>Pesimista — todo sale mal</td>
+              <td>Conservador rebajado un 7%</td>
+              <td>El máximo de tu rango</td>
+              <td>60% más de lo estimado</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="callout callout--warn">
+          <strong>El pesimista no es adorno.</strong> En un remate el caso malo pasa seguido: compras
+          sin poder probar el auto, el daño resulta ser mayor de lo que se veía y el auto se queda
+          meses en el patio. Si en ese escenario la pérdida supera lo que puedes aguantar, el sistema
+          <strong>bloquea la compra</strong> aunque el caso esperado se vea espectacular.
+        </div>
+      </section>
+
+      <!-- ====================================================== -->
+      <section id="riesgos">
+        <h2><span class="num">9</span> Riesgo mecánico y de papeles</h2>
+
+        <h3>Riesgo mecánico: no saber también es un riesgo</h3>
+        <p>
+          Acá el sistema evita una trampa mental muy común: <strong>no haber encontrado daños no
+          significa que no los haya</strong>. Si no pudiste encender el motor, tu desconocimiento es
+          en sí mismo un riesgo, y el sistema le pone un piso que no puedes bajar:
+        </p>
+
+        <table class="doc-table">
+          <thead>
+            <tr><th>Lo que pudiste hacer</th><th>Piso de riesgo mecánico</th><th>Por qué</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>No se pudo encender</td><td><strong>60 / 100</strong></td><td>No sabes si el motor funciona. Es la situación más común en remates.</td></tr>
+            <tr><td>Solo inspección visual</td><td>40 / 100</td><td>Viste el auto pero no lo escuchaste andar.</td></tr>
+            <tr><td>Encendió el motor</td><td>25 / 100</td><td>Al menos sabes que parte y suena.</td></tr>
+            <tr><td>Prueba de manejo</td><td>15 / 100</td><td>Probaste caja, embrague, frenos, dirección.</td></tr>
+            <tr><td>Informe de taller</td><td>5 / 100</td><td>Un profesional lo revisó con escáner.</td></tr>
+          </tbody>
+        </table>
+
+        <p>
+          Si además registras daños mecánicos, eléctricos, de suspensión, estructurales o de airbags,
+          el riesgo sube por encima de ese piso según la gravedad. Los daños de pintura o carrocería
+          <em>no</em> suben el riesgo mecánico: encarecen la reparación, que es otra cosa distinta.
+        </p>
+
+        <h3>Riesgo documental: el que arruina el negocio de golpe</h3>
+        <p>
+          Los problemas de papeles no encarecen el negocio: lo destruyen. Por eso se tratan aparte.
+          Cubren:
+        </p>
+        <ul class="compact">
+          <li><strong>Encargo por robo:</strong> el auto está denunciado como robado.</li>
+          <li><strong>Prenda o gravamen sin alzar:</strong> el auto sigue respondiendo por una deuda.</li>
+          <li><strong>Limitación al dominio:</strong> hay restricciones legales para venderlo.</li>
+          <li><strong>Multas de TAG impagas:</strong> se traspasan con el vehículo, las pagas tú.</li>
+          <li><strong>Permiso de circulación y revisión técnica vencidos.</strong></li>
+          <li><strong>Demoras de inscripción</strong> en el Registro Civil.</li>
+        </ul>
+
+        <div class="risk-levels">
+          <div><span class="dot dot--0"></span><strong>Sin riesgo</strong> — papeles verificados y limpios.</div>
+          <div><span class="dot dot--1"></span><strong>Bajo</strong> — trámites menores pendientes, con costo conocido.</div>
+          <div><span class="dot dot--2"></span><strong>Medio</strong> — hay antecedentes que todavía no verificaste.</div>
+          <div><span class="dot dot--3"></span><strong>Alto</strong> — problema legal sin resolver. <strong>Bloquea la compra.</strong></div>
+        </div>
+      </section>
+
+      <!-- ====================================================== -->
+      <section id="score">
+        <h2><span class="num">10</span> El puntaje</h2>
+
+        <p>
+          Un número de 0 a 100 que resume qué tan buena es la oportunidad. Se arma con siete
+          componentes, cada uno con un peso distinto según cuánto importa. La suma de los pesos es
+          100.
+        </p>
+
+        <div class="plain">
+          <strong>Cómo funciona un puntaje ponderado.</strong> Cada componente se califica de 0 a
+          100. Después esa nota se multiplica por su peso y se suman todos. Un componente con peso 30
+          puede aportar hasta 30 puntos; uno con peso 8, hasta 8. Así lo importante pesa más que lo
+          accesorio.
+        </div>
+
+        <table class="doc-table">
+          <thead>
+            <tr><th>Componente</th><th>Peso</th><th>Qué mide</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Rentabilidad</td><td>30</td><td>El ROI anualizado contra tu objetivo. Llegar al doble del objetivo da puntaje completo.</td></tr>
+            <tr><td>Holgura de puja</td><td>15</td><td>Cuánto espacio queda entre el precio actual y tu techo.</td></tr>
+            <tr><td>Liquidez esperada</td><td>15</td><td>Días de venta. 15 días da puntaje completo; 90 días da cero.</td></tr>
+            <tr><td>Riesgo mecánico</td><td>12</td><td>Al revés: mientras menos riesgo, más puntos.</td></tr>
+            <tr><td>Riesgo documental</td><td>10</td><td>También al revés.</td></tr>
+            <tr><td>Certeza de la estimación</td><td>10</td><td>Qué tan estrecho es tu rango de reparación.</td></tr>
+            <tr><td>Calidad de la evidencia</td><td>8</td><td>Cuántos comparables, qué tan recientes y qué tan consistentes.</td></tr>
+          </tbody>
+        </table>
+
+        <div class="callout callout--warn">
+          <strong>El puntaje no decide.</strong> Un «87/100» con pesos elegidos por una persona parece
+          ciencia y no lo es del todo. Por eso el semáforo no se ancla en el puntaje, sino en la
+          comparación entre el precio y la puja máxima, que es una comparación de pesos contra pesos.
+          <br /><br />
+          El puntaje sirve para <em>ordenar</em> varias oportunidades entre sí y para ver de un
+          vistazo dónde está el punto débil de un negocio. No para autorizar una compra.
+        </div>
+      </section>
+
+      <!-- ====================================================== -->
+      <section id="gates">
+        <h2><span class="num">11</span> Los bloqueos</h2>
+
+        <p>
+          Son condiciones que ponen el semáforo en <strong>rojo sin importar el puntaje</strong>. No
+          se promedian ni se compensan con otras cosas buenas: si se activa uno, no se compra.
+        </p>
+
+        <div class="plain">
+          En la pantalla aparecen con su nombre técnico en inglés porque también viajan al sistema por
+          dentro. Acá está qué significa cada uno.
+        </div>
+
+        <table class="doc-table doc-table--gates">
+          <thead>
+            <tr><th>Bloqueo</th><th>Cuándo se activa</th><th>Qué hacer</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>PriceAboveMaxBid</code><span class="gate-es">Precio sobre la puja máxima</span></td>
+              <td>El remate ya pasó tu techo.</td>
+              <td>Bajarse. Ese era exactamente el punto del cálculo.</td>
+            </tr>
+            <tr>
+              <td><code>RoiBelowMinimum</code><span class="gate-es">Rentabilidad bajo el mínimo</span></td>
+              <td>La rentabilidad anualizada no alcanza tu objetivo.</td>
+              <td>Revisar si el objetivo es realista o si el auto simplemente no sirve.</td>
+            </tr>
+            <tr>
+              <td><code>InsufficientMarketData</code><span class="gate-es">Datos de mercado insuficientes</span></td>
+              <td>Menos de 3 comparables válidos.</td>
+              <td>Cargar más avisos. Es lo más fácil de arreglar.</td>
+            </tr>
+            <tr>
+              <td><code>CriticalDocumentRisk</code><span class="gate-es">Riesgo documental crítico</span></td>
+              <td>Declaraste riesgo de papeles «Alto».</td>
+              <td>Resolver el estado legal antes de siquiera mirar el precio.</td>
+            </tr>
+            <tr>
+              <td><code>PessimisticLossExceedsLimit</code><span class="gate-es">Pérdida pesimista intolerable</span></td>
+              <td>En el peor escenario, la pérdida supera lo aguantable.</td>
+              <td>Estrechar el rango de reparación con un presupuesto real, o pasar.</td>
+            </tr>
+            <tr>
+              <td><code>CapitalConcentration</code><span class="gate-es">Demasiado capital en un auto</span></td>
+              <td>La operación comprometería demasiado de tu capital total.</td>
+              <td>Buscar algo más barato. Un solo auto malo no puede hundir el negocio.</td>
+            </tr>
+            <tr>
+              <td><code>NotViable</code><span class="gate-es">Inviable</span></td>
+              <td>No existe precio de compra, ni siquiera cero, que deje la utilidad exigida.</td>
+              <td>Pasar. El auto vale menos que lo que cuesta dejarlo vendible.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ====================================================== -->
+      <section id="semaforo">
+        <h2><span class="num">12</span> El semáforo</h2>
+
+        <div class="lights">
+          <div class="light light--green">
+            <strong>VERDE — Comprar / participar</strong>
+            <p>Precio bajo el 90% de la puja máxima, puntaje 70 o más, ningún bloqueo activo.</p>
+            <p class="light__why">Hay espacio para equivocarse y el negocio sigue siendo bueno.</p>
+          </div>
+          <div class="light light--yellow">
+            <strong>AMARILLO — Evaluar con cuidado</strong>
+            <p>Precio bajo la puja máxima y puntaje 50 o más, sin bloqueos.</p>
+            <p class="light__why">El negocio existe pero está apretado. Cualquier sorpresa se come la ganancia.</p>
+          </div>
+          <div class="light light--red">
+            <strong>ROJO — No comprar</strong>
+            <p>Cualquier bloqueo activo, o precio sobre la puja máxima, o puntaje bajo 50.</p>
+            <p class="light__why">La pantalla siempre dice cuál de las tres condiciones se cumplió.</p>
+          </div>
+        </div>
+
+        <p>
+          El semáforo nunca aparece solo: viene con la lista de bloqueos, los tres precios clave y el
+          desglose del puntaje. Si alguna vez no entiendes un rojo, la razón está escrita en la misma
+          tarjeta.
+        </p>
+      </section>
+
+      <!-- ====================================================== -->
+      <section id="ejemplo">
+        <h2>Ejemplo completo con números</h2>
+
+        <p>
+          Estos son los datos que vienen precargados en el analizador. Sigamos el cálculo entero, paso
+          por paso.
+        </p>
+
+        <h3>Lo que sabemos del auto</h3>
+        <ul class="compact">
+          <li>Año 2018, 80.000 km. El remate va en <strong>$5.400.000</strong>. Estimamos venderlo en 35 días.</li>
+          <li>5 comparables publicados, entre $11.800.000 y $12.900.000.</li>
+          <li>Daños: carrocería $350k–420k–500k, pintura $200k–250k–300k, neumáticos $220k–250k–280k.</li>
+          <li>Transporte $150.000, detailing $150.000, otros gastos $100.000.</li>
+          <li>Solo inspección visual. Papeles sin problemas. Capital total del negocio: $40.000.000.</li>
+        </ul>
+
+        <h3>Paso 1 — ¿En cuánto lo vendo?</h3>
+        <div class="calc">
+          <div><span>Percentil 75 — optimista</span><span>$12.750.000</span></div>
+          <div><span>Percentil 50 — esperado</span><span>$12.499.200</span></div>
+          <div><span>Percentil 25</span><span>$12.201.600</span></div>
+          <div><span>Menos la brecha de negociación de 7%</span><span class="hl">$11.347.488</span></div>
+        </div>
+        <p class="note">Ese último número es el valor conservador. Todo lo demás cuelga de ahí.</p>
+
+        <h3>Paso 2 — ¿Cuánto me queda realmente de esa venta? <span class="sym sym--inline">S</span></h3>
+        <div class="calc">
+          <div><span>Valor conservador</span><span>$11.347.488</span></div>
+          <div><span>− Provisión de garantía, 2%</span><span>−$226.950</span></div>
+          <div><span>− Publicación y marketing, 0,5%</span><span>−$56.737</span></div>
+          <div><span><strong>S — venta neta</strong></span><span class="hl">$11.063.801</span></div>
+        </div>
+
+        <h3>Paso 3 — ¿Cuánto voy a gastar en el auto? <span class="sym sym--inline">F</span></h3>
+        <div class="calc">
+          <div><span>Reparación esperada ($420k + $250k + $250k)</span><span>$920.000</span></div>
+          <div><span>Transporte</span><span>$150.000</span></div>
+          <div><span>Detailing</span><span>$150.000</span></div>
+          <div><span>Imprevistos, 10% sobre los tres anteriores</span><span>$122.000</span></div>
+          <div><span>Trámite de transferencia</span><span>$25.000</span></div>
+          <div><span>Otros gastos</span><span>$100.000</span></div>
+          <div><span><strong>F — costos fijos</strong></span><span class="hl">$1.467.000</span></div>
+        </div>
+
+        <h3>Paso 4 — Comisiones y tiempo <span class="sym sym--inline">α</span> <span class="sym sym--inline">k</span></h3>
+        <div class="calc">
+          <div><span>Comisión del martillero 10%, más IVA 19%</span><span>11,90%</span></div>
+          <div><span>+ Impuesto de transferencia</span><span>1,50%</span></div>
+          <div><span><strong>α — todo lo proporcional</strong></span><span class="hl">13,40%</span></div>
+          <div><span>k = 1 + 1,5% × (35 días ÷ 30)</span><span class="hl">1,0175</span></div>
+        </div>
+        <p class="note">
+          O sea: por cada peso que pague, se van 13,4 centavos en comisiones e impuestos, y todo el
+          negocio se encarece un 1,75% por los 35 días de espera.
+        </p>
+
+        <h3>Paso 5 — ¿A qué precio no gano ni pierdo?</h3>
+        <div class="formula formula--sm">
+          ($11.063.801 ÷ 1,0175 − $1.467.000) ÷ 1,134 = <strong>$8.294.986</strong>
+        </div>
+        <p class="note">Comprando sobre ese precio, pierdes plata.</p>
+
+        <h3>Paso 6 — ¿Cuánto quiero ganar? <span class="sym sym--inline">U</span></h3>
+        <p>
+          El capital comprometido rondaría los $10,9 millones. El criterio del retorno anual pide
+          35% × (35 ÷ 365) × $10,9M ≈ $366.000, que es menos que el piso fijo. Así que manda el piso:
+        </p>
+        <div class="calc">
+          <div><span><strong>U — utilidad mínima exigida</strong></span><span class="hl">$1.500.000</span></div>
+        </div>
+
+        <h3>Paso 7 — Puja teórica</h3>
+        <div class="formula formula--sm">
+          ($11.063.801 − $1.500.000 − $1.467.000 × 1,0175) ÷ (1,134 × 1,0175) = <strong>$6.994.985</strong>
+        </div>
+        <p class="note">Ese sería el techo si tuviéramos certeza total. No la tenemos.</p>
+
+        <h3>Paso 8 — El colchón por lo que no sabemos</h3>
+        <div class="calc">
+          <div><span>Base</span><span>5,00%</span></div>
+          <div><span>Rango de reparación ancho: ($1.080.000 − $770.000) ÷ (2 × $920.000) = 16,85%, por su peso de 0,20</span><span>3,37%</span></div>
+          <div><span>Dispersión del mercado: 4,4%, por su peso de 0,15</span><span>0,66%</span></div>
+          <div><span>Solo 5 comparables: 1 ÷ (1 + 5) = 16,67%, por su peso de 0,10</span><span>1,67%</span></div>
+          <div><span>Papeles sin problemas</span><span>0,00%</span></div>
+          <div><span><strong>Colchón aplicado</strong></span><span class="hl">10,70%</span></div>
+        </div>
+
+        <h3>Paso 9 — La puja máxima</h3>
+        <div class="formula formula--hero formula--result">
+          $6.994.985 × (1 − 0,1070) = <strong>$6.246.859</strong>
+        </div>
+
+        <h3>Paso 10 — El veredicto</h3>
+        <p>
+          El remate va en $5.400.000, que está por debajo del 90% de la puja máxima ($5.622.173). El
+          puntaje da 81/100 y no hay bloqueos activos. <strong>Semáforo verde.</strong> La utilidad
+          esperada a ese precio es $3.340.366, un margen de 29,4% sobre la venta.
+        </p>
+
+        <div class="callout callout--key">
+          <strong>Y acá viene lo interesante.</strong> Si en la sala el precio sube a $7.000.000, el
+          puntaje baja apenas a 73/100 —sigue pareciendo un buen auto— pero el semáforo se pone
+          <strong>rojo</strong>, porque el precio superó la puja máxima en $753.141.
+          <br /><br />
+          Todavía habría utilidad: $1.494.214. Pero ya no compensa el riesgo que estás tomando ni la
+          plata que vas a tener inmovilizada. Ese es exactamente el momento en que un comprador sin
+          sistema sigue levantando la mano «porque igual gano algo», y así se erosiona un negocio.
+        </div>
+      </section>
+
+      <!-- ====================================================== -->
+      <section id="leer-pantalla">
+        <h2>Cómo leer la pantalla</h2>
+
+        <p>La columna de resultados está ordenada de la conclusión al detalle. Léela de arriba hacia abajo:</p>
+
+        <ol class="steps">
+          <li><strong>Tarjeta del veredicto.</strong> Semáforo, puntaje, puja máxima en grande, la barra con los tres precios y los bloqueos. Con esto decides.</li>
+          <li><strong>Resultado al precio evaluado.</strong> Utilidad, ROI, ROI anualizado, margen, capital comprometido y costo total al precio en que va el remate ahora.</li>
+          <li><strong>Valor de mercado.</strong> Los tres valores y qué tan buena es la evidencia que los sostiene.</li>
+          <li><strong>Estructura de costos.</strong> Desde la venta hasta lo que te queda, y desde cada gasto hasta el total. Acá revisas si cargaste algo mal.</li>
+          <li><strong>Escenarios.</strong> Los tres casos lado a lado. Mira el pesimista <em>antes</em> de decidir.</li>
+          <li><strong>Cómo se formó el puntaje.</strong> Está ordenado por lo que <em>más resta</em>, así que lo primero que ves es el punto débil del negocio.</li>
+          <li><strong>Colchón de seguridad.</strong> Qué lo está inflando y, por lo tanto, qué te conviene ir a averiguar antes del remate.</li>
+          <li><strong>Advertencias.</strong> Los límites del análisis. No son letra chica de relleno.</li>
+        </ol>
+
+        <p>
+          El botón <em>«Evaluar en la puja máxima»</em> lleva el precio exactamente al techo, para que
+          veas cuál sería el piso de rentabilidad de esa operación.
+        </p>
+
+        <div class="plain">
+          <strong>Todo se recalcula solo.</strong> No hay botón de «calcular»: apenas cambias
+          cualquier dato, los resultados se actualizan. Prueba mover el precio del remate hacia arriba
+          y mira cómo el semáforo cambia de verde a amarillo y luego a rojo.
+        </div>
+      </section>
+
+      <!-- ====================================================== -->
+      <section id="errores">
+        <h2>Errores comunes</h2>
+
+        <div class="mistakes">
+          <div class="mistake">
+            <strong>Poner un rango de reparación falsamente estrecho.</strong>
+            <p>
+              Si escribes mínimo, esperado y máximo casi iguales «para que el sistema no castigue», lo
+              único que consigues es que la puja máxima suba y termines pagando de más. Un rango ancho
+              no es un defecto del formulario: es información honesta sobre lo que no sabes.
+            </p>
+          </div>
+
+          <div class="mistake">
+            <strong>Marcar «prueba de manejo» cuando solo miraste el auto.</strong>
+            <p>
+              Baja artificialmente el riesgo mecánico y sube la puja. Es la forma más rápida de
+              convertir esta herramienta en una máquina de justificar compras malas.
+            </p>
+          </div>
+
+          <div class="mistake">
+            <strong>Cargar solo los avisos más caros que encuentras.</strong>
+            <p>
+              Infla la base de todo el cálculo. Carga los avisos que realmente representan a tu auto,
+              incluidos los baratos.
+            </p>
+          </div>
+
+          <div class="mistake">
+            <strong>Ser optimista con los días de venta.</strong>
+            <p>
+              Es el dato que más se subestima. Un auto que «se vende en dos semanas» y termina tardando
+              tres meses cambia por completo la rentabilidad. Usa tus datos reales apenas los tengas.
+            </p>
+          </div>
+
+          <div class="mistake">
+            <strong>Subir la puja en caliente porque «igual queda algo de ganancia».</strong>
+            <p>
+              Casi siempre queda algo entre la puja máxima y el punto de equilibrio. El asunto es que
+              esa ganancia ya no compensa el riesgo ni el capital inmovilizado. Si estás dispuesto a
+              ganar menos, cambia el parámetro <em>antes</em> del remate, con la cabeza fría, no
+              durante.
+            </p>
+          </div>
+
+          <div class="mistake">
+            <strong>Ignorar el bloqueo por concentración de capital.</strong>
+            <p>
+              Un promedio de rentabilidad excelente no salva a un negocio que puso el 90% de su plata
+              en tres autos y uno salió malo. Ese bloqueo existe para protegerte justamente de la mejor
+              oportunidad que hayas visto.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================== -->
+      <section id="faq">
+        <h2>Preguntas frecuentes</h2>
+
+        <div class="faq">
+          <div class="faq__item">
+            <strong>¿Por qué la puja máxima me sale más baja de lo que yo habría pagado?</strong>
+            <p>
+              Por tres razones que normalmente no se calculan a mano: las comisiones e impuestos son un
+              porcentaje del precio y suben cuando pujas más alto; la plata inmovilizada cuesta durante
+              todo el tiempo de venta; y el colchón descuenta por lo que no sabes. Puedes bajar el
+              colchón cargando más comparables y estrechando el rango de reparación con un presupuesto
+              real.
+            </p>
+          </div>
+
+          <div class="faq__item">
+            <strong>Si nunca gano un remate, ¿el sistema está mal calibrado?</strong>
+            <p>
+              Puede ser. Los valores que más mueven la puja son el ROI anual objetivo, la utilidad
+              mínima, el costo del capital y la brecha de negociación. Si son demasiado exigentes, no
+              vas a comprar nunca. Por eso el sistema está pensado para registrar también las pujas que
+              <em>pierdes</em> y a qué precio se adjudicó el auto: con esos datos podrás calibrar con
+              evidencia en vez de intuición.
+            </p>
+          </div>
+
+          <div class="faq__item">
+            <strong>¿Puedo cambiar los valores por defecto?</strong>
+            <p>
+              Sí, y deberías. Son un punto de partida razonable para Chile, no una recomendación.
+              Cuando exista la pantalla de parámetros quedarán versionados, de modo que cambiar uno hoy
+              no altere los análisis que hiciste el mes pasado.
+            </p>
+          </div>
+
+          <div class="faq__item">
+            <strong>¿Qué pasa si no encuentro comparables?</strong>
+            <p>
+              Puedes ingresar un valor de mercado a mano. El análisis funciona, pero la calidad de la
+              evidencia baja, el colchón sube y la puja máxima queda más conservadora. Es el precio
+              justo de no haber investigado.
+            </p>
+          </div>
+
+          <div class="faq__item">
+            <strong>¿La inteligencia artificial calcula algo de esto?</strong>
+            <p>
+              No. Ni un peso. La puja máxima, los costos, la utilidad, el ROI, el puntaje, los bloqueos
+              y el semáforo salen de código con pruebas automatizadas que se ejecutan en cada cambio.
+              Más adelante la IA leerá fotografías para <em>proponer</em> daños y redactará
+              explicaciones de resultados ya calculados, siempre con confirmación humana antes de que
+              nada entre al cálculo.
+            </p>
+          </div>
+
+          <div class="faq__item">
+            <strong>¿Por qué el mismo auto me da distinta puja según los días de venta?</strong>
+            <p>
+              Porque la plata inmovilizada cuesta, y porque la utilidad que exiges crece con el tiempo.
+              Un auto que tarda 90 días en venderse tiene que comprarse más barato que uno idéntico que
+              sale en 30.
+            </p>
+          </div>
+
+          <div class="faq__item">
+            <strong>¿Tengo que entender las fórmulas para usar el sistema?</strong>
+            <p>
+              No. Carga los datos honestamente y lee el semáforo. Las fórmulas están documentadas para
+              que puedas auditar de dónde sale cada número cuando quieras, no porque necesites
+              calcularlas.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================== -->
+      <section id="glosario">
+        <h2>Glosario completo</h2>
+
+        <dl class="terms terms--glossary">
+          <div><dt>Adjudicación</dt><dd>El cierre de la venta en el remate. El precio de adjudicación es lo que efectivamente pagas por el auto, antes de comisiones.</dd></div>
+          <div><dt>Airbag</dt><dd>Bolsa de aire de seguridad. Si se activó, hubo un choque relevante y reemplazarla es caro. Es señal de posible daño estructural.</dd></div>
+          <div><dt>α (alfa)</dt><dd>La suma de todos los costos que son un porcentaje del precio de compra: comisión, IVA sobre la comisión, gastos administrativos e impuesto de transferencia.</dd></div>
+          <div><dt>Break-even</dt><dd>Punto de equilibrio. El precio de compra en que la utilidad es exactamente cero.</dd></div>
+          <div><dt>Brecha de negociación</dt><dd>La diferencia entre el precio publicado en un aviso y el precio al que realmente se cierra la venta. Entre 5% y 12% en la práctica.</dd></div>
+          <div><dt>Capital inmovilizado</dt><dd>La plata que está metida en autos que aún no vendes. No está disponible para nuevas compras.</dd></div>
+          <div><dt>Comparable</dt><dd>Un aviso de un auto parecido al tuyo, usado como referencia de precio. El sistema los normaliza por año y kilometraje.</dd></div>
+          <div><dt>Contingencia / imprevistos</dt><dd>Un porcentaje extra que se agrega a los costos estimados, porque las reparaciones casi nunca salen en lo presupuestado.</dd></div>
+          <div><dt>Costo de capital</dt><dd>Lo que te cuesta tener la plata inmovilizada. Si la pediste prestada son intereses; si es tuya, es lo que dejaste de ganar en otra cosa.</dd></div>
+          <div><dt>Daño estructural</dt><dd>Deformación del chasis o de las partes que dan rigidez al auto. Es el daño más caro y el más difícil de estimar mirando.</dd></div>
+          <div><dt>Detailing</dt><dd>Preparación estética profunda antes de publicar: pulido, tapiz, motor limpio.</dd></div>
+          <div><dt>Dispersión</dt><dd>Qué tan distintos son los precios de los comparables entre sí. Alta dispersión significa un mercado poco predecible.</dd></div>
+          <div><dt>Encargo por robo</dt><dd>Anotación que indica que el vehículo está denunciado como robado. Comprarlo es perderlo.</dd></div>
+          <div><dt>Escenario</dt><dd>Una versión del mismo negocio bajo distintos supuestos: optimista, esperado o pesimista.</dd></div>
+          <div><dt>F</dt><dd>Los costos fijos posteriores a la compra. No cambian según el precio que pagues.</dd></div>
+          <div><dt>Gate / bloqueo</dt><dd>Una condición que fuerza el semáforo a rojo sin importar el puntaje.</dd></div>
+          <div><dt>Gravamen</dt><dd>Una carga legal sobre el auto. Mientras no se alce, el auto responde por una deuda ajena a ti.</dd></div>
+          <div><dt>Holgura</dt><dd>La diferencia entre la puja máxima y el precio actual del remate. Si es negativa, ya te pasaste.</dd></div>
+          <div><dt>IVA</dt><dd>Impuesto al Valor Agregado, 19% en Chile. Acá aparece sobre la comisión del martillero.</dd></div>
+          <div><dt>k</dt><dd>El factor que encarece toda la operación según los días que tarde la venta. Siempre es un poco mayor que 1.</dd></div>
+          <div><dt>Limitación al dominio</dt><dd>Restricción legal que impide vender o transferir el vehículo libremente.</dd></div>
+          <div><dt>Liquidez</dt><dd>Qué tan rápido se convierte un auto en plata. Un auto líquido se vende rápido; uno ilíquido se queda en el patio.</dd></div>
+          <div><dt>Lote</dt><dd>Cada bien que se remata por separado. Cada auto es un lote.</dd></div>
+          <div><dt>Maldición del ganador</dt><dd>En una subasta, quien gana suele ser quien más sobreestimó el valor. Por eso existe el colchón de seguridad.</dd></div>
+          <div><dt>Margen</dt><dd>Qué porcentaje del precio de venta es ganancia.</dd></div>
+          <div><dt>Martillero</dt><dd>Quien dirige el remate. Cobra comisión, normalmente alrededor del 10% más IVA.</dd></div>
+          <div><dt>Mediana</dt><dd>El valor del medio de una lista ordenada. Más robusta que el promedio porque no se deforma con un dato absurdo.</dd></div>
+          <div><dt>Percentil</dt><dd>Posición dentro de una lista ordenada. El percentil 25 deja un cuarto de los valores por debajo; el 75, tres cuartos.</dd></div>
+          <div><dt>Prenda</dt><dd>Garantía sobre el vehículo por una deuda. Debe estar «alzada» para vender tranquilo.</dd></div>
+          <div><dt>Provisión de garantía</dt><dd>Un porcentaje del precio de venta que se aparta para responder por fallas posteriores, como exige la ley del consumidor.</dd></div>
+          <div><dt>Puja máxima</dt><dd>El precio máximo que te conviene pagar. El número central de todo el sistema.</dd></div>
+          <div><dt>ROI</dt><dd>Retorno sobre la Inversión, del inglés <em>Return On Investment</em>. Cuánto ganaste por cada peso que pusiste.</dd></div>
+          <div><dt>ROI anualizado</dt><dd>El ROI llevado a escala anual, para poder comparar operaciones de distinta duración.</dd></div>
+          <div><dt>S</dt><dd>La venta neta: lo que realmente te queda del precio de venta después de garantía y publicación.</dd></div>
+          <div><dt>Score / puntaje</dt><dd>Nota de 0 a 100 que resume la calidad de la oportunidad. Sirve para ordenar, no para decidir.</dd></div>
+          <div><dt>TAG</dt><dd>Sistema de peaje de autopistas urbanas. Sus deudas siguen al vehículo, no al dueño anterior.</dd></div>
+          <div><dt>Transferencia</dt><dd>El trámite de poner el auto a tu nombre. Tiene un costo fijo y un impuesto porcentual.</dd></div>
+          <div><dt>U</dt><dd>La utilidad mínima que exiges para que valga la pena entrar al negocio.</dd></div>
+          <div><dt>Utilidad</dt><dd>La ganancia en pesos: lo que queda después de descontar absolutamente todo.</dd></div>
+        </dl>
+      </section>
+
+      <!-- ====================================================== -->
+      <section id="formulario">
+        <h2>Todas las fórmulas juntas</h2>
+
+        <p>Para consulta rápida. Cada una está explicada en su sección correspondiente.</p>
+
+        <div class="formula formula--stack formula--reference">
+          <div class="fx"><span class="fx__name">Venta neta</span><span>S = valor conservador × (1 − garantía% − marketing%)</span></div>
+          <div class="fx"><span class="fx__name">Costos fijos</span><span>F = reparación + transporte + detailing + imprevistos + transferencia + otros</span></div>
+          <div class="fx"><span class="fx__name">Tasa proporcional</span><span>α = comisión × (1 + IVA) + admin% + transferencia%</span></div>
+          <div class="fx"><span class="fx__name">Factor de tiempo</span><span>k = 1 + costo mensual del capital × (días ÷ 30)</span></div>
+          <div class="formula__sep"></div>
+          <div class="fx"><span class="fx__name">Costo total</span><span>Costo(P) = P × (1 + α) × k + F × k</span></div>
+          <div class="fx"><span class="fx__name">Utilidad</span><span>Utilidad(P) = S − Costo(P)</span></div>
+          <div class="fx"><span class="fx__name">ROI</span><span>ROI = utilidad ÷ costo total</span></div>
+          <div class="fx"><span class="fx__name">ROI anualizado</span><span>(1 + ROI)<sup>365 ÷ días</sup> − 1</span></div>
+          <div class="fx"><span class="fx__name">Margen</span><span>utilidad ÷ precio de venta</span></div>
+          <div class="formula__sep"></div>
+          <div class="fx"><span class="fx__name">Punto de equilibrio</span><span>(S ÷ k − F) ÷ (1 + α)</span></div>
+          <div class="fx"><span class="fx__name">Utilidad mínima</span><span>U = mayor entre (monto fijo) y (ROI anual × días ÷ 365 × capital)</span></div>
+          <div class="fx"><span class="fx__name">Puja teórica</span><span>(S − U − F × k) ÷ ((1 + α) × k)</span></div>
+          <div class="fx"><span class="fx__name">Colchón</span><span>5% + 0,20×incert. reparación + 0,15×dispersión + 0,10×escasez datos + 0,10×riesgo papeles, entre 3% y 25%</span></div>
+          <div class="fx fx--result"><span class="fx__name">PUJA MÁXIMA</span><span>Puja teórica × (1 − colchón)</span></div>
+        </div>
+      </section>
+
+      <!-- ====================================================== -->
+      <section id="limites">
+        <h2>Límites y advertencias</h2>
+
+        <div class="callout callout--warn">
+          <ul class="compact">
+            <li>
+              Las estimaciones de reparación son referenciales y <strong>no reemplazan una revisión
+              mecánica profesional</strong> ni un presupuesto de taller.
+            </li>
+            <li>
+              El estado de los papeles —encargo por robo, prendas, limitaciones al dominio, deudas de
+              TAG— <strong>debe verificarse en el Registro Civil antes de pujar</strong>. El sistema
+              solo registra lo que tú declaras.
+            </li>
+            <li>
+              El sistema <strong>no asume ningún régimen tributario</strong>. El impuesto sobre la
+              utilidad es un parámetro que defines con tu contador; la utilidad se informa antes y
+              después de impuestos por separado.
+            </li>
+            <li>
+              Los resultados <strong>no son asesoría legal, tributaria ni de inversión</strong>. La
+              decisión de comprar es tuya.
+            </li>
+            <li>
+              La calidad del análisis depende por completo de la calidad de lo que cargues. Datos
+              optimistas producen pujas altas y pérdidas reales.
+            </li>
+          </ul>
+        </div>
+
+        <div class="doc-foot">
+          <a routerLink="/analizador" class="btn-primary">Ir al analizador →</a>
+        </div>
+      </section>
+
+    </article>
+  </div>
+</div>

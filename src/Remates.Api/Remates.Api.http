@@ -1,0 +1,37 @@
+@host = http://localhost:5044
+
+### Parámetros por defecto del motor
+GET {{host}}/api/analysis/default-parameters
+Accept: application/json
+
+### Simular una oportunidad
+# Devuelve puja máxima, utilidad, ROI, escenarios, score y semáforo.
+POST {{host}}/api/analysis/simulate
+Content-Type: application/json
+
+{
+  "year": 2018,
+  "mileageKm": 80000,
+  "comparables": [
+    { "listedPrice": 12300000, "year": 2018, "mileageKm": 78000, "ageDays": 3, "source": "Chileautos" },
+    { "listedPrice": 12400000, "year": 2018, "mileageKm": 82000, "ageDays": 5, "source": "Yapo" },
+    { "listedPrice": 12900000, "year": 2019, "mileageKm": 70000, "ageDays": 7, "source": "Chileautos" },
+    { "listedPrice": 11800000, "year": 2017, "mileageKm": 95000, "ageDays": 2, "source": "MercadoLibre" },
+    { "listedPrice": 12500000, "year": 2018, "mileageKm": 85000, "ageDays": 10, "source": "Chileautos" }
+  ],
+  "damages": [
+    { "category": "Bodywork", "severity": "Moderate", "costMin": 350000, "costExpected": 420000, "costMax": 500000, "description": "Golpe lateral derecho" },
+    { "category": "Paint", "severity": "Minor", "costMin": 200000, "costExpected": 250000, "costMax": 300000 },
+    { "category": "Tires", "severity": "Moderate", "costMin": 220000, "costExpected": 250000, "costMax": 280000 }
+  ],
+  "inspectionLevel": "VisualOnly",
+  "documentRisk": "None",
+  "transport": 150000,
+  "detailing": 150000,
+  "otherFixedCosts": 100000,
+  "estimatedDaysToSell": 35,
+  "currentAuctionPrice": 5400000,
+  "totalCapital": 40000000
+}
+
+###

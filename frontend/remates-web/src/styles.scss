@@ -1,0 +1,59 @@
+/* Sistema de diseño base. Orientado a decisiones: denso, legible, sin adornos. */
+
+:root {
+  color-scheme: dark;
+
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface-2: #1c2430;
+  --border: #2a323d;
+  --text: #e6edf3;
+  --text-dim: #9aa7b4;
+  --text-faint: #6b7684;
+
+  --accent: #4a9eff;
+  --green: #2ea043;
+  --green-soft: #1a3a24;
+  --yellow: #d29922;
+  --yellow-soft: #3a2f10;
+  --red: #da3633;
+  --red-soft: #3d1c1c;
+
+  --radius: 10px;
+  --radius-sm: 6px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+h1, h2, h3 { margin: 0; font-weight: 600; }
+
+table { border-collapse: collapse; width: 100%; }
+
+input, select, button {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+input[type='number'], input[type='text'], select {
+  width: 100%;
+  padding: 6px 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  outline: none;
+
+  &:focus { border-color: var(--accent); }
+}
+
+input[type='number'] { text-align: right; font-variant-numeric: tabular-nums; }

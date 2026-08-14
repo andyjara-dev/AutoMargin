@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Remates.Api/Remates.Api.csproj" />
+    <Project Path="src/Remates.Domain/Remates.Domain.csproj" />
+    <Project Path="src/Remates.Infrastructure/Remates.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Remates.Domain.Tests/Remates.Domain.Tests.csproj" />
+  </Folder>
+</Solution>

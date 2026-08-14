@@ -1,0 +1,31 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+artifacts/
+TestResults/
+
+# Secretos y entorno
+.env
+appsettings.Development.local.json
+appsettings.Local.json
+*.pfx
+
+# Node / Angular
+node_modules/
+dist/
+.angular/
+npm-debug.log*
+yarn-error.log*
+
+# IDE
+.idea/
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
+
+# SO
+Thumbs.db
+.DS_Store

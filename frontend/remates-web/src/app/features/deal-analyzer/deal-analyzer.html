@@ -1,0 +1,402 @@
+<div class="analyzer">
+  <header class="topbar">
+    <div>
+      <h1>Analizador de oportunidad</h1>
+      <p class="subtitle">
+        Cálculo determinístico de puja máxima, rentabilidad y riesgo. Ningún modelo de lenguaje
+        interviene en estos números.
+        <a routerLink="/manual" class="help-link">¿Primera vez? Lee el manual →</a>
+      </p>
+    </div>
+    @if (loading()) {
+      <span class="pill pill--muted">Calculando…</span>
+    }
+  </header>
+
+  @if (error()) {
+    <div class="alert alert--error">{{ error() }}</div>
+  }
+
+  <div class="layout">
+    <!-- ============ COLUMNA IZQUIERDA: DATOS ============ -->
+    <form class="inputs" [formGroup]="form">
+      <section class="card">
+        <h2>Vehículo y remate</h2>
+        <div class="grid grid--2">
+          <label>Año
+            <input type="number" formControlName="year" />
+          </label>
+          <label>Kilometraje
+            <input type="number" formControlName="mileageKm" step="1000" />
+          </label>
+          <label>Precio actual del lote
+            <input type="number" formControlName="currentAuctionPrice" step="100000" />
+          </label>
+          <label>Días estimados de venta
+            <input type="number" formControlName="estimatedDaysToSell" />
+          </label>
+          <label>Nivel de inspección lograda
+            <select formControlName="inspectionLevel">
+              @for (opt of inspectionLevels; track opt.value) {
+                <option [value]="opt.value">{{ opt.label }}</option>
+              }
+            </select>
+          </label>
+          <label>Riesgo documental
+            <select formControlName="documentRisk">
+              @for (opt of documentRisks; track opt.value) {
+                <option [value]="opt.value">{{ opt.label }}</option>
+              }
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Costos posteriores a la compra</h2>
+        <div class="grid grid--3">
+          <label>Transporte
+            <input type="number" formControlName="transport" step="10000" />
+          </label>
+          <label>Detailing
+            <input type="number" formControlName="detailing" step="10000" />
+          </label>
+          <label>Otros gastos
+            <input type="number" formControlName="otherFixedCosts" step="10000" />
+          </label>
+        </div>
+        <p class="hint">
+          La comisión del martillero y el impuesto de transferencia no se ingresan aquí: son
+          proporcionales al precio de adjudicación y el motor los resuelve dentro de la fórmula.
+        </p>
+      </section>
+
+      <section class="card">
+        <div class="card__head">
+          <h2>Comparables de mercado</h2>
+          <button type="button" class="btn btn--ghost" (click)="addComparable()">+ Agregar</button>
+        </div>
+
+        <div class="table-scroll">
+          <table class="editable" formArrayName="comparables">
+            <thead>
+              <tr>
+                <th>Precio lista</th><th>Año</th><th>Km</th><th>Días aviso</th>
+                <th>Fuente</th><th>Atípico</th><th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of comparables.controls; track $index; let i = $index) {
+                <tr [formGroupName]="i">
+                  <td><input type="number" formControlName="listedPrice" step="100000" /></td>
+                  <td><input type="number" formControlName="year" class="narrow" /></td>
+                  <td><input type="number" formControlName="mileageKm" step="1000" /></td>
+                  <td><input type="number" formControlName="ageDays" class="narrow" /></td>
+                  <td><input type="text" formControlName="source" /></td>
+                  <td class="center"><input type="checkbox" formControlName="isOutlier" /></td>
+                  <td><button type="button" class="btn btn--icon" (click)="removeComparable(i)">×</button></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <p class="hint">
+          Son precios de <strong>lista</strong>, no de transacción. El motor descuenta la brecha de
+          negociación antes de calcular la puja.
+        </p>
+      </section>
+
+      <section class="card">
+        <div class="card__head">
+          <h2>Daños y reparación estimada</h2>
+          <button type="button" class="btn btn--ghost" (click)="addDamage()">+ Agregar</button>
+        </div>
+
+        <div class="table-scroll">
+          <table class="editable" formArrayName="damages">
+            <thead>
+              <tr>
+                <th>Categoría</th><th>Gravedad</th><th>Mínimo</th><th>Esperado</th>
+                <th>Máximo</th><th>Detalle</th><th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of damages.controls; track $index; let i = $index) {
+                <tr [formGroupName]="i">
+                  <td>
+                    <select formControlName="category">
+                      @for (opt of damageCategories; track opt.value) {
+                        <option [value]="opt.value">{{ opt.label }}</option>
+                      }
+                    </select>
+                  </td>
+                  <td>
+                    <select formControlName="severity">
+                      @for (opt of severities; track opt.value) {
+                        <option [value]="opt.value">{{ opt.label }}</option>
+                      }
+                    </select>
+                  </td>
+                  <td><input type="number" formControlName="costMin" step="50000" /></td>
+                  <td><input type="number" formControlName="costExpected" step="50000" /></td>
+                  <td><input type="number" formControlName="costMax" step="50000" /></td>
+                  <td><input type="text" formControlName="description" /></td>
+                  <td><button type="button" class="btn btn--icon" (click)="removeDamage(i)">×</button></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <p class="hint">
+          El rango importa tanto como el valor esperado: cuanto más ancho, mayor será el margen de
+          seguridad que el motor descuenta de la puja.
+        </p>
+      </section>
+
+      <section class="card">
+        <h2>Capital del negocio</h2>
+        <label>Capital total disponible
+          <input type="number" formControlName="totalCapital" step="1000000" />
+        </label>
+        <p class="hint">
+          Se usa para controlar la concentración: una sola unidad no debería comprometer una
+          fracción excesiva del capital.
+        </p>
+      </section>
+    </form>
+
+    <!-- ============ COLUMNA DERECHA: RESULTADOS ============ -->
+    <div class="results">
+      @if (result(); as r) {
+        <section class="verdict" [class]="'verdict--' + r.score.trafficLight.toLowerCase()">
+          <div class="verdict__head">
+            <span class="verdict__light"></span>
+            <div>
+              <strong class="verdict__label">{{ r.score.recommendation }}</strong>
+              <span class="verdict__score">Score {{ r.score.score }}/100</span>
+            </div>
+          </div>
+
+          <div class="maxbid">
+            <span class="maxbid__label">PUJA MÁXIMA</span>
+            <span class="maxbid__value">{{ clp(r.maxBid.maxBid) }}</span>
+            <span class="maxbid__note">
+              Incluye un margen de seguridad de {{ pct(r.maxBid.safetyMarginPct) }} sobre
+              {{ clp(r.maxBid.theoreticalMaxBid) }}
+            </span>
+          </div>
+
+          @if (ladder(); as l) {
+            <div class="ladder">
+              <div class="ladder__track">
+                <div class="ladder__fill" [style.width.%]="l.maxBidPct"></div>
+                <div class="ladder__mark ladder__mark--max" [style.left.%]="l.maxBidPct"></div>
+                <div class="ladder__mark ladder__mark--be" [style.left.%]="l.breakevenPct"></div>
+                <div class="ladder__mark ladder__mark--now" [style.left.%]="l.currentPct"></div>
+              </div>
+              <div class="ladder__legend">
+                <span><i class="dot dot--now"></i> Precio actual {{ clp(r.currentAuctionPrice) }}</span>
+                <span><i class="dot dot--max"></i> Puja máxima {{ clp(r.maxBid.maxBid) }}</span>
+                <span><i class="dot dot--be"></i> Equilibrio {{ clp(r.breakevenBid) }}</span>
+              </div>
+            </div>
+          }
+
+          <div class="headroom" [class.headroom--negative]="r.headroom < 0">
+            @if (r.headroom >= 0) {
+              Queda margen de {{ clp(r.headroom) }} antes de tocar el techo.
+            } @else {
+              El precio ya supera la puja máxima en {{ clp(-r.headroom) }}.
+            }
+            <button type="button" class="btn btn--link" (click)="useMaxBidAsPrice()">
+              Evaluar en la puja máxima
+            </button>
+          </div>
+
+          @if (r.score.gates.length) {
+            <ul class="gates">
+              @for (gate of r.score.gates; track gate.code) {
+                <li>{{ gate.message }}</li>
+              }
+            </ul>
+          }
+        </section>
+
+        <section class="card">
+          <h2>Resultado al precio evaluado</h2>
+          <div class="kpis">
+            <div class="kpi">
+              <span class="kpi__label">Utilidad</span>
+              <span class="kpi__value" [class.negative]="r.metricsAtCurrentPrice.profit < 0">
+                {{ clp(r.metricsAtCurrentPrice.profit) }}
+              </span>
+            </div>
+            <div class="kpi">
+              <span class="kpi__label">ROI</span>
+              <span class="kpi__value">{{ pct(r.metricsAtCurrentPrice.roiSimple) }}</span>
+            </div>
+            <div class="kpi">
+              <span class="kpi__label">ROI anualizado</span>
+              <span class="kpi__value">{{ annualizedPct(r.metricsAtCurrentPrice.roiAnnualized) }}</span>
+            </div>
+            <div class="kpi">
+              <span class="kpi__label">Margen sobre venta</span>
+              <span class="kpi__value">{{ pct(r.metricsAtCurrentPrice.marginPct) }}</span>
+            </div>
+            <div class="kpi">
+              <span class="kpi__label">Capital comprometido</span>
+              <span class="kpi__value">{{ clp(r.metricsAtCurrentPrice.cashDeployed) }}</span>
+            </div>
+            <div class="kpi">
+              <span class="kpi__label">Costo total</span>
+              <span class="kpi__value">{{ clp(r.metricsAtCurrentPrice.totalCost) }}</span>
+            </div>
+          </div>
+          <p class="hint">
+            Comprando exactamente en la puja máxima la utilidad sería
+            {{ clp(r.metricsAtMaxBid.profit) }}, que es el mínimo exigido a esta operación
+            ({{ clp(r.maxBid.requiredProfit) }}).
+          </p>
+        </section>
+
+        <section class="card">
+          <h2>Valor de mercado</h2>
+          <div class="kpis kpis--3">
+            <div class="kpi">
+              <span class="kpi__label">Optimista</span>
+              <span class="kpi__value">{{ clp(r.valuation.optimistic) }}</span>
+            </div>
+            <div class="kpi">
+              <span class="kpi__label">Esperado</span>
+              <span class="kpi__value">{{ clp(r.valuation.expected) }}</span>
+            </div>
+            <div class="kpi kpi--highlight">
+              <span class="kpi__label">Conservador (base del cálculo)</span>
+              <span class="kpi__value">{{ clp(r.valuation.conservative) }}</span>
+            </div>
+          </div>
+          <p class="hint">
+            {{ r.valuation.comparableCount }} comparables válidos@if (r.valuation.excludedCount) {
+              <span> ({{ r.valuation.excludedCount }} excluidos)</span>
+            }, dispersión {{ pct(r.valuation.dispersionPct) }}, brecha de negociación
+            {{ pct(r.valuation.negotiationDiscountPct) }}.
+          </p>
+        </section>
+
+        <section class="card">
+          <h2>Estructura de costos</h2>
+          <table class="readout">
+            <tbody>
+              <tr class="readout__section">
+                <td>Venta conservadora</td>
+                <td>{{ clp(r.costStructure.grossSaleValue) }}</td>
+              </tr>
+              @for (line of r.costStructure.saleDeductionLines; track line.key) {
+                <tr class="readout__deduct">
+                  <td>− {{ line.label }}</td>
+                  <td>{{ clp(line.amount) }}</td>
+                </tr>
+              }
+              <tr class="readout__total">
+                <td>Venta neta (S)</td>
+                <td>{{ clp(r.costStructure.netSaleValue) }}</td>
+              </tr>
+
+              @for (line of r.costStructure.fixedCostLines; track line.key) {
+                @if (line.amount > 0) {
+                  <tr>
+                    <td>{{ line.label }}</td>
+                    <td>{{ clp(line.amount) }}</td>
+                  </tr>
+                }
+              }
+              <tr class="readout__total">
+                <td>Costos fijos post-compra (F)</td>
+                <td>{{ clp(r.costStructure.fixedCosts) }}</td>
+              </tr>
+
+              <tr>
+                <td>Costos proporcionales al martillo (α)</td>
+                <td>{{ pct(r.costStructure.proportionalRate, 2) }}</td>
+              </tr>
+              <tr>
+                <td>Costo de capital ({{ r.costStructure.daysToSell }} días)</td>
+                <td>{{ clp(r.metricsAtCurrentPrice.capitalCost) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="card">
+          <h2>Escenarios</h2>
+          <table class="readout readout--grid">
+            <thead>
+              <tr><th>Escenario</th><th>Venta</th><th>Reparación</th><th>Días</th><th>Utilidad</th></tr>
+            </thead>
+            <tbody>
+              @for (s of r.scenarios; track s.kind) {
+                <tr [class]="'tone-' + scenarioTone(s.kind)">
+                  <td>{{ s.label }}</td>
+                  <td>{{ clp(s.saleValue) }}</td>
+                  <td>{{ clp(s.repairCost) }}</td>
+                  <td>{{ s.daysToSell }}</td>
+                  <td [class.negative]="s.metrics.profit < 0">{{ clp(s.metrics.profit) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </section>
+
+        <section class="card">
+          <h2>Cómo se formó el score</h2>
+          @for (c of weakestComponents(); track c.key) {
+            <div class="component">
+              <div class="component__head">
+                <span>{{ c.label }}</span>
+                <span class="component__points">{{ c.points }} / {{ c.weight }} pts</span>
+              </div>
+              <div class="bar"><div class="bar__fill" [style.width.%]="c.normalized"></div></div>
+              <p class="component__why">{{ c.explanation }}</p>
+            </div>
+          }
+        </section>
+
+        <section class="card">
+          <h2>Margen de seguridad aplicado</h2>
+          <table class="readout">
+            <tbody>
+              @for (m of r.maxBid.safetyMarginBreakdown; track m.key) {
+                <tr>
+                  <td>{{ m.label }}</td>
+                  <td>{{ pct(m.contribution, 2) }}</td>
+                </tr>
+              }
+              <tr class="readout__total">
+                <td>Margen aplicado (acotado)</td>
+                <td>{{ pct(r.maxBid.safetyMarginPct, 2) }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="hint">
+            Ganar una subasta significa haber sido el más optimista de la sala. El margen crece con
+            la incertidumbre real de este vehículo, no es un porcentaje fijo.
+          </p>
+        </section>
+
+        <section class="card card--muted">
+          <h2>Advertencias</h2>
+          <ul class="disclaimers">
+            @for (d of r.disclaimers; track d) {
+              <li>{{ d }}</li>
+            }
+          </ul>
+          <p class="version">
+            Motor financiero v{{ r.financialEngineVersion }} · Motor de scoring v{{ r.scoringEngineVersion }}
+          </p>
+        </section>
+      } @else if (!error()) {
+        <section class="card"><p>Cargando análisis…</p></section>
+      }
+    </div>
+  </div>
+</div>

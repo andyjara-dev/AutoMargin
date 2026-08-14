@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "remates-web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["start", "--prefix", "frontend/remates-web"],
+      "port": 4200
+    }
+  ]
+}
