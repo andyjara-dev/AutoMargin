@@ -6,7 +6,7 @@ import { clp, num } from '../../core/format';
 import { describeHttpError } from '../../core/http-error';
 import { VEHICLE_STATUS_LABELS, VehicleStatus, VehicleSummary } from '../../core/models/auth.models';
 import { selectOnTouch } from '../../core/select-on-touch';
-import { LotsService } from '../../core/services/lots.service';
+import { BidResult, LotsService } from '../../core/services/lots.service';
 import { VehiclesService } from '../../core/services/vehicles.service';
 import { HelpTip } from '../../shared/help-tip';
 
@@ -15,6 +15,13 @@ interface Lot {
   vehicle: VehicleSummary;
   /** Lo que va ofreciendo la sala ahora mismo. Vive solo en esta pantalla. */
   currentPrice: number | null;
+}
+
+/** Cierre en curso: el lote, cómo terminó, y a cuánto se lo llevaron. */
+interface Closing {
+  lot: Lot;
+  result: BidResult;
+  winningPrice: number | null;
 }
 
 /**
@@ -52,6 +59,9 @@ export class AuctionRoom {
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly busyId = signal<number | null>(null);
+
+  /** Lote que se está cerrando, mientras se anota a cuánto se fue. */
+  readonly closing = signal<Closing | null>(null);
 
   /** Cuántos lotes están sobre su techo ahora mismo. Es la lectura de un vistazo. */
   readonly overLimit = computed(() =>
@@ -131,21 +141,70 @@ export class AuctionRoom {
     return headroom > max * 0.1 ? 'green' : 'yellow';
   }
 
-  mark(lot: Lot, status: VehicleStatus): void {
-    this.busyId.set(lot.vehicle.id);
+  /**
+   * Abre el cierre del lote. No se manda nada todavía: primero se pide el precio de adjudicación,
+   * que es el dato que da sentido a haber perdido.
+   */
+  startClosing(lot: Lot, result: BidResult): void {
+    this.closing.set({
+      lot,
+      result,
+      // Al ganar, el precio de adjudicación es lo que uno pagó, y suele ser lo último que se
+      // tecleó en la sala. Al perder hay que preguntarlo: nadie lo tiene anotado.
+      winningPrice: result === 'Won' ? lot.currentPrice : null
+    });
+
+    this.error.set(null);
+  }
+
+  cancelClosing(): void {
+    this.closing.set(null);
+  }
+
+  setClosingPrice(value: string): void {
+    const parsed = Number(value.replace(/\D/g, ''));
+
+    this.closing.update((c) =>
+      c === null ? null : { ...c, winningPrice: Number.isFinite(parsed) && parsed > 0 ? parsed : null }
+    );
+  }
+
+  confirmClosing(): void {
+    const closing = this.closing();
+    if (closing === null) return;
+
+    this.busyId.set(closing.lot.vehicle.id);
     this.error.set(null);
 
-    this.lots.changeStatus(lot.vehicle.id, status).subscribe({
-      next: () => {
-        this.busyId.set(null);
-        // Sale de la lista porque deja de estar en juego, no porque se borre.
-        this.items.update((items) => items.filter((l) => l.vehicle.id !== lot.vehicle.id));
-      },
-      error: (err) => {
-        this.busyId.set(null);
-        this.error.set(describeHttpError(err));
-      }
-    });
+    this.lots
+      .recordBidResult(closing.lot.vehicle.id, {
+        result: closing.result,
+        bidPlaced: closing.lot.currentPrice,
+        winningPrice: closing.winningPrice
+      })
+      .subscribe({
+        next: () => {
+          this.busyId.set(null);
+          this.closing.set(null);
+          // Sale de la lista porque deja de estar en juego, no porque se borre.
+          this.items.update((items) =>
+            items.filter((l) => l.vehicle.id !== closing.lot.vehicle.id));
+        },
+        error: (err) => {
+          this.busyId.set(null);
+          this.error.set(describeHttpError(err));
+        }
+      });
+  }
+
+  /** Cuánto faltó para ganar, según el precio que se está anotando. */
+  closingGap(): number | null {
+    const closing = this.closing();
+    const max = closing?.lot.vehicle.lastMaxBid;
+
+    if (closing?.winningPrice == null || max == null) return null;
+
+    return closing.winningPrice - max;
   }
 
   remove(lot: Lot): void {

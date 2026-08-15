@@ -46,6 +46,38 @@ public sealed class ChangeStatusRequest
     public string? Note { get; set; }
 }
 
+/// <summary>
+/// Cómo terminó un remate. Se registra aunque se pierda: el precio de adjudicación de un lote
+/// perdido es el único dato que dice si la puja máxima va corta, y sin él perder solo informa
+/// que alguien ofreció más, no cuánto más.
+/// </summary>
+public sealed class BidResultRequest
+{
+    public BidResult Result { get; set; }
+
+    /// <summary>Lo que llegamos a ofrecer. Nulo si no se alcanzó a pujar.</summary>
+    [Range(0, 999_999_999)]
+    public decimal? BidPlaced { get; set; }
+
+    /// <summary>Precio final del martillo, lo hayamos ganado o no.</summary>
+    [Range(0, 999_999_999)]
+    public decimal? WinningPrice { get; set; }
+
+    [MaxLength(500)]
+    public string? Note { get; set; }
+}
+
+public sealed record BidRecord(
+    long Id,
+    long VehicleId,
+    string VehicleLabel,
+    decimal MaxBidAuthorized,
+    decimal? BidPlaced,
+    BidResult Result,
+    decimal? WinningPrice,
+    DateTimeOffset DecidedAt,
+    string? Note);
+
 public sealed record VehicleSummary(
     long Id,
     string Label,

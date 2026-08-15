@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Remates.Domain.Alerts;
+using Remates.Domain.Learning;
 using Remates.Infrastructure.Entities;
 
 namespace Remates.Api.Contracts;
@@ -79,4 +80,6 @@ public sealed record DashboardSummary(
     IReadOnlyList<OpportunityRow> Opportunities,
     IReadOnlyList<Alert> Alerts,
     /// <summary>Ventas acumuladas. Bajo unas pocas decenas, los promedios no son concluyentes.</summary>
-    int ClosedOperations);
+    int ClosedOperations,
+    /// <summary>Qué tan afinada está la puja máxima, medida sobre los remates ya cerrados.</summary>
+    CalibrationReport Calibration);

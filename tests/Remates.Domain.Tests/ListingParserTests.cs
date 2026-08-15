@@ -203,6 +203,39 @@ public class ListingParserTests
         Assert.Equal(expected, result.Region);
     }
 
+    /// <summary>
+    /// Los avisos rotulan por comuna mucho más seguido que por región: «Maipú» aparece solo,
+    /// sin decir Santiago en ninguna parte.
+    /// </summary>
+    [Theory]
+    [InlineData("Toyota Yaris 2018 $ 9.800.000 50.000 km, Maipú", "Metropolitana")]
+    [InlineData("Toyota Yaris 2018 $ 9.800.000 50.000 km, Vitacura", "Metropolitana")]
+    [InlineData("Toyota Yaris 2018 $ 9.800.000 50.000 km, Ñuñoa", "Metropolitana")]
+    [InlineData("Toyota Yaris 2018 $ 9.800.000 50.000 km, San Pedro de la Paz", "Biobío")]
+    [InlineData("Toyota Yaris 2018 $ 9.800.000 50.000 km, Puerto Varas", "Los Lagos")]
+    public void Reconoce_la_region_desde_la_comuna(string text, string expected)
+    {
+        var result = ListingParser.Parse(text, Makes);
+
+        Assert.Equal(expected, result.Region);
+    }
+
+    /// <summary>
+    /// El título de un aviso de Yapo empieza con el nombre del vendedor, y varias comunas son
+    /// apellidos chilenos frecuentes. Una región inventada es peor que ninguna: hace parecer
+    /// comparable un auto que está a mil kilómetros.
+    /// </summary>
+    [Theory]
+    [InlineData("Juan Castro Toyota Yaris 2018 $ 9.800.000 50.000 km")]
+    [InlineData("María Linares Toyota Yaris 2018 $ 9.800.000 50.000 km")]
+    [InlineData("Pedro Ovalle Toyota Yaris 2018 $ 9.800.000 50.000 km")]
+    public void No_confunde_un_apellido_con_una_comuna(string text)
+    {
+        var result = ListingParser.Parse(text, Makes);
+
+        Assert.Null(result.Region);
+    }
+
     [Fact]
     public void No_inventa_una_region_cuando_el_aviso_no_la_menciona()
     {

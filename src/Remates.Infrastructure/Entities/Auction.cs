@@ -54,7 +54,16 @@ public class AuctionLot : AuditableEntity
 /// </summary>
 public class Bid : AuditableEntity
 {
-    public long AuctionLotId { get; set; }
+    /// <summary>
+    /// El vehículo por el que se pujó. Es la referencia obligatoria porque en la práctica no se
+    /// modelan casas de martillo ni remates: se prepara un lote, se va, y se anota cómo terminó.
+    /// Exigir toda la jerarquía obligaría a inventar un remate y una casa por cada puja.
+    /// </summary>
+    public long VehicleId { get; set; }
+    public Vehicle? Vehicle { get; set; }
+
+    /// <summary>Opcional, para cuando sí se registre el remate con su lote.</summary>
+    public long? AuctionLotId { get; set; }
     public AuctionLot? AuctionLot { get; set; }
 
     /// <summary>La puja máxima que autorizó el sistema en ese momento.</summary>

@@ -6,6 +6,8 @@ import { catchError, of, tap } from 'rxjs';
 
 import { API_BASE_URL } from '../../core/api-config';
 import { AnalysisParameters } from '../../core/models/analysis.models';
+import { GlossaryKey } from '../../shared/glossary';
+import { HelpTip } from '../../shared/help-tip';
 
 interface ParameterSetResponse {
   id: number;
@@ -38,12 +40,18 @@ interface Field {
 interface FieldGroup {
   title: string;
   intro: string;
+  /**
+   * Concepto del glosario al que pertenece el grupo. La ayuda va en el encabezado y no campo por
+   * campo: cada campo ya tiene su explicación debajo, y quince interrogaciones seguidas dejarían
+   * de leerse. Lo que falta aquí es el enlace al manual, y con uno por grupo basta.
+   */
+  helpKey?: GlossaryKey;
   fields: Field[];
 }
 
 @Component({
   selector: 'app-parameters',
-  imports: [ReactiveFormsModule, DatePipe],
+  imports: [ReactiveFormsModule, DatePipe, HelpTip],
   templateUrl: './parameters.html',
   styleUrl: './parameters.scss'
 })
@@ -69,6 +77,7 @@ export class Parameters {
   readonly groups: FieldGroup[] = [
     {
       title: 'Costos del remate',
+      helpKey: 'costosProporcionales',
       intro: 'Son proporcionales al precio de adjudicación: suben si pujas más alto. Por eso el ' +
              'sistema los despeja algebraicamente en vez de restarlos como monto fijo.',
       fields: [
@@ -82,6 +91,7 @@ export class Parameters {
     },
     {
       title: 'Costos posteriores',
+      helpKey: 'costosFijos',
       intro: 'Lo que se gasta después de comprar y no depende del precio de adjudicación.',
       fields: [
         { key: 'transportDefault', label: 'Transporte por defecto', kind: 'money', help: 'Se usa cuando no se informa uno específico.' },
@@ -93,6 +103,7 @@ export class Parameters {
     },
     {
       title: 'Tiempo y capital',
+      helpKey: 'costoCapital',
       intro: 'Lo que mueve la diferencia entre un negocio rentable y uno rentable pero lento.',
       fields: [
         { key: 'capitalCostMonthlyPct', label: 'Costo mensual del capital', kind: 'rate', help: 'Interés real u oportunidad de tener la plata inmovilizada.' },
@@ -102,6 +113,7 @@ export class Parameters {
     },
     {
       title: 'Umbrales de decisión',
+      helpKey: 'pujaMaxima',
       intro: 'Definen cuándo una operación vale la pena. Subirlos te hace más exigente y comprarás menos.',
       fields: [
         { key: 'minProfitAbs', label: 'Utilidad mínima', kind: 'money', help: 'Piso absoluto por operación. Manda en los vehículos baratos.' },
@@ -115,6 +127,7 @@ export class Parameters {
     },
     {
       title: 'Mercado',
+      helpKey: 'brechaNegociacion',
       intro: 'Cómo se traduce lo publicado en los portales a un valor de venta realista.',
       fields: [
         { key: 'negotiationDiscountPct', label: 'Brecha de negociación', kind: 'rate', help: 'Diferencia entre el precio pedido y el pagado.' },

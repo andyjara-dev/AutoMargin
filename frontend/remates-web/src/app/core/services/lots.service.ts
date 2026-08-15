@@ -5,6 +5,17 @@ import { Observable, forkJoin, of, switchMap } from 'rxjs';
 import { API_BASE_URL } from '../api-config';
 import { VehicleStatus } from '../models/auth.models';
 
+export type BidResult = 'NotBid' | 'Won' | 'Lost';
+
+export interface BidResultRequest {
+  result: BidResult;
+  /** Lo que llegamos a ofrecer. Nulo si no se alcanzó a pujar. */
+  bidPlaced?: number | null;
+  /** Precio final del martillo, lo hayamos ganado o no. */
+  winningPrice?: number | null;
+  note?: string | null;
+}
+
 /** Lo que hace falta para dejar un lote guardado y listo para el día del remate. */
 export interface SaveLotRequest {
   displayName: string;
@@ -103,6 +114,14 @@ export class LotsService {
       status,
       note: note ?? null
     });
+  }
+
+  /**
+   * Cierra el remate de un lote. El precio de adjudicación va aunque hayamos perdido: es el
+   * único dato que después dice si la puja máxima va corta.
+   */
+  recordBidResult(vehicleId: number, request: BidResultRequest): Observable<void> {
+    return this.http.post<void>(`${API_BASE_URL}/api/vehicles/${vehicleId}/bid-result`, request);
   }
 
   remove(vehicleId: number): Observable<void> {

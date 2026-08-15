@@ -28,7 +28,12 @@
   @if (current()) {
     @for (group of groups; track group.title) {
       <section class="card">
-        <h2>{{ group.title }}</h2>
+        <h2>
+          {{ group.title }}
+          @if (group.helpKey) {
+            <app-help [key]="group.helpKey" />
+          }
+        </h2>
         <p class="intro">{{ group.intro }}</p>
 
         @if (group.fields.length) {

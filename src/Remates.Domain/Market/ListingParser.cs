@@ -81,26 +81,68 @@ public static class ListingParser
     ///
     /// El orden importa: las claves más específicas van primero, o «valparaiso» quedaría
     /// atrapado antes de poder distinguir «viña del mar».
+    ///
+    /// Quedan fuera a propósito las comunas que son apellidos chilenos frecuentes —Castro,
+    /// Linares, Ovalle, Coronel—, porque el título de un aviso de Yapo empieza con el nombre del
+    /// vendedor. Un apellido daría una región inventada, y una región equivocada es peor que
+    /// ninguna: hace parecer comparable un auto que está a mil kilómetros.
     /// </summary>
     private static readonly (string Keyword, string Value)[] Regions =
     [
+        // Región Metropolitana. Los avisos rotulan por comuna mucho más seguido que por región:
+        // «Maipú» o «Vitacura» aparecen solos, sin decir Santiago en ninguna parte.
         ("metropolitana", "Metropolitana"), ("santiago", "Metropolitana"), (" rm ", "Metropolitana"),
+        ("maipu", "Metropolitana"), ("puente alto", "Metropolitana"), ("la florida", "Metropolitana"),
+        ("las condes", "Metropolitana"), ("vitacura", "Metropolitana"), ("providencia", "Metropolitana"),
+        ("lo barnechea", "Metropolitana"), ("la reina", "Metropolitana"), ("nunoa", "Metropolitana"),
+        ("penalolen", "Metropolitana"), ("macul", "Metropolitana"), ("san miguel", "Metropolitana"),
+        ("quilicura", "Metropolitana"), ("huechuraba", "Metropolitana"), ("renca", "Metropolitana"),
+        ("conchali", "Metropolitana"), ("independencia", "Metropolitana"), ("recoleta", "Metropolitana"),
+        ("estacion central", "Metropolitana"), ("cerrillos", "Metropolitana"), ("pudahuel", "Metropolitana"),
+        ("san bernardo", "Metropolitana"), ("la cisterna", "Metropolitana"), ("el bosque", "Metropolitana"),
+        ("colina", "Metropolitana"), ("lampa", "Metropolitana"), ("buin", "Metropolitana"),
+        ("melipilla", "Metropolitana"), ("talagante", "Metropolitana"), ("penaflor", "Metropolitana"),
+        ("padre hurtado", "Metropolitana"), ("quinta normal", "Metropolitana"),
+        ("la granja", "Metropolitana"), ("san joaquin", "Metropolitana"), ("la pintana", "Metropolitana"),
+
         ("valparaiso", "Valparaíso"), ("viña del mar", "Valparaíso"), ("vina del mar", "Valparaíso"),
-        ("quilpue", "Valparaíso"), ("san antonio", "Valparaíso"),
+        ("quilpue", "Valparaíso"), ("san antonio", "Valparaíso"), ("villa alemana", "Valparaíso"),
+        ("concon", "Valparaíso"), ("quillota", "Valparaíso"), ("la calera", "Valparaíso"),
+        ("san felipe", "Valparaíso"), ("los andes", "Valparaíso"), ("limache", "Valparaíso"),
+
         ("biobio", "Biobío"), ("bio bio", "Biobío"), ("concepcion", "Biobío"), ("talcahuano", "Biobío"),
-        ("araucania", "La Araucanía"), ("temuco", "La Araucanía"),
-        ("antofagasta", "Antofagasta"), ("calama", "Antofagasta"),
-        ("coquimbo", "Coquimbo"), ("la serena", "Coquimbo"),
+        ("san pedro de la paz", "Biobío"), ("chiguayante", "Biobío"), ("canete", "Biobío"),
+        ("los angeles", "Biobío"), ("hualpen", "Biobío"), ("penco", "Biobío"),
+
+        ("araucania", "La Araucanía"), ("temuco", "La Araucanía"), ("padre las casas", "La Araucanía"),
+        ("villarrica", "La Araucanía"), ("pucon", "La Araucanía"), ("angol", "La Araucanía"),
+
+        ("antofagasta", "Antofagasta"), ("calama", "Antofagasta"), ("tocopilla", "Antofagasta"),
+        ("mejillones", "Antofagasta"),
+
+        ("coquimbo", "Coquimbo"), ("la serena", "Coquimbo"), ("illapel", "Coquimbo"),
+
         ("o'higgins", "O'Higgins"), ("ohiggins", "O'Higgins"), ("rancagua", "O'Higgins"),
-        ("maule", "Maule"), ("talca", "Maule"), ("curico", "Maule"),
+        ("san fernando", "O'Higgins"), ("machali", "O'Higgins"), ("santa cruz", "O'Higgins"),
+
+        ("maule", "Maule"), ("talca", "Maule"), ("curico", "Maule"), ("cauquenes", "Maule"),
+
         ("los lagos", "Los Lagos"), ("puerto montt", "Los Lagos"), ("osorno", "Los Lagos"),
-        ("los rios", "Los Ríos"), ("valdivia", "Los Ríos"),
-        ("nuble", "Ñuble"), ("chillan", "Ñuble"),
-        ("atacama", "Atacama"), ("copiapo", "Atacama"),
-        ("tarapaca", "Tarapacá"), ("iquique", "Tarapacá"),
+        ("puerto varas", "Los Lagos"), ("ancud", "Los Lagos"),
+
+        ("los rios", "Los Ríos"), ("valdivia", "Los Ríos"), ("la union", "Los Ríos"),
+
+        ("nuble", "Ñuble"), ("chillan", "Ñuble"), ("san carlos", "Ñuble"),
+
+        ("atacama", "Atacama"), ("copiapo", "Atacama"), ("vallenar", "Atacama"),
+
+        ("tarapaca", "Tarapacá"), ("iquique", "Tarapacá"), ("alto hospicio", "Tarapacá"),
+
         ("arica", "Arica y Parinacota"),
+
         ("aysen", "Aysén"), ("coyhaique", "Aysén"),
-        ("magallanes", "Magallanes"), ("punta arenas", "Magallanes")
+
+        ("magallanes", "Magallanes"), ("punta arenas", "Magallanes"), ("puerto natales", "Magallanes")
     ];
 
     /// <param name="text">Texto del aviso, tal como se copió.</param>

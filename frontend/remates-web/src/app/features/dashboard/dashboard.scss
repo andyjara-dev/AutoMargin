@@ -122,6 +122,31 @@
   &--highlight { outline: 1px solid var(--accent); }
 }
 
+/* Ir demasiado arriba y demasiado abajo son errores opuestos, pero los dos cuestan plata. */
+.kpi--good { outline: 1px solid var(--green); }
+.kpi--warn { outline: 1px solid var(--yellow); }
+.kpi--muted { opacity: .75; }
+
+.note {
+  margin: 12px 0 0;
+  max-width: 92ch;
+  font-size: 12.5px;
+  color: var(--text-dim);
+  line-height: 1.65;
+
+  &--good { color: var(--green-text); }
+  &--warn { color: var(--yellow-text); }
+  &--muted { color: var(--text-faint); }
+}
+
+.kpi__value small {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-faint);
+}
+
 .kpi__label { display: block; font-size: 11px; color: var(--text-faint); }
 .kpi__value { display: block; font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; margin-top: 2px; }
 .kpi__sub { display: block; font-size: 11px; color: var(--text-faint); margin-top: 2px; }

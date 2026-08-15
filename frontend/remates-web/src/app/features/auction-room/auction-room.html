@@ -104,17 +104,17 @@
               type="button"
               class="btn-win"
               [disabled]="busyId() === lot.vehicle.id"
-              (click)="mark(lot, 'Won')">Lo gané</button>
+              (click)="startClosing(lot, 'Won')">Lo gané</button>
             <button
               type="button"
               class="btn-ghost"
               [disabled]="busyId() === lot.vehicle.id"
-              (click)="mark(lot, 'Lost')">Lo perdí</button>
+              (click)="startClosing(lot, 'Lost')">Lo perdí</button>
             <button
               type="button"
               class="btn-ghost"
               [disabled]="busyId() === lot.vehicle.id"
-              (click)="mark(lot, 'Discarded')">Desistí</button>
+              (click)="startClosing(lot, 'NotBid')">Desistí</button>
             <button
               type="button"
               class="btn-remove"
@@ -127,9 +127,80 @@
     </div>
 
     <p class="footnote">
-      «Lo gané», «Lo perdí» y «Desistí» sacan el lote de la sala pero conservan el registro. Con
-      el tiempo esos resultados dicen si tu puja máxima está bien calibrada: si ganas todo, vas
-      demasiado arriba; si no ganas nunca, demasiado abajo. «Borrar» sí elimina el lote entero.
+      Al cerrar un lote se te pide el <strong>precio de adjudicación</strong>. Anótalo sobre todo
+      cuando pierdas: sin él solo sabes que alguien ofreció más, y con él sabes cuánto más —
+      perder por cincuenta mil y perder por tres millones son diagnósticos opuestos. El resumen
+      está en <a routerLink="/dashboard">Estado del negocio</a>. «Borrar» sí elimina el lote entero.
     </p>
+  }
+
+  <!--
+    El cierre pide el precio de adjudicación. Es el paso que uno tiene ganas de saltarse cuando
+    perdió, y justamente el que hace que perder sirva de algo.
+  -->
+  @if (closing(); as c) {
+    <div class="sheet" (click)="cancelClosing()">
+      <div class="sheet__panel" (click)="$event.stopPropagation()" role="dialog">
+        <h2 class="sheet__title">
+          @switch (c.result) {
+            @case ('Won') { Ganaste {{ c.lot.vehicle.label }} }
+            @case ('Lost') { Perdiste {{ c.lot.vehicle.label }} }
+            @default { Desististe de {{ c.lot.vehicle.label }} }
+          }
+        </h2>
+
+        @if (c.result === 'NotBid') {
+          <p class="sheet__text">
+            No se pujó, así que no hay precio que anotar. Los desistidos no cuentan para la
+            calibración: no perdiste contra nadie, decidiste no ir.
+          </p>
+        } @else {
+          <label class="sheet__field">
+            <span>
+              {{ c.result === 'Won' ? 'Precio de adjudicación (lo que pagaste)' : '¿En cuánto se lo llevaron?' }}
+            </span>
+            <input
+              type="text"
+              inputmode="numeric"
+              [value]="c.winningPrice ?? ''"
+              (input)="setClosingPrice($any($event.target).value)"
+              (focus)="selectOnTouch($event)"
+              (click)="selectOnTouch($event)"
+              placeholder="0"
+            />
+          </label>
+
+          @if (c.result === 'Lost') {
+            @if (closingGap(); as gap) {
+              <p class="sheet__gap" [class.sheet__gap--own]="gap <= 0">
+                @if (gap > 0) {
+                  Te faltaron {{ clp(gap) }} sobre tu puja máxima de {{ clp(c.lot.vehicle.lastMaxBid) }}.
+                } @else {
+                  Se adjudicó por debajo de tu puja máxima. Ahí no falló el cálculo: faltó ofrecer
+                  lo que ya tenías autorizado.
+                }
+              </p>
+            } @else {
+              <p class="sheet__text">
+                Si no lo supiste, déjalo vacío. Se registra igual, pero ese remate no aportará a
+                la calibración: sin el precio final solo se sabe que alguien ofreció más, no
+                cuánto más.
+              </p>
+            }
+          }
+        }
+
+        <div class="sheet__actions">
+          <button type="button" class="btn-ghost" (click)="cancelClosing()">Cancelar</button>
+          <button
+            type="button"
+            class="btn-primary"
+            [disabled]="busyId() !== null"
+            (click)="confirmClosing()">
+            {{ busyId() !== null ? 'Guardando…' : 'Cerrar el lote' }}
+          </button>
+        </div>
+      </div>
+    </div>
   }
 </div>

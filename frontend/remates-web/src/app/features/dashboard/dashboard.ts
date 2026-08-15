@@ -5,6 +5,7 @@ import { catchError, of, tap } from 'rxjs';
 
 import { API_BASE_URL } from '../../core/api-config';
 import { annualizedPct, clp, num, pct } from '../../core/format';
+import { CalibrationVerdict } from '../../core/models/dashboard.models';
 import { HelpTip } from '../../shared/help-tip';
 import {
   ALERT_TYPE_LABELS,
@@ -40,6 +41,14 @@ export class Dashboard {
   readonly criticalCount = computed(
     () => this.data()?.alerts.filter((a) => a.severity === 'Critical').length ?? 0
   );
+
+  /**
+   * Ir demasiado arriba y demasiado abajo son errores opuestos, pero ambos cuestan plata: uno
+   * pagando de más y el otro dejando pasar negocios. Los dos se pintan igual de amarillo.
+   */
+  verdictTone(verdict: CalibrationVerdict): string {
+    return verdict === 'Balanced' ? 'good' : verdict === 'Insufficient' ? 'muted' : 'warn';
+  }
 
   constructor() {
     this.load();

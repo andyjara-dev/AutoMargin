@@ -51,16 +51,21 @@ public class BidConfiguration : IEntityTypeConfiguration<Bid>
 {
     public void Configure(EntityTypeBuilder<Bid> b)
     {
+        b.HasOne(x => x.Vehicle).WithMany()
+            .HasForeignKey(x => x.VehicleId).OnDelete(DeleteBehavior.Cascade);
+
+        // El lote es opcional: se registra el resultado del remate aunque no se haya modelado
+        // la casa de martillo ni la subasta, que es lo habitual.
         b.HasOne(x => x.AuctionLot).WithMany(l => l.Bids)
-            .HasForeignKey(x => x.AuctionLotId).OnDelete(DeleteBehavior.Cascade);
+            .HasForeignKey(x => x.AuctionLotId).OnDelete(DeleteBehavior.SetNull);
 
         b.Property(x => x.Note).HasMaxLength(500);
 
         // Consultado al calibrar: cuántas pujas ganamos y a qué precio se fueron las perdidas.
         b.HasIndex(x => x.Result);
+        b.HasIndex(x => x.VehicleId);
 
-        // El filtro se hereda a través del lote hasta el vehículo.
-        b.HasQueryFilter(x => x.AuctionLot!.Vehicle!.DeletedAt == null);
+        b.HasQueryFilter(x => x.Vehicle!.DeletedAt == null);
     }
 }
 

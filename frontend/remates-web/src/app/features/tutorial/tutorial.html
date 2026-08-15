@@ -1390,19 +1390,65 @@
           subir.
         </p>
 
-        <h3>Después</h3>
+        <h3>Después: anota en cuánto se lo llevaron</h3>
         <p>
           Marca cada lote como <strong>lo gané</strong>, <strong>lo perdí</strong> o
-          <strong>desistí</strong>. Sale de la sala pero queda registrado, y ahí está lo valioso:
-          con el tiempo esos resultados te dicen si tu puja máxima está bien calibrada.
+          <strong>desistí</strong>. Al hacerlo el sistema te pide el <strong>precio de
+          adjudicación</strong>, y ese es el paso que uno tiene ganas de saltarse justo cuando
+          perdió — y el que hace que perder sirva de algo.
         </p>
 
-        <div class="callout">
-          <strong>Si ganas todos los remates, vas demasiado arriba.</strong> Y si no ganas nunca,
-          demasiado abajo. Ninguno de los dos extremos se ve mirando una operación: se ve
-          contando ganadas y perdidas. Por eso conviene marcar también las que perdiste, aunque
-          no dejen plata — son justo las que te dicen dónde está el mercado.
+        <div class="callout callout--key">
+          <strong>Perder sin anotar el precio no enseña nada.</strong> Solo sabes que alguien
+          ofreció más. Con el precio sabes <em>cuánto</em> más, y eso cambia el diagnóstico por
+          completo: perder por cincuenta mil significa que estás afinado; perder por tres
+          millones significa que tu puja máxima va corta y se te están pasando negocios.
         </div>
+
+        <p>
+          Hay un caso que el sistema separa aparte: cuando el lote se adjudicó <em>por debajo</em>
+          de tu propia puja máxima. Ahí no falló el cálculo — faltó ofrecer lo que ya tenías
+          autorizado. Confundir los dos casos llevaría a subir la puja máxima cuando el problema
+          estaba en la sala.
+        </p>
+
+        <h3>La calibración</h3>
+        <p>
+          En <a routerLink="/dashboard">Estado del negocio</a> aparece el resumen de todo esto:
+          cuántos remates pujaste, cuántos ganaste y cuánto faltó en promedio en los perdidos.
+        </p>
+
+        <table class="doc-table">
+          <thead>
+            <tr><th>Si ves…</th><th>Significa</th></tr>
+          </thead>
+          <tbody>
+            <tr class="tone-warn">
+              <td>Ganas casi todos</td>
+              <td>Vas demasiado arriba. Suena bien, pero suele querer decir que ofreces por encima de lo que el mercado pide. Sube la utilidad mínima o el ROI exigido.</td>
+            </tr>
+            <tr>
+              <td>Ganas algunos, pierdes otros</td>
+              <td>Así se ve una puja máxima bien puesta. Perder es normal: en un remate compite mucha gente.</td>
+            </tr>
+            <tr class="tone-warn">
+              <td>No ganas casi nunca</td>
+              <td>Vas demasiado abajo y se te pasan negocios que sí daban. Revisa si la utilidad mínima o el margen de seguridad están más altos de lo necesario.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>
+          Con menos de ocho remates el sistema no opina, y lo dice. Con tres cualquier proporción
+          parece una tendencia, y bajar la utilidad mínima porque perdiste dos seguidos es
+          exactamente cómo se termina sobrepagando.
+        </p>
+
+        <p>
+          Los <strong>desistidos no cuentan</strong> para la calibración: no perdiste contra
+          nadie, decidiste no ir. Contarlos como derrotas haría creer que la puja máxima va corta
+          cuando lo que pasó fue que el auto no convencía.
+        </p>
 
         <p>
           <strong>Borrar</strong> es distinto: elimina el lote y su análisis. Úsalo para lo que

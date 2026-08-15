@@ -160,6 +160,50 @@
       </div>
     </section>
 
+    <!-- ---------- Calibración de la puja ---------- -->
+    <section class="card">
+      <h2>Calibración de la puja máxima<app-help key="pujaMaxima" /></h2>
+
+      @if (d.calibration; as c) {
+        <div class="kpis">
+          <div class="kpi">
+            <span class="kpi__label">Remates pujados</span>
+            <span class="kpi__value">{{ c.total }}</span>
+          </div>
+          <div class="kpi">
+            <span class="kpi__label">Ganados</span>
+            <span class="kpi__value">{{ c.won }} <small>de {{ c.total }}</small></span>
+          </div>
+          <div class="kpi" [class]="'kpi--' + verdictTone(c.verdict)">
+            <span class="kpi__label">Tasa de éxito</span>
+            <span class="kpi__value">{{ pct(c.winRate, 0) }}</span>
+          </div>
+          <div class="kpi">
+            <span class="kpi__label">Faltó en promedio</span>
+            <span class="kpi__value">
+              @if (c.averageGapWhenLost !== null) {
+                {{ clp(c.averageGapWhenLost) }}
+                <small>{{ pct(c.averageGapPctWhenLost) }} sobre tu techo</small>
+              } @else {
+                —
+              }
+            </span>
+          </div>
+        </div>
+
+        <p class="note" [class]="'note--' + verdictTone(c.verdict)">{{ c.explanation }}</p>
+
+        @if (c.lostWithoutPrice > 0) {
+          <p class="note">
+            {{ c.lostWithoutPrice }}
+            {{ c.lostWithoutPrice === 1 ? 'remate perdido no tiene' : 'remates perdidos no tienen' }}
+            anotado el precio de adjudicación, así que no cuentan para esta medición. Anotarlo al
+            cerrar el lote es lo que convierte una derrota en información.
+          </p>
+        }
+      }
+    </section>
+
     <!-- ---------- Oportunidades ---------- -->
     @if (d.opportunities.length) {
       <section class="card">

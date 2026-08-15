@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Remates.Api.Contracts;
 using Remates.Domain.Alerts;
+using Remates.Domain.Learning;
 using Remates.Domain.Common;
 using Remates.Domain.Inventory;
 using Remates.Infrastructure.Entities;
@@ -211,7 +212,28 @@ public sealed class DashboardService(
             byModel.OrderBy(m => m.AverageProfit).Take(5).ToList(),
             opportunities,
             alerts,
-            sales.Count);
+            sales.Count,
+            await CalibrationAsync(ct));
+    }
+
+    /// <summary>
+    /// Solo entran los remates a los que efectivamente se fue a pujar. Los desistidos quedan
+    /// fuera: no perdimos contra nadie, decidimos no ir, y contarlos como derrotas haría creer
+    /// que la puja máxima va corta cuando lo que pasó fue que el auto no convencía.
+    /// </summary>
+    private async Task<CalibrationReport> CalibrationAsync(CancellationToken ct)
+    {
+        var bids = await db.Bids.AsNoTracking()
+            .Where(b => b.Result != BidResult.NotBid)
+            .Select(b => new BidOutcome
+            {
+                MaxBidAuthorized = b.MaxBidAuthorized,
+                WinningPrice = b.WinningPrice,
+                Won = b.Result == BidResult.Won
+            })
+            .ToListAsync(ct);
+
+        return CalibrationCalculator.Analyze(bids);
     }
 
     public async Task<CashMovement> RegisterMovementAsync(

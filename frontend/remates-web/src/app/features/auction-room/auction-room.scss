@@ -171,6 +171,77 @@
   &:hover:not(:disabled) { border-color: var(--red); color: var(--red-text); }
 }
 
+/* ---------- Cierre del lote ---------- */
+
+.sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(11, 15, 25, .72);
+}
+
+.sheet__panel {
+  width: min(460px, 100%);
+  padding: 22px;
+  background: var(--surface);
+  border: 1px solid var(--brand);
+  border-radius: var(--radius);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, .5);
+}
+
+.sheet__title { font-size: 16px; margin-bottom: 12px; }
+.sheet__text { margin: 0 0 16px; font-size: 12.5px; color: var(--text-dim); line-height: 1.65; }
+
+.sheet__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+  font-size: 12px;
+
+  span { color: var(--text-dim); }
+
+  input {
+    padding: 10px 14px;
+    font-size: 22px;
+    font-weight: 600;
+    border-color: var(--brand);
+    background: var(--bg);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.sheet__gap {
+  margin: 0 0 16px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--yellow-text);
+
+  /* Perder un lote que se fue bajo el propio techo no es un problema de cálculo. */
+  &--own { color: var(--red-text); }
+}
+
+.sheet__actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+.btn-primary {
+  padding: 8px 18px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--brand-gradient);
+  color: var(--on-accent);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) { filter: brightness(1.08); }
+  &:disabled { opacity: .6; cursor: default; }
+}
+
 .footnote {
   margin: 20px 0 0;
   max-width: 80ch;

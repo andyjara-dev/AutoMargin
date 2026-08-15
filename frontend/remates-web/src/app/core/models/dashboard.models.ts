@@ -65,6 +65,29 @@ export interface OpportunityRow {
   analyzedAt: string;
 }
 
+export type CalibrationVerdict =
+  | 'Insufficient'
+  | 'Balanced'
+  | 'TooAggressive'
+  | 'TooConservative';
+
+/** Qué tan afinada está la puja máxima, medida sobre los remates cerrados. */
+export interface CalibrationReport {
+  total: number;
+  won: number;
+  lost: number;
+  winRate: number;
+  /** Cuánto faltó en promedio para ganar los perdidos. */
+  averageGapWhenLost: number | null;
+  averageGapPctWhenLost: number | null;
+  /** Perdidos que se adjudicaron por debajo de nuestro propio techo. */
+  lostBelowOwnLimit: number;
+  lostWithoutPrice: number;
+  verdict: CalibrationVerdict;
+  explanation: string;
+  isConclusive: boolean;
+}
+
 export interface DashboardSummary {
   capital: CapitalSummary;
   inventory: InventorySummary;
@@ -74,6 +97,7 @@ export interface DashboardSummary {
   opportunities: OpportunityRow[];
   alerts: Alert[];
   closedOperations: number;
+  calibration: CalibrationReport;
 }
 
 export const ALERT_TYPE_LABELS: Record<AlertType, string> = {

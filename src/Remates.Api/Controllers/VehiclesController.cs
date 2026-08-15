@@ -165,6 +165,104 @@ public sealed class VehiclesController(
         return NoContent();
     }
 
+    /// <summary>
+    /// Cierra el remate de un vehículo: anota cómo terminó y lo deja en el estado que corresponde.
+    ///
+    /// Registrar el precio de adjudicación de un lote perdido es lo que después permite saber si
+    /// la puja máxima va corta. Sin ese número, perder solo dice que alguien ofreció más; con él
+    /// se sabe si fue por cincuenta mil o por tres millones, que son dos diagnósticos opuestos.
+    /// </summary>
+    [HttpPost("{id:long}/bid-result")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> RecordBidResult(
+        long id, [FromBody] BidResultRequest request, CancellationToken ct)
+    {
+        var vehicle = await db.Vehicles.FirstOrDefaultAsync(v => v.Id == id, ct);
+        if (vehicle is null) return NotFound();
+
+        // La puja máxima que se autorizó en su momento, no una recalculada ahora: la calibración
+        // compara contra el número con el que efectivamente se fue al remate.
+        var maxBid = await db.DealAnalyses
+            .Where(a => a.VehicleId == id)
+            .OrderByDescending(a => a.ComputedAt)
+            .Select(a => (decimal?)a.MaxBid)
+            .FirstOrDefaultAsync(ct);
+
+        if (maxBid is null)
+        {
+            return Conflict(new ProblemDetails
+            {
+                Title = "El vehículo no tiene un análisis guardado, así que no hay puja máxima " +
+                        "contra la cual comparar el resultado."
+            });
+        }
+
+        var now = timeProvider.GetUtcNow();
+
+        db.Bids.Add(new Bid
+        {
+            VehicleId = vehicle.Id,
+            MaxBidAuthorized = maxBid.Value,
+            BidPlaced = request.BidPlaced,
+            Result = request.Result,
+            WinningPrice = request.WinningPrice,
+            DecidedAt = now,
+            Note = request.Note
+        });
+
+        var status = request.Result switch
+        {
+            BidResult.Won => VehicleStatus.Won,
+            BidResult.Lost => VehicleStatus.Lost,
+            _ => VehicleStatus.Discarded
+        };
+
+        if (vehicle.Status != status)
+        {
+            db.VehicleStatusHistory.Add(new VehicleStatusHistory
+            {
+                VehicleId = vehicle.Id,
+                FromStatus = vehicle.Status,
+                ToStatus = status,
+                ChangedAt = now,
+                Note = request.Note
+            });
+
+            vehicle.Status = status;
+        }
+
+        await db.SaveChangesAsync(ct);
+
+        return NoContent();
+    }
+
+    /// <summary>Historial de remates cerrados, del más reciente al más antiguo.</summary>
+    [HttpGet("/api/bids")]
+    [ProducesResponseType<IReadOnlyList<BidRecord>>(StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyList<BidRecord>>> Bids(CancellationToken ct)
+    {
+        var rows = await db.Bids.AsNoTracking()
+            .Include(b => b.Vehicle!).ThenInclude(v => v.Make)
+            .Include(b => b.Vehicle!).ThenInclude(v => v.Model)
+            .OrderByDescending(b => b.DecidedAt)
+            .Take(200)
+            .ToListAsync(ct);
+
+        return Ok(rows.Select(b => new BidRecord(
+            b.Id,
+            b.VehicleId,
+            BuildLabel(b.Vehicle?.Make?.Name, b.Vehicle?.Model?.Name,
+                b.Vehicle?.DisplayName, b.Vehicle?.Year ?? 0),
+            b.MaxBidAuthorized,
+            b.BidPlaced,
+            b.Result,
+            b.WinningPrice,
+            b.DecidedAt,
+            b.Note)).ToList());
+    }
+
     /// <summary>Baja lógica: el vehículo se oculta pero conserva su historial de análisis.</summary>
     [HttpDelete("{id:long}")]
     [Authorize(Roles = AppRoles.Admin)]
