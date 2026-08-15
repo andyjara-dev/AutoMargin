@@ -178,6 +178,24 @@
 
 .results__actions { display: flex; gap: 8px; }
 
+/* ---------- Filtros sobre lo ya traído ---------- */
+
+.filters {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) auto;
+  gap: 10px 12px;
+  align-items: end;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+
+  @media (max-width: 1000px) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  @media (max-width: 560px) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; }
+  label span { color: var(--text-dim); }
+}
+
 /* ---------- Resumen de lo seleccionado ---------- */
 
 .stats {
@@ -281,6 +299,25 @@ table.grid {
 
   tbody tr:hover td { background: rgba(148, 163, 184, .05); }
   tbody tr.picked td { background: var(--accent-soft); }
+
+  /* El aviso sospechoso no se esconde: se marca. Un auto chocado sirve de comparable si el
+     que estás analizando también lo está, y esa es una decisión de persona, no de filtro. */
+  tbody tr.suspect td { background: var(--yellow-soft); }
+  tbody tr.suspect.picked td { background: rgba(245, 158, 11, .18); }
+}
+
+.caveat {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--yellow-soft);
+  border: 1px solid var(--yellow);
+  color: var(--yellow-text);
+  font-size: 10.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: help;
 }
 
 .tag {

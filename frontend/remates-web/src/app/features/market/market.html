@@ -144,12 +144,52 @@
   @if (candidates().length) {
     <section class="results">
       <header class="results__head">
-        <h2>{{ candidates().length }} avisos · {{ selected().length }} seleccionados</h2>
+        <h2>
+          @if (isFiltered()) {
+            {{ visibleCandidates().length }} de {{ candidates().length }} avisos
+          } @else {
+            {{ candidates().length }} avisos
+          }
+          · {{ selected().length }} seleccionados
+        </h2>
         <div class="results__actions">
-          <button type="button" class="btn-ghost" (click)="toggleAll(true)">Seleccionar todos</button>
+          <button type="button" class="btn-ghost" (click)="toggleAll(true)">
+            {{ isFiltered() ? 'Seleccionar estos' : 'Seleccionar todos' }}
+          </button>
           <button type="button" class="btn-ghost" (click)="toggleAll(false)">Ninguno</button>
         </div>
       </header>
+
+      <form [formGroup]="filterForm" class="filters">
+        <label>
+          <span>Año desde</span>
+          <input type="number" formControlName="yearFrom" placeholder="2016" />
+        </label>
+        <label>
+          <span>Año hasta</span>
+          <input type="number" formControlName="yearTo" placeholder="2020" />
+        </label>
+        <label>
+          <span>Km máximo</span>
+          <input type="number" formControlName="maxKm" placeholder="120000" />
+        </label>
+        <label>
+          <span>Que contenga</span>
+          <input type="text" formControlName="text" placeholder="automático" />
+        </label>
+        <label>
+          <span>Que no contenga</span>
+          <input type="text" formControlName="excludeText" placeholder="grand, desarme" />
+        </label>
+        <button type="button" class="btn-ghost" (click)="clearFilters()">Limpiar</button>
+      </form>
+
+      @if (hiddenSelectedCount() > 0) {
+        <p class="hint warn">
+          {{ hiddenSelectedCount() }} de los seleccionados están fuera del filtro y no se ven en
+          la lista. Se importan igual: el filtro esconde, no desmarca.
+        </p>
+      }
 
       @if (selectedStats(); as s) {
         <div class="stats">
@@ -230,17 +270,20 @@
             </tr>
           </thead>
           <tbody>
-            @for (c of candidates(); track $index) {
-              <tr [class.picked]="c.selected">
+            @for (c of visibleCandidates(); track c.key) {
+              <tr [class.picked]="c.selected" [class.suspect]="c.caveat">
                 <td>
                   <input
                     type="checkbox"
                     [checked]="c.selected"
-                    (change)="toggle($index)"
+                    (change)="toggle(c.key)"
                     [attr.aria-label]="'Seleccionar aviso de ' + c.result.year"
                   />
                 </td>
                 <td class="title">
+                  @if (c.caveat) {
+                    <span class="caveat" title="Su precio no representa el mercado. Revísalo antes de usarlo como comparable.">{{ c.caveat }}</span>
+                  }
                   @if (c.result.url) {
                     <a [href]="c.result.url" target="_blank" rel="noopener noreferrer">
                       {{ c.result.title || 'Ver aviso' }}

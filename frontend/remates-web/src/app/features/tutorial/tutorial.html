@@ -1514,12 +1514,58 @@
           </tbody>
         </table>
 
+        <h3>El resumen que aparece al marcar</h3>
         <p>
-          Mientras marcas avisos, la pantalla te muestra la <strong>mediana de lo
-          seleccionado</strong>. Es una referencia rápida para notar si estás mezclando cosas que
-          no se parecen: si la mediana salta mucho al marcar un aviso más, probablemente ese aviso
-          no corresponde.
+          Mientras marcas avisos, la pantalla calcula mínimo, mediana, promedio, moda y máximo de
+          lo seleccionado. Sirve para notar en el momento que la muestra quedó torcida, en vez de
+          descubrirlo cuando el análisis ya salió con un número que parece bueno.
         </p>
+
+        <table class="doc-table">
+          <thead>
+            <tr><th>Cifra</th><th>Qué te dice</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Mediana</strong></td>
+              <td>El precio del medio. Es la que manda, porque un aviso extremo no la mueve. El sistema valoriza con esta y con los cuartiles.</td>
+            </tr>
+            <tr>
+              <td>Promedio</td>
+              <td>La suma dividida por la cantidad. Un solo aviso muy caro o muy barato lo arrastra entero. Si se aparta mucho de la mediana, la pantalla te avisa.</td>
+            </tr>
+            <tr>
+              <td>Moda</td>
+              <td>El precio que más se repite. Cuando varios vendedores publican el mismo número, ese es el que el mercado da por bueno. Si ningún precio se repite, no hay moda y aparece un guion.</td>
+            </tr>
+            <tr>
+              <td>Mínimo y máximo</td>
+              <td>Los extremos. Sirven para cazar al intruso cuando el promedio se despega de la mediana.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Filtrar y descartar</h3>
+        <p>
+          Los buscadores de los portales son laxos: pides «i10» y también te traen «Grand i10»,
+          que es otro auto y otro precio. Por eso la lista tiene filtros por año, kilometraje y
+          texto, con un campo <em>«que no contenga»</em> para sacar justamente esos casos —
+          escribes <code>grand</code> y desaparecen.
+        </p>
+
+        <p>
+          <strong>Filtrar esconde, no desmarca.</strong> Puedes acotar la lista, marcar, cambiar
+          el filtro y seguir marcando: lo elegido se va sumando. Si algo seleccionado queda fuera
+          del filtro, la pantalla te lo dice para que el total del botón de importar nunca sorprenda.
+        </p>
+
+        <div class="callout">
+          <strong>Avisos marcados en amarillo.</strong> Cuando el título dice «para desarme»,
+          «chocado», «no funciona» o «permuta», el aviso se marca con una etiqueta. Sus precios
+          no representan el mercado: un auto vendido por piezas vale lo que valen sus piezas, y
+          mezclarlo con avisos sanos tuerce la mediana. No se esconden solos porque a veces sí
+          sirven — un chocado es buen comparable si el que estás analizando también lo está.
+        </div>
 
         <div class="callout">
           <strong>Ojo: son precios de lista, no de venta.</strong> Lo que ves publicado es lo que

@@ -1,4 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { catchError, of } from 'rxjs';
@@ -46,11 +47,30 @@ const EMPTY_STATS: PriceStats = {
 
 /** Un aviso en la pantalla, con su estado de selección y de dónde vino. */
 interface Candidate {
+  /** Identidad estable. Hace falta porque con filtros la posición en la lista deja de servir. */
+  key: string;
   result: MarketSearchResult;
   selected: boolean;
   /** Pegado a mano o traído de una fuente. Cambia el sello que se guarda. */
   manual: boolean;
+  /** Motivo por el que este aviso probablemente no sirve como comparable. */
+  caveat: string | null;
 }
+
+/**
+ * Avisos que no son de un auto en venta normal. Sus precios no representan el mercado: un auto
+ * para desarme vale lo que valen sus piezas, y uno chocado lo que vale menos el arreglo.
+ * Mezclarlos con avisos sanos tuerce la mediana y con ella la puja máxima.
+ *
+ * No se excluyen solos: se marcan para que la persona decida. Un auto chocado sí puede ser buen
+ * comparable si el que estás analizando también lo está.
+ */
+const CAVEATS: { keywords: string[]; label: string }[] = [
+  { keywords: ['desarme', 'repuesto', 'partes y piezas'], label: 'Para desarme' },
+  { keywords: ['chocado', 'siniestrado', 'choque'], label: 'Chocado' },
+  { keywords: ['no funciona', 'no enciende', 'no arranca', 'motor malo'], label: 'No funciona' },
+  { keywords: ['permuta', 'arriendo', 'leasing'], label: 'No es venta directa' }
+];
 
 /**
  * Búsqueda de comparables de mercado.
@@ -102,7 +122,64 @@ export class Market {
 
   readonly targetForm = this.fb.nonNullable.group({ vehicleId: [null as number | null] });
 
+  /** Filtros sobre lo ya traído. No vuelven a consultar los portales. */
+  readonly filterForm = this.fb.nonNullable.group({
+    yearFrom: [null as number | null],
+    yearTo: [null as number | null],
+    maxKm: [null as number | null],
+    text: [''],
+    // Los buscadores de los portales son laxos: pedir «i10» trae también «Grand i10», que es
+    // otro auto y otro precio. Excluir por palabra es la forma corta de sacarlos.
+    excludeText: ['']
+  });
+
+  private readonly filters = signal(this.filterForm.getRawValue());
+
   readonly selected = computed(() => this.candidates().filter((c) => c.selected));
+
+  /**
+   * Lo que se muestra tras aplicar los filtros.
+   *
+   * Filtrar no desmarca nada. Alguien puede acotar la lista, marcar, cambiar el filtro y seguir
+   * marcando: la selección se va sumando. Los que quedan fuera del filtro se avisan aparte, para
+   * que el total del botón de importar nunca sorprenda.
+   */
+  readonly visibleCandidates = computed(() => {
+    const f = this.filters();
+    const text = f.text.trim().toLowerCase();
+
+    // Varias palabras separadas por coma o espacio: basta que aparezca una para descartar.
+    const excluded = f.excludeText
+      .toLowerCase()
+      .split(/[,\s]+/)
+      .map((w) => w.trim())
+      .filter((w) => w.length > 0);
+
+    return this.candidates().filter((c) => {
+      const r = c.result;
+
+      if (f.yearFrom !== null && r.year < f.yearFrom) return false;
+      if (f.yearTo !== null && r.year > f.yearTo) return false;
+
+      // Un aviso sin kilometraje no se esconde: le falta el dato, no lo incumple.
+      if (f.maxKm !== null && r.mileageKm !== null && r.mileageKm !== undefined
+          && r.mileageKm > f.maxKm) return false;
+
+      const title = (r.title ?? '').toLowerCase();
+
+      if (text && !title.includes(text)) return false;
+      if (excluded.some((word) => title.includes(word))) return false;
+
+      return true;
+    });
+  });
+
+  readonly hiddenSelectedCount = computed(() => {
+    const visible = new Set(this.visibleCandidates().map((c) => c.key));
+    return this.selected().filter((c) => !visible.has(c.key)).length;
+  });
+
+  readonly isFiltered = computed(() => this.visibleCandidates().length !== this.candidates().length);
 
   /**
    * Vehículo con el que se llegó desde su ficha. Se muestra en el encabezado porque si la
@@ -174,7 +251,25 @@ export class Market {
     return modeCount < 2 ? { mode: null, modeCount: 0 } : { mode, modeCount };
   }
 
+  /** Envuelve un resultado con lo que la pantalla necesita: identidad y advertencias. */
+  private toCandidate(result: MarketSearchResult, selected: boolean, manual: boolean): Candidate {
+    const haystack = (result.title ?? '').toLowerCase();
+    const caveat = CAVEATS.find((c) => c.keywords.some((k) => haystack.includes(k)))?.label ?? null;
+
+    return {
+      key: result.url ?? `${result.source}|${result.listedPrice}|${result.year}|${result.mileageKm}`,
+      result,
+      selected,
+      manual,
+      caveat
+    };
+  }
+
   constructor() {
+    this.filterForm.valueChanges
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => this.filters.set(this.filterForm.getRawValue()));
+
     this.vehicles
       .list()
       .pipe(catchError(() => of([] as VehicleSummary[])))
@@ -223,7 +318,7 @@ export class Market {
         const manual = this.candidates().filter((c) => c.manual);
         this.candidates.set([
           ...manual,
-          ...response.results.map((result) => ({ result, selected: false, manual: false }))
+          ...response.results.map((result) => this.toCandidate(result, false, false))
         ]);
       },
       error: (err) => {
@@ -262,19 +357,29 @@ export class Market {
       isUsable: true
     };
 
-    this.candidates.update((items) => [{ result, selected: true, manual: true }, ...items]);
+    this.candidates.update((items) => [this.toCandidate(result, true, true), ...items]);
     this.parsed.set(null);
     this.pasteForm.reset({ text: '' });
   }
 
-  toggle(index: number): void {
+  /** Por identidad, no por posición: con filtros aplicados la posición ya no identifica nada. */
+  toggle(key: string): void {
     this.candidates.update((items) =>
-      items.map((c, i) => (i === index ? { ...c, selected: !c.selected } : c))
+      items.map((c) => (c.key === key ? { ...c, selected: !c.selected } : c))
     );
   }
 
+  /** Actúa solo sobre lo visible: con un filtro puesto, «todos» significa «todos estos». */
   toggleAll(select: boolean): void {
-    this.candidates.update((items) => items.map((c) => ({ ...c, selected: select })));
+    const visible = new Set(this.visibleCandidates().map((c) => c.key));
+
+    this.candidates.update((items) =>
+      items.map((c) => (visible.has(c.key) ? { ...c, selected: select } : c))
+    );
+  }
+
+  clearFilters(): void {
+    this.filterForm.reset({ yearFrom: null, yearTo: null, maxKm: null, text: '', excludeText: '' });
   }
 
   importSelected(): void {
