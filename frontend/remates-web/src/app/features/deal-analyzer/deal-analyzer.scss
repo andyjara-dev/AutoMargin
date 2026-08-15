@@ -29,7 +29,24 @@
   gap: 20px;
   align-items: start;
 
-  @media (max-width: 1200px) { grid-template-columns: 1fr; }
+  /*
+   * Al apilarse, las dos columnas dejan de ser columnas y sus tarjetas pasan a ser hijas
+   * directas de la rejilla. Eso permite reordenarlas entre sí: el precio y el veredicto suben
+   * arriba de todo, y el resto queda abajo en el orden en que se llena.
+   *
+   * Sin esto el veredicto quedaba al final de la segunda columna, a dos mil píxeles del campo
+   * que se está escribiendo. Duplicarlo arriba resolvía la distancia pero dejaba dos veredictos
+   * diciendo lo mismo, y uno de los dos siempre sobra.
+   */
+  @media (max-width: 1200px) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+
+    .inputs, .results { display: contents; }
+
+    .card--live { order: -2; }
+    .verdict { order: -1; }
+  }
 }
 
 .inputs, .results { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
@@ -103,44 +120,6 @@
 
 .live__ok { color: var(--green-text); font-weight: 600; }
 .live__over { color: var(--red-text); font-weight: 600; }
-
-/*
- * Solo cuando las columnas se apilan. En pantalla ancha el veredicto grande está a la derecha,
- * a la altura del ojo, y repetirlo aquí sería ruido.
- */
-.live__verdict { display: none; }
-
-@media (max-width: 1200px) {
-  .live__verdict {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 14px;
-    padding: 10px 12px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    background: var(--surface);
-  }
-
-  .live__verdict--green { border-color: var(--green); background: var(--green-soft); }
-  .live__verdict--yellow { border-color: var(--yellow); background: var(--yellow-soft); }
-  .live__verdict--red { border-color: var(--red); background: var(--red-soft); }
-}
-
-.live__dot {
-  width: 13px;
-  height: 13px;
-  border-radius: 50%;
-  flex: none;
-  background: var(--border);
-
-  .live__verdict--green & { background: var(--green); }
-  .live__verdict--yellow & { background: var(--yellow); }
-  .live__verdict--red & { background: var(--red); }
-}
-
-.live__call { display: block; font-size: 13.5px; letter-spacing: .03em; color: var(--text); }
-.live__figures { display: block; margin-top: 2px; font-size: 11.5px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
 
 .save-lot {
   display: flex;

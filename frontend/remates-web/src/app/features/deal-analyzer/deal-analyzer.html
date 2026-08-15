@@ -45,23 +45,6 @@
           </div>
         </div>
 
-        <!--
-          El veredicto repetido aquí. En pantalla ancha vive en la columna de la derecha, al lado
-          del precio; al apilarse en el teléfono queda a varias pantallas de distancia, y en la
-          sala nadie va a bajar a buscarlo con el martillo en el aire.
-        -->
-        @if (result(); as r) {
-          <div class="live__verdict" [class]="'live__verdict--' + r.score.trafficLight.toLowerCase()">
-            <span class="live__dot"></span>
-            <div>
-              <strong class="live__call">{{ r.score.recommendation }}</strong>
-              <span class="live__figures">
-                Puja máxima {{ clp(r.maxBid.maxBid) }} · Score {{ r.score.score }}/100
-              </span>
-            </div>
-          </div>
-        }
-
         <div class="save-lot">
           <input
             type="text"
