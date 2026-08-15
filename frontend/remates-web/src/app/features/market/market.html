@@ -151,10 +151,61 @@
         </div>
       </header>
 
-      @if (selectedMedian(); as median) {
+      @if (selectedStats(); as s) {
+        <div class="stats">
+          <div class="stat">
+            <span class="stat__label">Avisos</span>
+            <strong class="stat__value">{{ s.count }}</strong>
+          </div>
+          <div class="stat">
+            <span class="stat__label">Mínimo</span>
+            <strong class="stat__value">{{ clp(s.min) }}</strong>
+          </div>
+          <div class="stat stat--key">
+            <span class="stat__label">Mediana</span>
+            <strong class="stat__value">{{ clp(s.median) }}</strong>
+          </div>
+          <div class="stat">
+            <span class="stat__label">Promedio</span>
+            <strong class="stat__value">{{ clp(s.average) }}</strong>
+          </div>
+          <div class="stat">
+            <span class="stat__label">Moda</span>
+            @if (s.mode !== null) {
+              <strong class="stat__value">{{ clp(s.mode) }}</strong>
+              <span class="stat__note">{{ s.modeCount }} avisos iguales</span>
+            } @else {
+              <strong class="stat__value muted-value">—</strong>
+              <span class="stat__note">ningún precio se repite</span>
+            }
+          </div>
+          <div class="stat">
+            <span class="stat__label">Máximo</span>
+            <strong class="stat__value">{{ clp(s.max) }}</strong>
+          </div>
+        </div>
+
+        @if (s.count < 3) {
+          <p class="hint warn">
+            Con menos de tres comparables el análisis se bloquea. Marca al menos uno más.
+          </p>
+        }
+
+        @if (s.skew > 0.1) {
+          <p class="hint warn">
+            El promedio se aparta un {{ pct(s.skew) }} de la mediana. Eso pasa cuando algún aviso
+            está muy fuera de rango y tira del conjunto: revisa el mínimo y el máximo, y quita el
+            que no corresponda.
+          </p>
+        }
+
         <p class="hint">
-          Mediana de lo seleccionado: <strong>{{ clp(median) }}</strong>. Es un precio de lista, no
-          de transacción: el sistema le descuenta la brecha de negociación al valorizar.
+          <strong>Guíate por la mediana, no por el promedio.</strong> Un solo aviso extremo mueve
+          el promedio y no mueve la mediana, y por eso el sistema valoriza con mediana y cuartiles.
+          La moda es distinta: cuando varios vendedores publican el mismo número, ese es el precio
+          que el mercado da por bueno. Y ojo con las tres: son precios de lista, no de transacción
+          — al valorizar se les descuenta la brecha de negociación, así que no la descuentes tú
+          también.
         </p>
       }
 

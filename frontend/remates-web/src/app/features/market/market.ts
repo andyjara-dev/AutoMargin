@@ -3,7 +3,7 @@ import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { catchError, of } from 'rxjs';
 
-import { clp, num } from '../../core/format';
+import { clp, num, pct } from '../../core/format';
 import { describeHttpError } from '../../core/http-error';
 import { VehicleSummary } from '../../core/models/auth.models';
 import {
@@ -13,6 +13,21 @@ import {
 } from '../../core/models/market.models';
 import { MarketService } from '../../core/services/market.service';
 import { VehiclesService } from '../../core/services/vehicles.service';
+
+/** Resumen de precios de los avisos elegidos. */
+interface PriceStats {
+  count: number;
+  min: number;
+  max: number;
+  average: number;
+  median: number;
+  /** Precio que más se repite. Nulo cuando todos los avisos valen distinto. */
+  mode: number | null;
+  /** Cuántas veces se repite la moda. */
+  modeCount: number;
+  /** Cuánto se aparta el promedio de la mediana, en proporción a la mediana. */
+  skew: number;
+}
 
 /** Un aviso en la pantalla, con su estado de selección y de dónde vino. */
 interface Candidate {
@@ -45,6 +60,7 @@ export class Market {
 
   readonly clp = clp;
   readonly num = num;
+  readonly pct = pct;
 
   readonly candidates = signal<Candidate[]>([]);
   readonly sources = signal<SourceStatus[]>([]);
@@ -85,17 +101,63 @@ export class Market {
     return id === null ? null : (this.vehicleOptions().find((v) => v.id === id) ?? null);
   });
 
-  /** Referencia rápida mientras se eligen avisos: si la muestra es corta, hay que seguir buscando. */
-  readonly selectedMedian = computed(() => {
+  /**
+   * Resumen de lo seleccionado, recalculado con cada check. Sirve para darse cuenta en el
+   * momento de que la muestra quedó torcida, en vez de descubrirlo cuando el análisis ya salió.
+   */
+  readonly selectedStats = computed<PriceStats | null>(() => {
     const prices = this.selected()
       .map((c) => c.result.listedPrice)
       .sort((a, b) => a - b);
 
     if (prices.length === 0) return null;
 
-    const middle = Math.floor(prices.length / 2);
-    return prices.length % 2 === 0 ? (prices[middle - 1] + prices[middle]) / 2 : prices[middle];
+    const count = prices.length;
+    const average = prices.reduce((sum, p) => sum + p, 0) / count;
+
+    const middle = Math.floor(count / 2);
+    const median = count % 2 === 0 ? (prices[middle - 1] + prices[middle]) / 2 : prices[middle];
+
+    const { mode, modeCount } = this.calculateMode(prices);
+
+    return {
+      count,
+      min: prices[0],
+      max: prices[count - 1],
+      average,
+      median,
+      mode,
+      modeCount,
+      // La mediana no se mueve con un aviso extremo y el promedio sí. Que se separen es la
+      // señal de que hay algo tirando del conjunto.
+      skew: median === 0 ? 0 : Math.abs(average - median) / median
+    };
   });
+
+  /**
+   * Precio que más se repite. Sobre cifras continuas la moda muchas veces no existe, y decirlo
+   * es parte del dato: si ningún precio se repite, no hay un valor al que el mercado converja.
+   *
+   * En los avisos chilenos sí se repiten, porque se publican en cifras redondas, y ahí la moda
+   * dice algo que la mediana no: cuál es el precio que varios vendedores consideran el correcto.
+   */
+  private calculateMode(sortedPrices: number[]): { mode: number | null; modeCount: number } {
+    const frequency = new Map<number, number>();
+    for (const price of sortedPrices) frequency.set(price, (frequency.get(price) ?? 0) + 1);
+
+    let mode: number | null = null;
+    let modeCount = 0;
+
+    for (const [price, times] of frequency) {
+      // En empate se queda el más bajo: para quien compra, la referencia prudente.
+      if (times > modeCount || (times === modeCount && mode !== null && price < mode)) {
+        mode = price;
+        modeCount = times;
+      }
+    }
+
+    return modeCount < 2 ? { mode: null, modeCount: 0 } : { mode, modeCount };
+  }
 
   constructor() {
     this.vehicles

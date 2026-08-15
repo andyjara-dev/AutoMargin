@@ -152,8 +152,7 @@ public sealed class YapoSource(
             var parsed = ListingParser.Parse(text);
             if (!parsed.IsUsable) continue;
 
-            var link = candidate.QuerySelector("a[href]")?.GetAttribute("href");
-            var url = BuildAbsoluteUrl(link);
+            var url = BuildAbsoluteUrl(FindListingLink(candidate));
 
             // Sin dirección, se deduplica por la combinación de cifras del aviso.
             var key = url ?? $"{parsed.Price}|{parsed.Year}|{parsed.MileageKm}";
@@ -195,6 +194,46 @@ public sealed class YapoSource(
             yield return element;
         }
     }
+
+    /// <summary>
+    /// Busca el enlace del aviso. A veces no está dentro del bloque de texto sino envolviéndolo,
+    /// y por eso algunos avisos aparecían sin dirección.
+    ///
+    /// Al subir por los ancestros solo se acepta un enlace si no hay ambigüedad: o el ancestro
+    /// mismo es el enlace, o contiene exactamente uno. Tomar el primero de varios sería peor que
+    /// no tener enlace, porque le pegaría a un aviso la dirección de otro.
+    /// </summary>
+    private static string? FindListingLink(IElement element)
+    {
+        var inside = SingleListingLink(element);
+        if (inside is not null) return inside;
+
+        foreach (var ancestor in element.Ancestors<IElement>().Take(4))
+        {
+            if (IsListingHref(ancestor.GetAttribute("href")))
+                return ancestor.GetAttribute("href");
+
+            var nested = SingleListingLink(ancestor);
+            if (nested is not null) return nested;
+        }
+
+        return null;
+    }
+
+    private static string? SingleListingLink(IElement element)
+    {
+        var links = element.QuerySelectorAll("a[href]")
+            .Select(a => a.GetAttribute("href"))
+            .Where(IsListingHref)
+            .Distinct()
+            .Take(2)
+            .ToList();
+
+        return links.Count == 1 ? links[0] : null;
+    }
+
+    private static bool IsListingHref(string? href)
+        => href is not null && href.Contains("/autos-usados/", StringComparison.OrdinalIgnoreCase);
 
     private string? BuildAbsoluteUrl(string? href)
     {

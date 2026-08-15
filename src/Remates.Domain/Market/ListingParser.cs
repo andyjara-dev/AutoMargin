@@ -162,8 +162,12 @@ public static class ListingParser
 
         var value = ParseNumber(match.Groups[1].Value);
 
+        // El cero se conserva: «0 km» no es un dato ausente, es un auto sin uso. Descartarlo lo
+        // haría pasar por «no informado», y son cosas opuestas a la hora de elegir comparables:
+        // un auto nuevo se vende al precio de nuevo y no sirve para valorizar uno de remate.
+        //
         // Por encima del millón ya no es kilometraje de un auto usable.
-        return value is > 0 and <= 1_000_000m ? (int)value : null;
+        return value is >= 0 and <= 1_000_000m ? (int)value : null;
     }
 
     /// <summary>

@@ -210,4 +210,27 @@ public class ListingParserTests
 
         Assert.Null(result.Region);
     }
+
+    /// <summary>
+    /// «0 km» y «no dice» son cosas opuestas al elegir comparables: un auto sin uso se vende al
+    /// precio de nuevo y no sirve para valorizar uno de remate. Confundirlos con un guion los
+    /// hace indistinguibles en pantalla.
+    /// </summary>
+    [Fact]
+    public void Un_auto_sin_uso_declara_cero_kilometros_y_no_los_omite()
+    {
+        var result = ListingParser.Parse("Suzuki Fronx 2025 1.5 Glx $ 16.480.000 · 0 Km", Makes);
+
+        Assert.Equal(0, result.MileageKm);
+        Assert.DoesNotContain("kilometraje", result.Missing);
+    }
+
+    [Fact]
+    public void El_aviso_que_no_menciona_kilometraje_lo_deja_sin_informar()
+    {
+        var result = ListingParser.Parse("Suzuki Fronx 2025 1.5 Glx $ 16.480.000", Makes);
+
+        Assert.Null(result.MileageKm);
+        Assert.Contains("kilometraje", result.Missing);
+    }
 }
