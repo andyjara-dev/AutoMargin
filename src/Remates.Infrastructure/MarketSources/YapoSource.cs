@@ -50,6 +50,13 @@ public sealed class YapoSource(
 
         var url = BuildSearchUrl(query);
 
+        if (url is null)
+        {
+            return MarketSearchOutcome.Failed(Name,
+                "Hace falta marca o modelo para buscar. Sin eso, el sitio devuelve autos " +
+                "cualesquiera, que no sirven como comparables.");
+        }
+
         if (DisallowedPaths.Any(path => url.Contains(path, StringComparison.OrdinalIgnoreCase)))
         {
             logger.LogWarning("Se descartó una consulta a una ruta que Yapo no permite: {Url}", url);
@@ -73,6 +80,23 @@ public sealed class YapoSource(
                 return MarketSearchOutcome.Failed(Name, $"El sitio respondió {(int)response.StatusCode}.");
             }
 
+            // Si el sitio redirige a su listado general, la búsqueda se perdió por el camino y lo
+            // que llega son autos cualesquiera. Devolverlos sería peor que no devolver nada: se
+            // colarían como comparables de un vehículo con el que no tienen relación, y nadie
+            // notaría el error mirando la puja máxima resultante.
+            var finalUrl = response.RequestMessage?.RequestUri?.ToString() ?? url;
+
+            if (!finalUrl.Contains("keyword.", StringComparison.OrdinalIgnoreCase))
+            {
+                logger.LogWarning(
+                    "Yapo descartó la búsqueda por el camino: se pidió {Url} y se terminó en {FinalUrl}",
+                    url, finalUrl);
+
+                return MarketSearchOutcome.Failed(Name,
+                    "El sitio ignoró la búsqueda y devolvió su listado general. No se usan esos " +
+                    "avisos porque no corresponden al vehículo buscado.");
+            }
+
             var html = await response.Content.ReadAsStringAsync(ct);
             var results = await ExtractAsync(html, query, ct);
 
@@ -85,14 +109,19 @@ public sealed class YapoSource(
         }
     }
 
-    private string BuildSearchUrl(MarketSearchQuery query)
+    /// <summary>
+    /// Ruta de resultados de búsqueda del sitio. El texto va como «keyword.loquesea», que es el
+    /// formato que espera su buscador.
+    ///
+    /// Sin búsqueda no se pide nada: el listado general devolvería autos cualesquiera, y como
+    /// comparables de un vehículo concreto eso no es un resultado pobre, es un resultado falso.
+    /// </summary>
+    private string? BuildSearchUrl(MarketSearchQuery query)
     {
         var text = query.BuildSearchText();
-        var baseUrl = _options.Yapo.BaseUrl.TrimEnd('/');
+        if (string.IsNullOrWhiteSpace(text)) return null;
 
-        return string.IsNullOrWhiteSpace(text)
-            ? $"{baseUrl}/chile/autos"
-            : $"{baseUrl}/chile/autos?q={Uri.EscapeDataString(text)}";
+        return $"{_options.Yapo.BaseUrl.TrimEnd('/')}/searchresult/autos?q=keyword.{Uri.EscapeDataString(text)}";
     }
 
     /// <summary>
