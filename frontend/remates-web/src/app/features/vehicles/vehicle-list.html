@@ -2,11 +2,16 @@
   <header class="head">
     <div>
       <h1>Vehículos</h1>
-      <p class="subtitle">Cada fila muestra el resultado del último análisis registrado.</p>
+      <p class="subtitle">
+        Todo lo registrado, en cualquier estado, con el resultado de su último análisis.
+      </p>
     </div>
-    @if (loading()) {
-      <span class="pill">Cargando…</span>
-    }
+    <div class="head__actions">
+      @if (loading()) {
+        <span class="pill">Cargando…</span>
+      }
+      <a class="btn-primary" routerLink="/analizador">Nuevo vehículo</a>
+    </div>
   </header>
 
   <div class="filters">
@@ -23,13 +28,37 @@
     <div class="alert">{{ error() }}</div>
   }
 
-  @if (!error() && items().length === 0 && !loading()) {
+  @if (!error() && items().length === 0 && !loading() && filtering()) {
+    <div class="empty">
+      <strong>Ningún vehículo calza con el filtro.</strong>
+      <p>Prueba con otro texto o quita el filtro de estado.</p>
+    </div>
+  }
+
+  @if (!error() && items().length === 0 && !loading() && !filtering()) {
     <div class="empty">
       <strong>No hay vehículos registrados todavía.</strong>
       <p>
-        Cuando cargues el primero, aquí verás su puja máxima, su puntaje y su semáforo, ordenados
-        para comparar oportunidades de un vistazo.
+        Los vehículos no se crean aquí: se crean analizándolos. Esta pantalla es el archivo, y un
+        vehículo sin comparables ni daños no tendría puja máxima que mostrar.
       </p>
+
+      <ol class="how">
+        <li>
+          Abre el <a routerLink="/analizador">Analizador</a> y carga el vehículo: año,
+          kilometraje, daños y costos.
+        </li>
+        <li>
+          Trae sus comparables desde <a routerLink="/mercado">Mercado</a>, o pégalos a mano. Con
+          menos de tres el análisis se bloquea.
+        </li>
+        <li>
+          Ponle nombre y presiona <strong>Guardar como lote</strong>. Ahí aparece en esta lista y
+          en la <a routerLink="/remate">sala de remate</a>.
+        </li>
+      </ol>
+
+      <a class="btn-primary" routerLink="/analizador">Analizar el primero</a>
     </div>
   }
 

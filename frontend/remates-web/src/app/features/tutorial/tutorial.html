@@ -371,6 +371,13 @@
             detalle para entender por qué.
           </li>
           <li>
+            <strong>Guárdalo como lote.</strong> Ponle un nombre con el que lo reconozcas
+            —«Lote 14 · Yaris 2018»— y presiona <em>Guardar como lote</em>. Así queda registrado
+            con sus comparables, sus daños y su puja máxima, y aparece en
+            <a routerLink="/vehiculos">Vehículos</a> y en la
+            <a routerLink="/remate">sala de remate</a>.
+          </li>
+          <li>
             <strong>Anota la puja máxima y ve al remate.</strong> Ese número no se renegocia en
             caliente. Cuando en la sala te den ganas de subir «un poquito más», ese es exactamente el
             momento para el que fue calculado.
@@ -382,12 +389,21 @@
         </ol>
 
         <div class="plain">
-          <strong>Las cinco pantallas.</strong>
+          <strong>Las pantallas.</strong>
           <em>Estado</em> resume el negocio y avisa qué necesita atención.
-          <em>Analizador</em> decide cuánto pujar.
-          <em>Vehículos</em> lista lo que tienes y abre la ficha de cada uno.
+          <em>Analizador</em> decide cuánto pujar, y es donde nacen los vehículos.
+          <em>Remate</em> es la sala el día de la subasta.
+          <em>Vehículos</em> es el archivo completo y abre la ficha de cada uno.
+          <em>Mercado</em> busca los comparables.
           <em>Parámetros</em> ajusta los umbrales.
           <em>Manual</em> es esto que estás leyendo.
+        </div>
+
+        <div class="callout callout--key">
+          <strong>Los vehículos no se crean en la pantalla de Vehículos.</strong> Se crean
+          analizándolos y guardando. Es a propósito: un vehículo sin comparables ni daños no
+          tiene puja máxima, y una ficha vacía no sirve para decidir nada. El analizador te
+          obliga a llenar lo que hace falta antes de que exista el registro.
         </div>
       </section>
 

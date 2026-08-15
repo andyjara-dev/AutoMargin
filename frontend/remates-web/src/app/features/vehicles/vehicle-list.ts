@@ -35,6 +35,12 @@ export class VehicleList {
 
   readonly statuses = Object.entries(VEHICLE_STATUS_LABELS) as [VehicleStatus, string][];
 
+  /**
+   * Si hay filtro puesto, una lista vacía significa «ninguno calza», no «no tienes ninguno».
+   * Explicar cómo crear el primero a quien ya tiene doce sería desconcertante.
+   */
+  readonly filtering = signal(false);
+
   constructor() {
     this.search.valueChanges
       .pipe(debounceTime(300), startWith(''), takeUntilDestroyed())
@@ -46,6 +52,7 @@ export class VehicleList {
   load(): void {
     this.loading.set(true);
     this.error.set(null);
+    this.filtering.set(Boolean(this.search.value || this.statusFilter.value));
 
     this.vehicles
       .list({
