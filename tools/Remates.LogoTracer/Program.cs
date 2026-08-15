@@ -12,6 +12,28 @@ using Remates.LogoTracer;
 
 if (args.Contains("--selftest")) return SelfTest.Run();
 
+// El favicon sale del mismo PNG, así que vive con el vectorizador y no en otra herramienta:
+//   dotnet run --project tools/Remates.LogoTracer -- --favicon <entrada.png> [salida.ico]
+if (args.Contains("--favicon"))
+{
+    var rest = args.Where(a => a != "--favicon").ToArray();
+    var png = rest.ElementAtOrDefault(0);
+
+    if (string.IsNullOrWhiteSpace(png) || !File.Exists(png))
+    {
+        Console.Error.WriteLine("Uso: dotnet run --project tools/Remates.LogoTracer -- --favicon <entrada.png> [salida.ico]");
+        return 1;
+    }
+
+    var ico = rest.ElementAtOrDefault(1)
+        ?? Path.Combine(Path.GetDirectoryName(Path.GetFullPath(png))!, "favicon.ico");
+
+    IcoWriter.Write(png, ico);
+    Console.WriteLine($"Favicon generado: {ico} ({new FileInfo(ico).Length / 1024d:N1} KB)");
+
+    return 0;
+}
+
 var input = args.ElementAtOrDefault(0);
 
 if (string.IsNullOrWhiteSpace(input) || !File.Exists(input))

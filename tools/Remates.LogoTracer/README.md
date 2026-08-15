@@ -43,12 +43,28 @@ dotnet run --project tools/Remates.LogoTracer -- --selftest
 Traza figuras de geometría conocida: un disco debe dar un contorno y un anillo dos, el exterior y
 el del agujero.
 
+## El favicon.ico
+
+Aparte del SVG hace falta un `.ico`: el navegador pide `/favicon.ico` aunque el HTML declare un
+SVG, y si ahí queda el archivo que trae Angular por defecto, en la pestaña aparece su logo.
+
+```bash
+dotnet run --project tools/Remates.LogoTracer -- --favicon frontend/remates-web/public/logo-source.png
+```
+
+Recorta el margen transparente —sin eso el isotipo queda diminuto y a 16 px no se distingue—,
+lo centra en un lienzo cuadrado y guarda seis tamaños: 16, 32, 48, 64, 128 y 256.
+
+> Los navegadores guardan el favicon con mucha insistencia. Después de reemplazarlo hay que
+> recargar con Ctrl+F5, y a veces abrir la pestaña en una ventana de incógnito para comprobarlo.
+
 ## Después de generar el SVG
 
-El isotipo se usa en tres lugares:
+El isotipo se usa en cuatro lugares:
 
 - `frontend/remates-web/public/logo.svg` — archivo suelto
 - `frontend/remates-web/public/favicon.svg` — versión con fondo oscuro para la pestaña
+- `frontend/remates-web/public/favicon.ico` — para navegadores que piden el .ico
 - `frontend/remates-web/src/app/shared/logo.ts` — componente Angular, con el trazo en línea
 
-Copiar el contenido del `<path>` generado a los otros dos mantiene todo consistente.
+Copiar el contenido del `<path>` generado a los otros mantiene todo consistente.
