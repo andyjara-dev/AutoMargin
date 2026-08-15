@@ -80,23 +80,42 @@ chmod 600 .env
 ## 3b. Fuentes de mercado (opcional)
 
 La pantalla **Mercado** busca avisos comparables en portales de venta de autos. Todo lo de esta
-sección es opcional: sin configurar nada, la pantalla funciona igual y la búsqueda informa que
-las fuentes no están configuradas, en vez de mostrar cero resultados sin explicación. El pegado
-manual de avisos no depende de ninguna credencial.
+sección es opcional: sin encender nada, la pantalla funciona igual y la búsqueda informa qué
+fuente está apagada, en vez de mostrar cero resultados sin explicación. El pegado manual de
+avisos no depende de ninguna credencial ni de ninguna fuente.
+
+**Ninguna fuente necesita credenciales.** Las dos leen el HTML público del portal.
 
 | Fuente | Estado |
 |---|---|
-| **MercadoLibre** | **No sirve para comparables.** Su API no ofrece búsqueda abierta del marketplace: [Ítems y Búsquedas](https://developers.mercadolibre.cl/es_ar/items-y-busquedas) solo documenta `/sites/{site}/search` acotado a un vendedor (`seller_id` o `nickname`). Sin ese parámetro responde `403`. No es configurable. El adaptador se conserva apagado (`ML_ENABLED=false`) por si abren la búsqueda general. |
-| **Yapo** | Funciona. Lectura del HTML de su búsqueda pública, que su `robots.txt` permite. Se activa con `YAPO_ENABLED=true`. Frágil: un rediseño del sitio la degrada. |
+| **MercadoLibre** | Funciona. Lee `autos.mercadolibre.cl/{marca}/{modelo}/usados/`, que su `robots.txt` no prohíbe para un cliente genérico. Se activa con `ML_ENABLED=true`. |
+| **Yapo** | Funciona. Lee su página de resultados, que su `robots.txt` permite, ordenada por publicación reciente. Se activa con `YAPO_ENABLED=true`. |
 | **Chileautos** | No se integra. Su `robots.txt` prohíbe la lectura automatizada de las rutas necesarias, y el sistema no las pide. Para esos avisos se usa el pegado manual. |
+
+Las dos son lectura de HTML, así que **se rompen cuando el portal cambia de maquetado**. Por eso
+vienen apagadas: encenderlas es una decisión, no un valor por defecto. Y cuando dejan de entender
+la página lo dicen con todas sus letras en vez de devolver cero avisos, que se confundiría con
+«no hay autos de ese modelo».
+
+Las consultas salen con un agente que se identifica y da un contacto, con un mínimo de segundos
+entre peticiones a un mismo sitio (`MARKET_MIN_SECONDS`, por defecto 3) y un tope bajo de
+resultados. Bajar ese intervalo es pedir un bloqueo.
+
+### Por qué MercadoLibre no usa su API oficial
+
+Se probó primero y no sirve. Su API no ofrece búsqueda abierta del marketplace:
+[Ítems y Búsquedas](https://developers.mercadolibre.cl/es_ar/items-y-busquedas) solo documenta
+el endpoint de búsqueda por sitio acotado a un vendedor (`seller_id` o `nickname`). Sin ese
+parámetro responde `403`, y para comparar precios hacen falta avisos de muchos vendedores.
 
 > Verificado el 14-08-2026 con credenciales válidas: el token se emite sin problema y la búsqueda
 > devuelve `{"message":"forbidden","error":"forbidden","status":403,"cause":[]}`. El `cause` vacío
-> es la negativa genérica; cuando falta un scope concreto, MercadoLibre lo nombra ahí.
+> es la negativa genérica; cuando falta un scope concreto, MercadoLibre lo nombra ahí. Sin token
+> la respuesta es idéntica. No hay permiso del panel de desarrollador que lo destrabe.
 >
-> La guía de vehículos de MercadoLibre es enteramente para vendedores —publicar, paquetes, leads,
-> créditos preaprobados—, y su página «Localiza vehículos» trata de IDs de ubicación para publicar,
-> no de buscar. No hay un camino oficial para leer avisos de otros vendedores.
+> Su guía de vehículos es enteramente para vendedores —publicar, paquetes, leads, créditos
+> preaprobados—, y la página «Localiza vehículos» trata de IDs de ubicación para publicar, no de
+> buscar.
 >
 > Queda una vía teórica que **no conviene usar**: consultar vendedor por vendedor con
 > `/users/{user_id}/items/search` sobre un puñado de automotoras conocidas. Daría una muestra
@@ -104,15 +123,12 @@ manual de avisos no depende de ninguna credencial.
 > valor de mercado y con él la puja máxima, que es justo el error que este sistema existe para
 > evitar. Es preferible no tener la fuente que tenerla sesgada.
 
-Las consultas salen con un agente que se identifica, con un mínimo de segundos entre peticiones
-a un mismo sitio (`MARKET_MIN_SECONDS`, por defecto 3) y con un tope bajo de resultados. Bajar
-ese intervalo es pedir un bloqueo.
+### Encenderlas
 
 ```bash
-# Editar .env y dejar, por ejemplo:
-#   ML_CLIENT_ID=1234567890123456
-#   ML_CLIENT_SECRET=...
-#   YAPO_ENABLED=false
+# Editar .env y dejar:
+#   ML_ENABLED=true
+#   YAPO_ENABLED=true
 ```
 
 Los cambios se aplican recreando el contenedor, no reiniciándolo:

@@ -26,25 +26,13 @@ public sealed class MarketSourceOptions
 public sealed class MercadoLibreOptions
 {
     /// <summary>
-    /// Apagada por defecto, y con una razón que no depende de la configuración: la API no
-    /// ofrece búsqueda abierta del marketplace. Su documentación solo admite
-    /// /sites/{site}/search acotado a un vendedor (seller_id o nickname), y sin ese parámetro
-    /// responde 403. Para comparables se necesitan avisos de muchos vendedores distintos.
-    ///
-    /// El adaptador se conserva porque funciona y no cuesta nada apagado, por si alguna vez
-    /// abren la búsqueda general; encenderlo hoy solo agrega un error permanente a la pantalla.
+    /// Desactivada por defecto, igual que Yapo: es lectura de HTML y se rompe cuando el sitio
+    /// cambia, así que conviene que se encienda a conciencia. No necesita credenciales.
     /// </summary>
     public bool Enabled { get; set; }
 
-    /// <summary>Credenciales de la aplicación registrada en developers.mercadolibre.cl.</summary>
-    public string ClientId { get; set; } = string.Empty;
-    public string ClientSecret { get; set; } = string.Empty;
-
-    /// <summary>MLC es el sitio de Chile.</summary>
-    public string SiteId { get; set; } = "MLC";
-
-    /// <summary>Categoría de autos y camionetas.</summary>
-    public string CategoryId { get; set; } = "MLC1744";
+    /// <summary>Subdominio de autos. El listado vive en /{marca}/{modelo}/usados/.</summary>
+    public string BaseUrl { get; set; } = "https://autos.mercadolibre.cl";
 }
 
 public sealed class YapoOptions

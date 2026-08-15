@@ -1548,13 +1548,13 @@
             <tr><th>Fuente</th><th>Cómo funciona</th></tr>
           </thead>
           <tbody>
-            <tr class="tone-bad">
+            <tr>
               <td>MercadoLibre</td>
-              <td>No sirve para esto. Su API solo permite listar las publicaciones de un vendedor concreto, no buscar en el sitio completo, y para comparar precios se necesitan avisos de muchos vendedores. No es algo que se pueda configurar. Para esos avisos, el pegado.</td>
+              <td>Se lee su listado público de autos usados por marca y modelo. Es frágil: si el sitio cambia de diseño, trae menos resultados o ninguno.</td>
             </tr>
             <tr>
               <td>Yapo</td>
-              <td>Se lee su página pública de búsqueda, que su robots.txt permite. Es frágil: si el sitio cambia de diseño, trae menos resultados o ninguno.</td>
+              <td>Se lee su página pública de búsqueda, ordenada por publicación reciente. Misma fragilidad.</td>
             </tr>
             <tr>
               <td>Chileautos</td>
@@ -1564,11 +1564,19 @@
         </table>
 
         <p>
-          Cuando una fuente no está configurada, la pantalla lo dice con todas sus letras en vez
-          de mostrar cero resultados sin explicación. Eso importa: «no hay avisos» y «no pregunté»
-          son cosas muy distintas, y confundirlas te haría creer que un modelo no se vende cuando
-          en realidad nadie miró.
+          Cuando una fuente está apagada o dejó de entender la página del portal, la pantalla lo
+          dice con todas sus letras en vez de mostrar cero resultados sin explicación. Eso importa:
+          «no hay avisos» y «no pregunté» son cosas muy distintas, y confundirlas te haría creer
+          que un modelo no se vende cuando en realidad nadie miró.
         </p>
+
+        <div class="callout callout--key">
+          <strong>Ninguna fuente te va a dar avisos de otro auto sin avisarte.</strong> Si el
+          portal ignora la búsqueda y responde con su listado general —cosa que pasa cuando cambian
+          una dirección—, el sistema descarta esa respuesta entera en vez de aprovecharla. Serían
+          autos sin relación con el tuyo entrando como comparables, y el error no se vería: la puja
+          máxima saldría con la misma cara de siempre, calculada sobre nada.
+        </div>
       </section>
 
       <!-- ====================================================== -->

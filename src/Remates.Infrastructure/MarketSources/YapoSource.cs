@@ -121,7 +121,11 @@ public sealed class YapoSource(
         var text = query.BuildSearchText();
         if (string.IsNullOrWhiteSpace(text)) return null;
 
-        return $"{_options.Yapo.BaseUrl.TrimEnd('/')}/searchresult/autos?q=keyword.{Uri.EscapeDataString(text)}";
+        // Ordenado por publicación reciente. Un aviso de hace ocho meses a un precio que nadie
+        // pagó es peor evidencia que uno de esta semana: sigue publicado justamente porque el
+        // precio no funcionó, y tomarlo como comparable subiría el valor de mercado sin razón.
+        return $"{_options.Yapo.BaseUrl.TrimEnd('/')}/searchresult/autos" +
+               $"?sort=f_added&dir=desc&q=keyword.{Uri.EscapeDataString(text)}";
     }
 
     /// <summary>

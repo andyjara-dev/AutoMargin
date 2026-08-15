@@ -1,5 +1,6 @@
-using System.Net.Http.Json;
-using System.Text.Json;
+using System.Text.RegularExpressions;
+using AngleSharp.Dom;
+using AngleSharp.Html.Parser;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Remates.Domain.Market;
@@ -7,89 +8,119 @@ using Remates.Domain.Market;
 namespace Remates.Infrastructure.MarketSources;
 
 /// <summary>
-/// Consulta MercadoLibre por su API oficial.
+/// Lee avisos de MercadoLibre desde el HTML de su listado de autos usados.
 ///
-/// Es la vía legítima y estable: no lee HTML, así que no se rompe cuando el sitio cambia de
-/// diseño. Requiere registrar una aplicación gratuita, porque desde 2024 los endpoints de
-/// búsqueda dejaron de ser públicos y responden 403 sin token.
+/// No usa su API oficial a propósito: esa solo permite listar las publicaciones de un vendedor
+/// concreto, con seller_id o nickname, y para comparar precios se necesitan avisos de muchos
+/// vendedores distintos. Sin ese parámetro responde 403. Está documentado en DESPLIEGUE.md.
+///
+/// El robots.txt del sitio no prohíbe la ruta de listados por marca y modelo para un cliente
+/// genérico. Aun así se consulta con moderación: intervalo entre peticiones, agente que se
+/// identifica con un contacto, y un tope bajo de resultados. Se consulta el sitio, no se rastrea.
 /// </summary>
 public sealed class MercadoLibreSource(
     IHttpClientFactory httpClientFactory,
     IOptions<MarketSourceOptions> options,
     HostRateLimiter rateLimiter,
-    TimeProvider timeProvider,
     ILogger<MercadoLibreSource> logger) : IMarketSource
 {
-    private const string ApiHost = "api.mercadolibre.com";
-
     private readonly MarketSourceOptions _options = options.Value;
 
-    private string? _token;
-    private DateTimeOffset _tokenExpiresAt;
+    /// <summary>
+    /// Contenedor de cada aviso. Verificado contra el sitio real: 48 avisos por página, 48
+    /// precios, 48 kilometrajes. Es una correspondencia de uno a uno, no una aproximación.
+    /// </summary>
+    private const string ItemSelector = "li.ui-search-layout__item";
+
+    /// <summary>
+    /// El precio se lee de su propio elemento en vez de buscarlo en el texto. Hay exactamente
+    /// uno por tarjeta, así que no hay riesgo de tomar el valor de una cuota por el precio, que
+    /// es el error que invertiría la valuación entera.
+    /// </summary>
+    private const string PriceSelector = ".andes-money-amount__fraction";
+
+    /// <summary>
+    /// Fragmentos que su robots.txt prohíbe y que un nombre de marca o modelo podría producir.
+    /// Se comprueban antes de pedir nada: si alguna vez se arma una URL que caiga ahí, la
+    /// petición no debe salir.
+    /// </summary>
+    private static readonly string[] DisallowedFragments =
+        ["/pagina/", "_pricerange_", "_kilometers_", "_pricemin_", "_pricemax_", "/adultos/", ".html", "/e/"];
+
+    private static readonly Regex NonSlug = new(@"[^a-z0-9]+", RegexOptions.Compiled);
+    private static readonly Regex Digits = new(@"\d+", RegexOptions.Compiled);
 
     public string Name => "MercadoLibre";
 
-    public bool IsConfigured =>
-        _options.MercadoLibre.Enabled
-        && !string.IsNullOrWhiteSpace(_options.MercadoLibre.ClientId)
-        && !string.IsNullOrWhiteSpace(_options.MercadoLibre.ClientSecret);
+    public bool IsConfigured => _options.MercadoLibre.Enabled;
 
-    public string? UnavailableReason
-    {
-        get
-        {
-            if (IsConfigured) return null;
-
-            return _options.MercadoLibre.Enabled
-                ? "Faltan las credenciales. Definir MarketSources__MercadoLibre__ClientId y ClientSecret."
-                : "Desactivada. Su API solo permite buscar publicaciones de un vendedor concreto, " +
-                  "no del marketplace completo, así que encenderla solo agregaría un error " +
-                  "permanente. Para este portal, usa el pegado de avisos.";
-        }
-    }
+    public string? UnavailableReason => IsConfigured
+        ? null
+        : "Desactivada. Se enciende con MarketSources__MercadoLibre__Enabled=true " +
+          "(ML_ENABLED en el .env).";
 
     public async Task<MarketSearchOutcome> SearchAsync(MarketSearchQuery query, CancellationToken ct)
     {
-        if (!IsConfigured)
+        if (!IsConfigured) return MarketSearchOutcome.Failed(Name, UnavailableReason!);
+
+        var (url, makeSlug) = BuildSearchUrl(query);
+
+        if (url is null)
         {
             return MarketSearchOutcome.Failed(Name,
-                "Falta configurar las credenciales. Registra una aplicación gratuita en " +
-                "developers.mercadolibre.cl y define MarketSources__MercadoLibre__ClientId y ClientSecret.");
+                "Hace falta la marca para buscar. Sin ella el sitio devuelve autos cualesquiera, " +
+                "que no sirven como comparables.");
+        }
+
+        if (DisallowedFragments.Any(f => url.Contains(f, StringComparison.OrdinalIgnoreCase)))
+        {
+            logger.LogWarning("Se descartó una consulta a una ruta que MercadoLibre no permite: {Url}", url);
+            return MarketSearchOutcome.Failed(Name, "La ruta solicitada no está permitida por el sitio.");
         }
 
         try
         {
-            var token = await GetTokenAsync(ct);
-            if (token is null)
-                return MarketSearchOutcome.Failed(Name, "No se pudo obtener el token de acceso.");
+            var host = new Uri(url).Host;
+            await rateLimiter.WaitTurnAsync(host, TimeSpan.FromSeconds(_options.MinSecondsBetweenRequests), ct);
 
-            await rateLimiter.WaitTurnAsync(ApiHost, TimeSpan.FromSeconds(_options.MinSecondsBetweenRequests), ct);
+            var client = httpClientFactory.CreateClient(nameof(MercadoLibreSource));
+            client.Timeout = TimeSpan.FromSeconds(_options.TimeoutSeconds);
+            client.DefaultRequestHeaders.UserAgent.ParseAdd(_options.UserAgent);
+            client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("es-CL,es;q=0.9");
 
-            var client = CreateClient();
-            client.DefaultRequestHeaders.Authorization = new("Bearer", token);
-
-            var url = BuildSearchUrl(query);
             using var response = await client.GetAsync(url, ct);
 
             if (!response.IsSuccessStatusCode)
             {
-                // El código solo no basta para actuar: un 403 puede ser falta de permisos, una
-                // categoría inexistente o un endpoint restringido, y MercadoLibre distingue esos
-                // casos en el cuerpo. Sin leerlo, el usuario queda con un número y sin salida.
-                var detail = await ReadErrorMessageAsync(response, ct);
+                logger.LogWarning("MercadoLibre respondió {Status} a {Url}", response.StatusCode, url);
 
-                logger.LogWarning("MercadoLibre respondió {Status} a {Url}: {Detail}",
-                    response.StatusCode, url, detail ?? "(sin detalle)");
-
-                return MarketSearchOutcome.Failed(Name, Explain(response.StatusCode, detail));
+                return MarketSearchOutcome.Failed(Name, response.StatusCode is System.Net.HttpStatusCode.NotFound
+                    ? "No existe un listado para esa marca y modelo. Revisa cómo están escritos."
+                    : $"El sitio respondió {(int)response.StatusCode}.");
             }
 
-            var payload = await response.Content.ReadFromJsonAsync<JsonElement>(ct);
-            var results = ParseResults(payload, query);
+            // Si el sitio redirige a un listado que ya no es el de la marca pedida, la búsqueda se
+            // perdió por el camino. Devolver esos avisos sería peor que no devolver nada: entrarían
+            // como comparables de un vehículo con el que no tienen relación, y el error no se vería
+            // mirando la puja máxima resultante.
+            var finalUrl = response.RequestMessage?.RequestUri?.ToString() ?? url;
 
-            return new MarketSearchOutcome { Source = Name, Results = results };
+            if (!finalUrl.Contains(makeSlug!, StringComparison.OrdinalIgnoreCase))
+            {
+                logger.LogWarning(
+                    "MercadoLibre descartó la búsqueda: se pidió {Url} y se terminó en {FinalUrl}",
+                    url, finalUrl);
+
+                return MarketSearchOutcome.Failed(Name,
+                    "El sitio ignoró la búsqueda y devolvió otro listado. No se usan esos avisos " +
+                    "porque no corresponden al vehículo buscado.");
+            }
+
+            var html = await response.Content.ReadAsStringAsync(ct);
+
+            return await ExtractAsync(html, query, ct);
         }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException)
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or UriFormatException)
         {
             logger.LogWarning(ex, "Falló la consulta a MercadoLibre");
             return MarketSearchOutcome.Failed(Name, "No se pudo consultar la fuente.");
@@ -97,205 +128,110 @@ public sealed class MercadoLibreSource(
     }
 
     /// <summary>
-    /// Flujo de credenciales de cliente. El token se reutiliza hasta poco antes de expirar,
-    /// para no pedir uno nuevo en cada búsqueda.
+    /// Ruta de listado por marca y modelo. El modelo es opcional; la marca no, porque sin ella
+    /// el sitio devuelve el listado general de autos.
     /// </summary>
-    private async Task<string?> GetTokenAsync(CancellationToken ct)
+    private (string? Url, string? MakeSlug) BuildSearchUrl(MarketSearchQuery query)
     {
-        if (_token is not null && timeProvider.GetUtcNow() < _tokenExpiresAt) return _token;
+        var makeSlug = Slug(query.Make);
+        if (string.IsNullOrEmpty(makeSlug)) return (null, null);
 
-        await rateLimiter.WaitTurnAsync(ApiHost, TimeSpan.FromSeconds(_options.MinSecondsBetweenRequests), ct);
+        var modelSlug = Slug(query.Model);
+        var baseUrl = _options.MercadoLibre.BaseUrl.TrimEnd('/');
 
-        var client = CreateClient();
+        var path = string.IsNullOrEmpty(modelSlug)
+            ? $"{baseUrl}/{makeSlug}/usados/"
+            : $"{baseUrl}/{makeSlug}/{modelSlug}/usados/";
 
-        var form = new FormUrlEncodedContent(new Dictionary<string, string>
-        {
-            ["grant_type"] = "client_credentials",
-            ["client_id"] = _options.MercadoLibre.ClientId,
-            ["client_secret"] = _options.MercadoLibre.ClientSecret
-        });
-
-        using var response = await client.PostAsync("https://api.mercadolibre.com/oauth/token", form, ct);
-
-        if (!response.IsSuccessStatusCode)
-        {
-            logger.LogWarning("MercadoLibre rechazó las credenciales con {Status}: {Detail}",
-                response.StatusCode, await ReadErrorMessageAsync(response, ct) ?? "(sin detalle)");
-
-            return null;
-        }
-
-        var payload = await response.Content.ReadFromJsonAsync<JsonElement>(ct);
-
-        if (!payload.TryGetProperty("access_token", out var tokenProperty)) return null;
-
-        _token = tokenProperty.GetString();
-
-        var seconds = payload.TryGetProperty("expires_in", out var expires) ? expires.GetInt32() : 21_600;
-        // Un minuto de margen: si el token vence a mitad de la petición, la búsqueda falla entera.
-        _tokenExpiresAt = timeProvider.GetUtcNow().AddSeconds(seconds - 60);
-
-        return _token;
+        return (path, makeSlug);
     }
+
+    private static string Slug(string? value)
+        => string.IsNullOrWhiteSpace(value)
+            ? string.Empty
+            : NonSlug.Replace(value.Trim().ToLowerInvariant(), "-").Trim('-');
 
     /// <summary>
-    /// Traduce el fallo a algo sobre lo que se pueda actuar. «forbidden · forbidden» es
-    /// literalmente lo que devuelve la API, y no le dice nada a quien está mirando la pantalla.
+    /// Cada aviso vive en su propio contenedor, así que no hay que adivinar dónde empieza y
+    /// termina. El precio sale de su elemento; el año, el kilometraje y la región se leen del
+    /// texto de la tarjeta con el mismo parser probado que usa el pegado manual.
     /// </summary>
-    private static string Explain(System.Net.HttpStatusCode status, string? detail) => (int)status switch
+    private async Task<MarketSearchOutcome> ExtractAsync(
+        string html, MarketSearchQuery query, CancellationToken ct)
     {
-        // La búsqueda abierta del marketplace no existe en la API. Su documentación solo ofrece
-        // /sites/{site}/search acotado a un vendedor, con seller_id o nickname. No hay permiso
-        // que activar en el panel de desarrollador, así que conviene decirlo para no mandar a
-        // nadie a buscar una casilla que no está.
-        403 => "La API de MercadoLibre solo permite buscar publicaciones de un vendedor concreto, " +
-               "no del marketplace completo. No es un problema de tus credenciales ni de los " +
-               "permisos que marcaste. Para avisos de este portal, usa el pegado de avisos.",
+        var parser = new HtmlParser();
+        using var document = await parser.ParseDocumentAsync(html, ct);
 
-        401 => "Las credenciales fueron rechazadas. Revisa MarketSources__MercadoLibre__ClientId " +
-               "y ClientSecret.",
+        var items = document.QuerySelectorAll(ItemSelector);
 
-        429 => "Se superó el límite de consultas de la API. Espera unos minutos.",
-
-        _ => detail is null
-            ? $"La API respondió {(int)status}."
-            : $"La API respondió {(int)status}: {detail}"
-    };
-
-    /// <summary>
-    /// Saca el motivo del error del cuerpo de la respuesta. MercadoLibre devuelve un JSON con
-    /// «message» y «error»; si viniera otra cosa, se muestra el texto recortado antes que nada.
-    /// </summary>
-    private static async Task<string?> ReadErrorMessageAsync(HttpResponseMessage response, CancellationToken ct)
-    {
-        try
+        if (items.Length == 0)
         {
-            var body = await response.Content.ReadAsStringAsync(ct);
-            if (string.IsNullOrWhiteSpace(body)) return null;
+            // Callar aquí sería lo peor: parecería que no hay autos de ese modelo cuando en
+            // realidad el sitio cambió y dejamos de entenderlo.
+            logger.LogWarning(
+                "MercadoLibre devolvió una página sin avisos reconocibles con «{Selector}». " +
+                "Probablemente cambió su maquetado.", ItemSelector);
 
-            try
-            {
-                using var json = JsonDocument.Parse(body);
-                var root = json.RootElement;
-
-                var message = root.TryGetProperty("message", out var m) ? m.GetString() : null;
-                var error = root.TryGetProperty("error", out var e) ? e.GetString() : null;
-
-                var text = string.Join(" · ", new[] { message, error }
-                    .Where(s => !string.IsNullOrWhiteSpace(s)));
-
-                if (!string.IsNullOrWhiteSpace(text)) return Trim(text);
-            }
-            catch (JsonException)
-            {
-                // No era JSON; sirve igual el texto crudo.
-            }
-
-            return Trim(body);
-        }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
-        {
-            return null;
-        }
-    }
-
-    private static string Trim(string text)
-    {
-        var single = string.Join(' ', text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
-        return single.Length <= 200 ? single : single[..200] + "…";
-    }
-
-    private string BuildSearchUrl(MarketSearchQuery query)
-    {
-        var ml = _options.MercadoLibre;
-        var parameters = new List<string>
-        {
-            $"category={Uri.EscapeDataString(ml.CategoryId)}",
-            $"limit={Math.Clamp(query.Limit, 1, 50)}"
-        };
-
-        var text = query.BuildSearchText();
-        if (!string.IsNullOrWhiteSpace(text)) parameters.Add($"q={Uri.EscapeDataString(text)}");
-
-        if (query.Year is { } year)
-        {
-            var from = year - query.YearTolerance;
-            var to = year + query.YearTolerance;
-            parameters.Add($"VEHICLE_YEAR={from}-{to}");
+            return MarketSearchOutcome.Failed(Name,
+                "No se reconoció ningún aviso en la página. El sitio cambió su formato y hay que " +
+                "actualizar la fuente. Mientras tanto, usa el pegado de avisos.");
         }
 
-        return $"https://{ApiHost}/sites/{ml.SiteId}/search?{string.Join("&", parameters)}";
-    }
-
-    private static List<MarketSearchResult> ParseResults(JsonElement payload, MarketSearchQuery query)
-    {
+        var seen = new HashSet<string>();
         var results = new List<MarketSearchResult>();
 
-        if (!payload.TryGetProperty("results", out var items) || items.ValueKind != JsonValueKind.Array)
-            return results;
-
-        foreach (var item in items.EnumerateArray())
+        foreach (var item in items)
         {
-            var price = item.TryGetProperty("price", out var p) && p.ValueKind == JsonValueKind.Number
-                ? p.GetDecimal()
-                : 0m;
+            if (results.Count >= query.Limit) break;
 
-            var attributes = item.TryGetProperty("attributes", out var attrs) ? attrs : default;
-            var year = ReadIntAttribute(attributes, "VEHICLE_YEAR");
-            var mileage = ReadIntAttribute(attributes, "KILOMETERS");
+            var text = Normalize(item.TextContent);
+            var parsed = ListingParser.Parse(text);
 
-            var result = new MarketSearchResult
+            var price = ReadPrice(item) ?? parsed.Price;
+            if (price is null or <= 0 || parsed.Year is null) continue;
+
+            var url = item.QuerySelector("a[href]")?.GetAttribute("href");
+
+            var key = url ?? $"{price}|{parsed.Year}|{parsed.MileageKm}";
+            if (!seen.Add(key)) continue;
+
+            results.Add(new MarketSearchResult
             {
-                Source = "MercadoLibre",
-                ListedPrice = price,
-                Year = year ?? 0,
-                MileageKm = mileage,
-                Title = item.TryGetProperty("title", out var t) ? t.GetString() : null,
-                Url = item.TryGetProperty("permalink", out var u) ? u.GetString() : null,
-                Region = ReadNestedString(item, "address", "state_name")
-            };
-
-            // Un aviso sin año o sin precio no aporta a la valuación y solo ensucia la muestra.
-            if (result.IsUsable) results.Add(result);
+                Source = Name,
+                ListedPrice = price.Value,
+                Year = parsed.Year.Value,
+                MileageKm = parsed.MileageKm,
+                Title = ReadTitle(item) ?? Shorten(text),
+                Url = url,
+                Region = parsed.Region
+            });
         }
 
-        return results;
+        return new MarketSearchOutcome { Source = Name, Results = results };
     }
 
-    /// <summary>
-    /// Los atributos vienen como lista de pares, no como campos. El kilometraje además
-    /// llega con la unidad pegada («80000 km»), así que se extraen solo los dígitos.
-    /// </summary>
-    private static int? ReadIntAttribute(JsonElement attributes, string id)
+    private static decimal? ReadPrice(IElement item)
     {
-        if (attributes.ValueKind != JsonValueKind.Array) return null;
+        var raw = item.QuerySelector(PriceSelector)?.TextContent;
+        if (string.IsNullOrWhiteSpace(raw)) return null;
 
-        foreach (var attribute in attributes.EnumerateArray())
-        {
-            if (!attribute.TryGetProperty("id", out var attributeId)) continue;
-            if (attributeId.GetString() != id) continue;
+        var digits = new string(raw.Where(char.IsDigit).ToArray());
 
-            var raw = attribute.TryGetProperty("value_name", out var value) ? value.GetString() : null;
-            if (raw is null) continue;
-
-            var digits = new string(raw.Where(char.IsDigit).ToArray());
-            return int.TryParse(digits, out var parsed) ? parsed : null;
-        }
-
-        return null;
+        return decimal.TryParse(digits, out var value) && value > 0 ? value : null;
     }
 
-    private static string? ReadNestedString(JsonElement element, string parent, string child)
-        => element.TryGetProperty(parent, out var node) && node.TryGetProperty(child, out var value)
-            ? value.GetString()
-            : null;
-
-    private HttpClient CreateClient()
+    private static string? ReadTitle(IElement item)
     {
-        var client = httpClientFactory.CreateClient(nameof(MercadoLibreSource));
-        client.Timeout = TimeSpan.FromSeconds(_options.TimeoutSeconds);
-        client.DefaultRequestHeaders.UserAgent.ParseAdd(_options.UserAgent);
+        // El nombre de clase cambió una vez y volverá a cambiar; si no está, el texto de la
+        // tarjeta recortado sirve igual y el aviso no se pierde por un detalle cosmético.
+        var title = item.QuerySelector(".poly-component__title")?.TextContent;
 
-        return client;
+        return string.IsNullOrWhiteSpace(title) ? null : Normalize(title);
     }
+
+    private static string Normalize(string text)
+        => string.Join(' ', text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+
+    private static string Shorten(string text)
+        => text.Length <= 90 ? text : text[..90] + "…";
 }
