@@ -30,7 +30,13 @@
         <div class="live">
           <label class="live__field">
             <span class="live__label">Precio actual del lote</span>
-            <input type="number" formControlName="currentAuctionPrice" step="100000" />
+            <input
+              type="number"
+              formControlName="currentAuctionPrice"
+              step="100000"
+              (focus)="selectOnTouch($event)"
+              (click)="selectOnTouch($event)"
+            />
           </label>
           <div class="live__hint">
             @if (result(); as r) {

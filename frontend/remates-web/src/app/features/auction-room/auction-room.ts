@@ -5,6 +5,7 @@ import { catchError, of } from 'rxjs';
 import { clp, num } from '../../core/format';
 import { describeHttpError } from '../../core/http-error';
 import { VEHICLE_STATUS_LABELS, VehicleStatus, VehicleSummary } from '../../core/models/auth.models';
+import { selectOnTouch } from '../../core/select-on-touch';
 import { LotsService } from '../../core/services/lots.service';
 import { VehiclesService } from '../../core/services/vehicles.service';
 import { HelpTip } from '../../shared/help-tip';
@@ -45,6 +46,7 @@ export class AuctionRoom {
   readonly clp = clp;
   readonly num = num;
   readonly statusLabels = VEHICLE_STATUS_LABELS;
+  readonly selectOnTouch = selectOnTouch;
 
   readonly items = signal<Lot[]>([]);
   readonly loading = signal(false);

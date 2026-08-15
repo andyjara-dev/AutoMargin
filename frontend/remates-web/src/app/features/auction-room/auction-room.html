@@ -73,6 +73,8 @@
                   class="figure__input"
                   [value]="lot.currentPrice ?? ''"
                   (input)="setPrice(lot.vehicle.id, $any($event.target).value)"
+                  (focus)="selectOnTouch($event)"
+                  (click)="selectOnTouch($event)"
                   placeholder="0"
                   [attr.aria-label]="'Precio actual de ' + lot.vehicle.label"
                 />

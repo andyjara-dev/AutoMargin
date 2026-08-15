@@ -6,6 +6,7 @@ import { catchError, debounceTime, of, switchMap, tap } from 'rxjs';
 
 import { annualizedPct, clp, num, pct } from '../../core/format';
 import { describeHttpError } from '../../core/http-error';
+import { selectOnTouch } from '../../core/select-on-touch';
 import {
   DamageCategory,
   DamageSeverity,
@@ -57,6 +58,7 @@ export class DealAnalyzer {
   readonly num = num;
   readonly pct = pct;
   readonly annualizedPct = annualizedPct;
+  readonly selectOnTouch = selectOnTouch;
 
   readonly result = signal<DealAnalysisResult | null>(null);
   readonly loading = signal(false);
