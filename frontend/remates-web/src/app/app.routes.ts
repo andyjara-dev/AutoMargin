@@ -29,6 +29,13 @@ export const routes: Routes = [
     title: 'Analizador · AutoMargin'
   },
   {
+    path: 'remate',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/auction-room/auction-room').then((m) => m.AuctionRoom),
+    title: 'Sala de remate · AutoMargin'
+  },
+  {
     path: 'vehiculos',
     canActivate: [authGuard],
     loadComponent: () =>

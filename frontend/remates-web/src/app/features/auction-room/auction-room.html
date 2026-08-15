@@ -1,0 +1,133 @@
+<div class="room">
+  <header class="head">
+    <div>
+      <h1>Sala de remate</h1>
+      <p class="subtitle">
+        Los lotes que preparaste, con su puja máxima al lado. Escribe lo que va cantando el
+        martillero y verás cuánto margen te queda en cada uno.
+      </p>
+    </div>
+    <button type="button" class="btn-ghost" (click)="load()" [disabled]="loading()">
+      {{ loading() ? 'Cargando…' : 'Actualizar' }}
+    </button>
+  </header>
+
+  @if (error()) {
+    <div class="alert">{{ error() }}</div>
+  }
+
+  @if (items().length === 0 && !loading()) {
+    <div class="empty">
+      <strong>No hay lotes preparados.</strong>
+      <p>
+        Analiza un vehículo en el <a routerLink="/analizador">Analizador</a> y guárdalo como lote.
+        Aquí lo tendrás con su puja máxima el día del remate, sin tener que rehacer los números
+        con el martillo corriendo.
+      </p>
+    </div>
+  }
+
+  @if (items().length) {
+    @if (overLimit() > 0) {
+      <div class="alert alert--warn">
+        {{ overLimit() }} {{ overLimit() === 1 ? 'lote está' : 'lotes están' }} por encima de su
+        puja máxima. Ahí ya no se sube.
+      </div>
+    }
+
+    <div class="lots">
+      @for (lot of items(); track lot.vehicle.id) {
+        <article class="lot" [class]="'lot--' + priceTone(lot)">
+          <header class="lot__head">
+            <div>
+              <a class="lot__name" [routerLink]="['/vehiculos', lot.vehicle.id]">
+                {{ lot.vehicle.label }}
+              </a>
+              <span class="lot__meta">
+                {{ lot.vehicle.year }} · {{ num(lot.vehicle.mileageKm) }} km
+                @if (lot.vehicle.lastScore != null) {
+                  · Score {{ lot.vehicle.lastScore }}
+                }
+              </span>
+            </div>
+            <span class="lot__status">{{ statusLabels[lot.vehicle.status] }}</span>
+          </header>
+
+          @if (lot.vehicle.lastMaxBid == null) {
+            <p class="lot__pending">
+              Sin análisis guardado, así que no tiene puja máxima. Ábrelo en el analizador antes
+              del remate.
+            </p>
+          } @else {
+            <div class="lot__numbers">
+              <div class="figure">
+                <span class="figure__label">Puja máxima<app-help key="pujaMaxima" /></span>
+                <strong class="figure__value">{{ clp(lot.vehicle.lastMaxBid) }}</strong>
+              </div>
+
+              <div class="figure">
+                <span class="figure__label">Va en</span>
+                <input
+                  type="text"
+                  inputmode="numeric"
+                  class="figure__input"
+                  [value]="lot.currentPrice ?? ''"
+                  (input)="setPrice(lot.vehicle.id, $any($event.target).value)"
+                  placeholder="0"
+                  [attr.aria-label]="'Precio actual de ' + lot.vehicle.label"
+                />
+              </div>
+
+              <div class="figure">
+                <span class="figure__label">Margen</span>
+                @if (headroom(lot); as h) {
+                  <strong class="figure__value" [class.negative]="h < 0">
+                    {{ h >= 0 ? clp(h) : '−' + clp(-h) }}
+                  </strong>
+                } @else {
+                  <strong class="figure__value muted">—</strong>
+                }
+              </div>
+            </div>
+
+            @if (priceTone(lot) === 'red') {
+              <p class="lot__verdict lot__verdict--stop">Pasó el techo. No subas más.</p>
+            } @else if (priceTone(lot) === 'yellow') {
+              <p class="lot__verdict lot__verdict--close">Queda poco. Cada puja cuenta.</p>
+            }
+          }
+
+          <footer class="lot__actions">
+            <button
+              type="button"
+              class="btn-win"
+              [disabled]="busyId() === lot.vehicle.id"
+              (click)="mark(lot, 'Won')">Lo gané</button>
+            <button
+              type="button"
+              class="btn-ghost"
+              [disabled]="busyId() === lot.vehicle.id"
+              (click)="mark(lot, 'Lost')">Lo perdí</button>
+            <button
+              type="button"
+              class="btn-ghost"
+              [disabled]="busyId() === lot.vehicle.id"
+              (click)="mark(lot, 'Discarded')">Desistí</button>
+            <button
+              type="button"
+              class="btn-remove"
+              [disabled]="busyId() === lot.vehicle.id"
+              (click)="remove(lot)"
+              title="Borrar el lote y su análisis">Borrar</button>
+          </footer>
+        </article>
+      }
+    </div>
+
+    <p class="footnote">
+      «Lo gané», «Lo perdí» y «Desistí» sacan el lote de la sala pero conservan el registro. Con
+      el tiempo esos resultados dicen si tu puja máxima está bien calibrada: si ganas todo, vas
+      demasiado arriba; si no ganas nunca, demasiado abajo. «Borrar» sí elimina el lote entero.
+    </p>
+  }
+</div>

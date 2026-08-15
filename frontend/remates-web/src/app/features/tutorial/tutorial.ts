@@ -62,6 +62,7 @@ export class Tutorial {
 
     { group: 'Las pantallas', id: 'ciclo', label: 'El ciclo de un vehículo' },
     { group: 'Las pantallas', id: 'leer-pantalla', label: 'Analizador' },
+    { group: 'Las pantallas', id: 'pantalla-remate', label: 'Sala de remate' },
     { group: 'Las pantallas', id: 'pantalla-estado', label: 'Estado del negocio' },
     { group: 'Las pantallas', id: 'pantalla-vehiculos', label: 'Vehículos y su ficha' },
     { group: 'Las pantallas', id: 'pantalla-mercado', label: 'Comparables de mercado' },

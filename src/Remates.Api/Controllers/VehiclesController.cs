@@ -273,6 +273,12 @@ public sealed class VehiclesController(
             : !string.IsNullOrWhiteSpace(displayName) ? displayName
             : fromCatalog;
 
-        return string.IsNullOrWhiteSpace(baseName) ? $"Vehículo {year}" : $"{baseName} {year}";
+        if (string.IsNullOrWhiteSpace(baseName)) return $"Vehículo {year}";
+
+        // Si el nombre ya trae el año, agregarlo otra vez da «Lote 14 · Yaris 2018 2018». Quien
+        // nombra un lote a mano suele escribir el año, porque es lo que lo distingue.
+        return baseName.Contains(year.ToString(), StringComparison.Ordinal)
+            ? baseName
+            : $"{baseName} {year}";
     }
 }

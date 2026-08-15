@@ -1,7 +1,7 @@
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { catchError, debounceTime, of, switchMap, tap } from 'rxjs';
 
 import { annualizedPct, clp, num, pct } from '../../core/format';
@@ -16,6 +16,7 @@ import {
   SimulateAnalysisRequest
 } from '../../core/models/analysis.models';
 import { AnalysisService } from '../../core/services/analysis.service';
+import { LotsService } from '../../core/services/lots.service';
 import { HelpTip } from '../../shared/help-tip';
 
 interface Option<T> {
@@ -60,6 +61,13 @@ export class DealAnalyzer {
   readonly result = signal<DealAnalysisResult | null>(null);
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
+
+  private readonly lots = inject(LotsService);
+  private readonly router = inject(Router);
+
+  readonly saving = signal(false);
+  readonly saveError = signal<string | null>(null);
+  readonly lotName = signal('');
 
   readonly inspectionLevels: Option<MechanicalInspectionLevel>[] = [
     { value: 'None', label: 'No se pudo encender' },
@@ -129,6 +137,70 @@ export class DealAnalyzer {
 
   get damages(): FormArray<FormGroup> {
     return this.form.controls.damages as FormArray<FormGroup>;
+  }
+
+  /**
+   * Guarda lo que hay en pantalla como un lote de la sala de remate.
+   *
+   * Existe porque el analizador por sí solo no recuerda nada: sirve para tantear un auto, pero
+   * no para llegar al remate con cinco preparados. Guardar deja el vehículo con sus comparables,
+   * sus daños y su análisis, que es lo que después se consulta con el martillo corriendo.
+   */
+  saveLot(): void {
+    const name = this.lotName().trim();
+
+    if (!name) {
+      this.saveError.set('Ponle un nombre para reconocerlo en la sala. Por ejemplo «Lote 14 · Yaris 2018».');
+      return;
+    }
+
+    const raw = this.form.getRawValue();
+    const comparables = this.comparables.getRawValue() as ComparableFormValue[];
+    const damages = this.damages.getRawValue() as DamageFormValue[];
+
+    this.saving.set(true);
+    this.saveError.set(null);
+
+    this.lots
+      .save({
+        displayName: name,
+        year: raw.year,
+        mileageKm: raw.mileageKm,
+        comparables: comparables.map((c) => ({
+          listedPrice: c.listedPrice,
+          year: c.year,
+          mileageKm: c.mileageKm,
+          source: c.source || 'Manual',
+          ageDays: c.ageDays
+        })),
+        damages: damages.map((d) => ({
+          category: d.category,
+          severity: d.severity,
+          costMin: d.costMin,
+          costExpected: d.costExpected,
+          costMax: d.costMax,
+          description: d.description
+        })),
+        analysis: {
+          currentAuctionPrice: raw.currentAuctionPrice,
+          transport: raw.transport,
+          detailing: raw.detailing,
+          otherFixedCosts: raw.otherFixedCosts,
+          estimatedDaysToSell: raw.estimatedDaysToSell,
+          totalCapital: raw.totalCapital
+        }
+      })
+      .subscribe({
+        next: () => {
+          this.saving.set(false);
+          this.lotName.set('');
+          this.router.navigate(['/remate']);
+        },
+        error: (err) => {
+          this.saving.set(false);
+          this.saveError.set(describeHttpError(err));
+        }
+      });
   }
 
   /** Componentes ordenados por lo que más restan: son las razones de que el score no sea mayor. */

@@ -20,6 +20,58 @@
   <div class="layout">
     <!-- ============ COLUMNA IZQUIERDA: DATOS ============ -->
     <form class="inputs" [formGroup]="form">
+      <!--
+        El precio del lote va aparte y en grande. Es el único campo que se toca mientras el
+        martillo corre: los demás se llenan tranquilo, antes del remate. Mezclarlo con ellos
+        obliga a buscarlo justo cuando no hay tiempo de buscar nada.
+      -->
+      <section class="card card--live">
+        <h2>En el remate<app-help key="precioActual" /></h2>
+        <div class="live">
+          <label class="live__field">
+            <span class="live__label">Precio actual del lote</span>
+            <input type="number" formControlName="currentAuctionPrice" step="100000" />
+          </label>
+          <div class="live__hint">
+            @if (result(); as r) {
+              @if (r.headroom >= 0) {
+                <span class="live__ok">Queda {{ clp(r.headroom) }} de margen</span>
+              } @else {
+                <span class="live__over">Te pasaste en {{ clp(-r.headroom) }}</span>
+              }
+            } @else {
+              <span class="muted">Súbelo mientras avanza la sala.</span>
+            }
+          </div>
+        </div>
+
+        <div class="save-lot">
+          <input
+            type="text"
+            [value]="lotName()"
+            (input)="lotName.set($any($event.target).value)"
+            placeholder="Lote 14 · Yaris 2018"
+            aria-label="Nombre del lote"
+          />
+          <button
+            type="button"
+            class="btn-ghost"
+            [disabled]="saving() || !result()"
+            (click)="saveLot()">
+            {{ saving() ? 'Guardando…' : 'Guardar como lote' }}
+          </button>
+        </div>
+
+        <p class="save-lot__hint">
+          Guardarlo lo deja en <a routerLink="/remate">la sala de remate</a> con sus comparables y
+          daños, para tenerlo a mano el día de la subasta.
+        </p>
+
+        @if (saveError()) {
+          <p class="save-lot__error">{{ saveError() }}</p>
+        }
+      </section>
+
       <section class="card">
         <h2>Vehículo y remate</h2>
         <div class="grid grid--2">
@@ -29,20 +81,17 @@
           <label>Kilometraje
             <input type="number" formControlName="mileageKm" step="1000" />
           </label>
-          <label>Precio actual del lote
-            <input type="number" formControlName="currentAuctionPrice" step="100000" />
-          </label>
-          <label>Días estimados de venta
+          <label>Días estimados de venta<app-help key="diasVenta" />
             <input type="number" formControlName="estimatedDaysToSell" />
           </label>
-          <label>Nivel de inspección lograda
+          <label>Nivel de inspección lograda<app-help key="riesgoMecanico" />
             <select formControlName="inspectionLevel">
               @for (opt of inspectionLevels; track opt.value) {
                 <option [value]="opt.value">{{ opt.label }}</option>
               }
             </select>
           </label>
-          <label>Riesgo documental
+          <label>Riesgo documental<app-help key="riesgoDocumental" />
             <select formControlName="documentRisk">
               @for (opt of documentRisks; track opt.value) {
                 <option [value]="opt.value">{{ opt.label }}</option>
