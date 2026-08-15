@@ -32,19 +32,19 @@
           <span class="kpi__value">{{ clp(f.performance.totalCashInvested) }}</span>
         </div>
         <div class="kpi">
-          <span class="kpi__label">Utilidad de caja</span>
+          <span class="kpi__label">Utilidad de caja<app-help key="utilidadCaja" /></span>
           <span class="kpi__value" [class.negative]="f.performance.profitCash < 0">
             {{ clp(f.performance.profitCash) }}
           </span>
         </div>
         <div class="kpi kpi--highlight">
-          <span class="kpi__label">Utilidad económica</span>
+          <span class="kpi__label">Utilidad económica<app-help key="utilidadEconomica" /></span>
           <span class="kpi__value" [class.negative]="f.performance.profitEconomic < 0">
             {{ clp(f.performance.profitEconomic) }}
           </span>
         </div>
         <div class="kpi">
-          <span class="kpi__label">Costo del capital</span>
+          <span class="kpi__label">Costo del capital<app-help key="costoCapital" /></span>
           <span class="kpi__value">{{ clp(f.performance.capitalCost) }}</span>
         </div>
         <div class="kpi">

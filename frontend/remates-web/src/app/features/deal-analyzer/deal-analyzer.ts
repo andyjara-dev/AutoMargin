@@ -16,6 +16,7 @@ import {
   SimulateAnalysisRequest
 } from '../../core/models/analysis.models';
 import { AnalysisService } from '../../core/services/analysis.service';
+import { HelpTip } from '../../shared/help-tip';
 
 interface Option<T> {
   value: T;
@@ -42,7 +43,7 @@ interface DamageFormValue {
 
 @Component({
   selector: 'app-deal-analyzer',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, HelpTip],
   templateUrl: './deal-analyzer.html',
   styleUrl: './deal-analyzer.scss'
 })

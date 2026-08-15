@@ -1,7 +1,7 @@
 <div class="market">
   <header class="head">
     <div>
-      <h1>Comparables de mercado</h1>
+      <h1>Comparables de mercado<app-help key="comparables" /></h1>
       <p class="subtitle">
         Reúne avisos de vehículos parecidos al que quieres comprar. De ellos sale el valor de
         mercado, y de ahí la puja máxima. Con menos de tres comparables el análisis se bloquea.
@@ -202,7 +202,7 @@
             <strong class="stat__value">{{ clp(s.min) }}</strong>
           </div>
           <div class="stat stat--key">
-            <span class="stat__label">Mediana</span>
+            <span class="stat__label">Mediana<app-help key="mediana" /></span>
             <strong class="stat__value">{{ clp(s.median) }}</strong>
           </div>
           <div class="stat">
@@ -210,7 +210,7 @@
             <strong class="stat__value">{{ clp(s.average) }}</strong>
           </div>
           <div class="stat">
-            <span class="stat__label">Moda</span>
+            <span class="stat__label">Moda<app-help key="moda" /></span>
             @if (s.mode !== null) {
               <strong class="stat__value">{{ clp(s.mode) }}</strong>
               <span class="stat__note">{{ s.modeCount }} avisos iguales</span>

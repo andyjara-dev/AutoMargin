@@ -58,7 +58,7 @@
           </span>
         </div>
         <div class="kpi">
-          <span class="kpi__label">Inmovilizado</span>
+          <span class="kpi__label">Inmovilizado<app-help key="capitalInmovilizado" /></span>
           <span class="kpi__value">{{ clp(d.capital.immobilized) }}</span>
           <span class="kpi__sub">{{ pct(d.capital.immobilizedPct) }} del total</span>
         </div>
@@ -98,7 +98,7 @@
           <span class="kpi__value">{{ clp(d.inventory.inventoryExpectedValue) }}</span>
         </div>
         <div class="kpi">
-          <span class="kpi__label">Utilidad potencial</span>
+          <span class="kpi__label">Utilidad potencial<app-help key="utilidadPotencial" /></span>
           <span class="kpi__value" [class.negative]="d.inventory.potentialProfit < 0">
             {{ clp(d.inventory.potentialProfit) }}
           </span>
@@ -129,13 +129,13 @@
 
       <div class="kpis">
         <div class="kpi">
-          <span class="kpi__label">Utilidad de caja</span>
+          <span class="kpi__label">Utilidad de caja<app-help key="utilidadCaja" /></span>
           <span class="kpi__value" [class.negative]="d.profit.realizedProfitCash < 0">
             {{ clp(d.profit.realizedProfitCash) }}
           </span>
         </div>
         <div class="kpi kpi--highlight">
-          <span class="kpi__label">Utilidad económica</span>
+          <span class="kpi__label">Utilidad económica<app-help key="utilidadEconomica" /></span>
           <span class="kpi__value" [class.negative]="d.profit.realizedProfitEconomic < 0">
             {{ clp(d.profit.realizedProfitEconomic) }}
           </span>
@@ -146,7 +146,7 @@
           <span class="kpi__sub">{{ d.profit.salesLast30Days }} venta(s)</span>
         </div>
         <div class="kpi">
-          <span class="kpi__label">ROI promedio</span>
+          <span class="kpi__label">ROI promedio<app-help key="roiAnual" /></span>
           <span class="kpi__value">{{ pct(d.profit.averageRoiEconomic) }}</span>
         </div>
         <div class="kpi">

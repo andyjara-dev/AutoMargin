@@ -13,10 +13,11 @@ import {
   VehicleFinancials
 } from '../../core/models/inventory.models';
 import { InventoryService } from '../../core/services/inventory.service';
+import { HelpTip } from '../../shared/help-tip';
 
 @Component({
   selector: 'app-vehicle-detail',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, HelpTip],
   templateUrl: './vehicle-detail.html',
   styleUrl: './vehicle-detail.scss'
 })

@@ -1,5 +1,5 @@
-import { Component, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, afterNextRender, inject, signal } from '@angular/core';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 
 interface TocEntry {
   id: string;
@@ -14,7 +14,30 @@ interface TocEntry {
   styleUrl: './tutorial.scss'
 })
 export class Tutorial {
+  private readonly route = inject(ActivatedRoute);
+
   readonly activeId = signal<string>('el-negocio');
+
+  constructor() {
+    // Se llega aquí desde las ayudas de las otras pantallas, con la sección en el fragmento de
+    // la dirección. Hay que esperar a que el navegador haya maquetado: en ngAfterViewInit el
+    // manual todavía mide cero y el desplazamiento no va a ninguna parte.
+    afterNextRender(() => this.scrollToFragment());
+  }
+
+  private scrollToFragment(): void {
+    const fragment = this.route.snapshot.fragment;
+    if (!fragment) return;
+
+    const target = document.getElementById(fragment);
+    if (!target) return;
+
+    this.activeId.set(fragment);
+
+    // Sin animación: son cuarenta mil píxeles de manual y ver el recorrido entero no aporta
+    // nada. Quien llega por un enlace quiere estar ahí, no viajar hasta ahí.
+    target.scrollIntoView({ behavior: 'auto', block: 'start' });
+  }
 
   readonly toc: TocEntry[] = [
     { group: 'Empieza aquí', id: 'el-negocio', label: 'El negocio en simple' },

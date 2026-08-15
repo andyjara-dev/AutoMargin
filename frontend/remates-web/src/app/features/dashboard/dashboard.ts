@@ -5,6 +5,7 @@ import { catchError, of, tap } from 'rxjs';
 
 import { API_BASE_URL } from '../../core/api-config';
 import { annualizedPct, clp, num, pct } from '../../core/format';
+import { HelpTip } from '../../shared/help-tip';
 import {
   ALERT_TYPE_LABELS,
   Alert,
@@ -13,7 +14,7 @@ import {
 
 @Component({
   selector: 'app-dashboard',
-  imports: [RouterLink],
+  imports: [RouterLink, HelpTip],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss'
 })

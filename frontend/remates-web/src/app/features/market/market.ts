@@ -14,6 +14,7 @@ import {
 } from '../../core/models/market.models';
 import { MarketService } from '../../core/services/market.service';
 import { VehiclesService } from '../../core/services/vehicles.service';
+import { HelpTip } from '../../shared/help-tip';
 
 /**
  * Resumen de precios de los avisos elegidos. Las cifras son nulas cuando no hay nada marcado:
@@ -83,7 +84,7 @@ const CAVEATS: { keywords: string[]; label: string }[] = [
  */
 @Component({
   selector: 'app-market',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, HelpTip],
   templateUrl: './market.html',
   styleUrl: './market.scss'
 })

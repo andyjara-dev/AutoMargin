@@ -73,7 +73,7 @@
 
       <section class="card">
         <div class="card__head">
-          <h2>Comparables de mercado</h2>
+          <h2>Comparables de mercado<app-help key="comparables" /></h2>
           <button type="button" class="btn btn--ghost" (click)="addComparable()">+ Agregar</button>
         </div>
 
@@ -178,7 +178,7 @@
           </div>
 
           <div class="maxbid">
-            <span class="maxbid__label">PUJA MÁXIMA</span>
+            <span class="maxbid__label">PUJA MÁXIMA<app-help key="pujaMaxima" /></span>
             <span class="maxbid__value">{{ clp(r.maxBid.maxBid) }}</span>
             <span class="maxbid__note">
               Incluye un margen de seguridad de {{ pct(r.maxBid.safetyMarginPct) }} sobre
@@ -195,9 +195,18 @@
                 <div class="ladder__mark ladder__mark--now" [style.left.%]="l.currentPct"></div>
               </div>
               <div class="ladder__legend">
-                <span><i class="dot dot--now"></i> Precio actual {{ clp(r.currentAuctionPrice) }}</span>
-                <span><i class="dot dot--max"></i> Puja máxima {{ clp(r.maxBid.maxBid) }}</span>
-                <span><i class="dot dot--be"></i> Equilibrio {{ clp(r.breakevenBid) }}</span>
+                <span>
+                  <i class="dot dot--now"></i> Precio actual {{ clp(r.currentAuctionPrice) }}
+                  <app-help key="precioActual" />
+                </span>
+                <span>
+                  <i class="dot dot--max"></i> Puja máxima {{ clp(r.maxBid.maxBid) }}
+                  <app-help key="pujaMaxima" />
+                </span>
+                <span>
+                  <i class="dot dot--be"></i> Equilibrio {{ clp(r.breakevenBid) }}
+                  <app-help key="breakEven" />
+                </span>
               </div>
             </div>
           }
@@ -226,7 +235,7 @@
           <h2>Resultado al precio evaluado</h2>
           <div class="kpis">
             <div class="kpi">
-              <span class="kpi__label">Utilidad</span>
+              <span class="kpi__label">Utilidad<app-help key="utilidad" /></span>
               <span class="kpi__value" [class.negative]="r.metricsAtCurrentPrice.profit < 0">
                 {{ clp(r.metricsAtCurrentPrice.profit) }}
               </span>
@@ -236,11 +245,11 @@
               <span class="kpi__value">{{ pct(r.metricsAtCurrentPrice.roiSimple) }}</span>
             </div>
             <div class="kpi">
-              <span class="kpi__label">ROI anualizado</span>
+              <span class="kpi__label">ROI anualizado<app-help key="roiAnual" /></span>
               <span class="kpi__value">{{ annualizedPct(r.metricsAtCurrentPrice.roiAnnualized) }}</span>
             </div>
             <div class="kpi">
-              <span class="kpi__label">Margen sobre venta</span>
+              <span class="kpi__label">Margen sobre venta<app-help key="margen" /></span>
               <span class="kpi__value">{{ pct(r.metricsAtCurrentPrice.marginPct) }}</span>
             </div>
             <div class="kpi">
@@ -271,7 +280,7 @@
               <span class="kpi__value">{{ clp(r.valuation.expected) }}</span>
             </div>
             <div class="kpi kpi--highlight">
-              <span class="kpi__label">Conservador (base del cálculo)</span>
+              <span class="kpi__label">Conservador (base del cálculo)<app-help key="valorConservador" /></span>
               <span class="kpi__value">{{ clp(r.valuation.conservative) }}</span>
             </div>
           </div>
@@ -284,7 +293,7 @@
         </section>
 
         <section class="card">
-          <h2>Estructura de costos</h2>
+          <h2>Estructura de costos<app-help key="costosProporcionales" /></h2>
           <table class="readout">
             <tbody>
               <tr class="readout__section">
@@ -328,7 +337,7 @@
         </section>
 
         <section class="card">
-          <h2>Escenarios</h2>
+          <h2>Escenarios<app-help key="escenarios" /></h2>
           <table class="readout readout--grid">
             <thead>
               <tr><th>Escenario</th><th>Venta</th><th>Reparación</th><th>Días</th><th>Utilidad</th></tr>
@@ -348,7 +357,7 @@
         </section>
 
         <section class="card">
-          <h2>Cómo se formó el score</h2>
+          <h2>Cómo se formó el score<app-help key="score" /></h2>
           @for (c of weakestComponents(); track c.key) {
             <div class="component">
               <div class="component__head">
@@ -362,7 +371,7 @@
         </section>
 
         <section class="card">
-          <h2>Margen de seguridad aplicado</h2>
+          <h2>Margen de seguridad aplicado<app-help key="margenSeguridad" /></h2>
           <table class="readout">
             <tbody>
               @for (m of r.maxBid.safetyMarginBreakdown; track m.key) {
