@@ -55,7 +55,7 @@
           <input type="text" formControlName="region" placeholder="Metropolitana" />
         </label>
         <label>
-          <span>Máximo de avisos</span>
+          <span>Máximo por portal</span>
           <input type="number" formControlName="limit" min="1" max="50" />
         </label>
 
@@ -176,7 +176,9 @@
               <span class="stat__note">{{ s.modeCount }} avisos iguales</span>
             } @else {
               <strong class="stat__value muted-value">—</strong>
-              <span class="stat__note">ningún precio se repite</span>
+              @if (s.count > 0) {
+                <span class="stat__note">ningún precio se repite</span>
+              }
             }
           </div>
           <div class="stat">
@@ -185,9 +187,15 @@
           </div>
         </div>
 
-        @if (s.count < 3) {
+        @if (s.count === 0) {
+          <p class="hint">
+            Marca los avisos que de verdad se parezcan al vehículo y aquí verás cómo se mueven
+            las cifras con cada uno.
+          </p>
+        } @else if (s.count < 3) {
           <p class="hint warn">
-            Con menos de tres comparables el análisis se bloquea. Marca al menos uno más.
+            Con menos de tres comparables el análisis se bloquea. Marca al menos
+            {{ 3 - s.count }} más.
           </p>
         }
 

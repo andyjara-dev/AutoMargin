@@ -227,14 +227,20 @@
 
 .stat__note { font-size: 10.5px; color: var(--text-faint); }
 
-.table-scroll { overflow-x: auto; }
+/*
+ * La lista se desplaza dentro de su propio marco. Con dos portales activos son cincuenta avisos,
+ * y dejarlos crecer hacia abajo aleja el resumen y el botón de importar hasta perderlos de vista.
+ */
+.table-scroll {
+  overflow: auto;
+  max-height: 60vh;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
 
 table.grid {
   width: 100%;
   font-size: 13px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
 
   th {
     text-align: left;
@@ -246,6 +252,11 @@ table.grid {
     text-transform: uppercase;
     letter-spacing: .05em;
     white-space: nowrap;
+
+    /* El encabezado acompaña el desplazamiento: sin él se pierde qué columna es cuál. */
+    position: sticky;
+    top: 0;
+    z-index: 2;
   }
 
   td {

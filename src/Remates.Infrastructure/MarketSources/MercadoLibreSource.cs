@@ -184,7 +184,7 @@ public sealed class MercadoLibreSource(
         {
             if (results.Count >= query.Limit) break;
 
-            var text = Normalize(item.TextContent);
+            var text = BuildCardText(item);
             var parsed = ListingParser.Parse(text);
 
             var price = ReadPrice(item) ?? parsed.Price;
@@ -208,6 +208,27 @@ public sealed class MercadoLibreSource(
         }
 
         return new MarketSearchOutcome { Source = Name, Results = results };
+    }
+
+    /// <summary>
+    /// Arma el texto de la tarjeta separando cada elemento.
+    ///
+    /// No se usa TextContent directo porque pega los elementos sin espacio: el año «2021» y el
+    /// kilometraje «88.000 Km» quedan como «202188.000 Km», y de ahí se lee un kilometraje de
+    /// doscientos millones que después se descarta por absurdo. El resultado era que ningún
+    /// aviso de esta fuente traía kilometraje, sin que nada fallara a la vista.
+    /// </summary>
+    private static string BuildCardText(IElement item)
+    {
+        var parts = item.QuerySelectorAll("*")
+            .Where(e => e.Children.Length == 0)
+            .Select(e => e.TextContent.Trim())
+            .Where(t => t.Length > 0)
+            .ToList();
+
+        return parts.Count > 0
+            ? Normalize(string.Join(" · ", parts))
+            : Normalize(item.TextContent);
     }
 
     private static decimal? ReadPrice(IElement item)

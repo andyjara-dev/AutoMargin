@@ -14,7 +14,10 @@ public sealed record MarketSearchQuery
 
     public string? Region { get; init; }
 
-    /// <summary>Tope de resultados. Se mantiene bajo a propósito: no se rastrea, se consulta.</summary>
+    /// <summary>
+    /// Tope de resultados <b>por fuente</b>. Se mantiene bajo a propósito: no se rastrea, se
+    /// consulta. Con dos fuentes activas, la lista combinada puede traer hasta el doble.
+    /// </summary>
     public int Limit { get; init; } = 25;
 
     /// <summary>Texto libre, para cuando la marca y el modelo no bastan.</summary>

@@ -14,13 +14,17 @@ import {
 import { MarketService } from '../../core/services/market.service';
 import { VehiclesService } from '../../core/services/vehicles.service';
 
-/** Resumen de precios de los avisos elegidos. */
+/**
+ * Resumen de precios de los avisos elegidos. Las cifras son nulas cuando no hay nada marcado:
+ * el panel se muestra igual, con guiones, porque uno que aparece y desaparece según cuántos
+ * avisos lleves marcados desconcierta más de lo que informa.
+ */
 interface PriceStats {
   count: number;
-  min: number;
-  max: number;
-  average: number;
-  median: number;
+  min: number | null;
+  max: number | null;
+  average: number | null;
+  median: number | null;
   /** Precio que más se repite. Nulo cuando todos los avisos valen distinto. */
   mode: number | null;
   /** Cuántas veces se repite la moda. */
@@ -28,6 +32,17 @@ interface PriceStats {
   /** Cuánto se aparta el promedio de la mediana, en proporción a la mediana. */
   skew: number;
 }
+
+const EMPTY_STATS: PriceStats = {
+  count: 0,
+  min: null,
+  max: null,
+  average: null,
+  median: null,
+  mode: null,
+  modeCount: 0,
+  skew: 0
+};
 
 /** Un aviso en la pantalla, con su estado de selección y de dónde vino. */
 interface Candidate {
@@ -105,12 +120,12 @@ export class Market {
    * Resumen de lo seleccionado, recalculado con cada check. Sirve para darse cuenta en el
    * momento de que la muestra quedó torcida, en vez de descubrirlo cuando el análisis ya salió.
    */
-  readonly selectedStats = computed<PriceStats | null>(() => {
+  readonly selectedStats = computed<PriceStats>(() => {
     const prices = this.selected()
       .map((c) => c.result.listedPrice)
       .sort((a, b) => a - b);
 
-    if (prices.length === 0) return null;
+    if (prices.length === 0) return EMPTY_STATS;
 
     const count = prices.length;
     const average = prices.reduce((sum, p) => sum + p, 0) / count;

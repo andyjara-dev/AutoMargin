@@ -83,6 +83,10 @@ public sealed class MarketSearchService(
     /// <summary>
     /// Quita repetidos y ordena por cercanía al vehículo objetivo: los avisos del mismo año y
     /// kilometraje parecido son los que mejor sostienen la valuación.
+    ///
+    /// No se recorta al tope pedido. Ese tope es por fuente, y aplicarlo otra vez al conjunto
+    /// tiraba a la basura la mitad de lo encontrado: dos fuentes con 25 avisos cada una
+    /// terminaban mostrando 25, contradiciendo lo que decía el estado de cada fuente.
     /// </summary>
     private static List<MarketSearchResult> Deduplicate(
         List<MarketSearchResult> results, MarketSearchQuery query)
@@ -92,7 +96,6 @@ public sealed class MarketSearchService(
             .Select(g => g.First())
             .OrderBy(r => query.Year is { } year ? Math.Abs(r.Year - year) : 0)
             .ThenBy(r => r.MileageKm ?? int.MaxValue)
-            .Take(query.Limit)
             .ToList();
     }
 
